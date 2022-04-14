@@ -106,9 +106,16 @@
                                     <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
                                         icon="fas fa-volume-down" data-toggle="tooltop" title=""
                                         onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                    <x-adminlte-button class="btn-xs" label="Layani" theme="success"
-                                        icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
-                                        onclick="window.location='{{ route('antrian.layanan', $item->kodebooking) }}'" />
+                                    @if ($item->pasienbaru == 1)
+                                        <x-adminlte-button class="btn-xs" label="Daftar" theme="success"
+                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
+                                            onclick="window.location='{{ route('antrian.baru_online', $item->kodebooking) }}'" />
+                                    @endif
+                                    @if ($item->pasienbaru == 2)
+                                        <x-adminlte-button class="btn-xs" label="Daftar" theme="success"
+                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
+                                            onclick="window.location='{{ route('antrian.baru_offline', $item->kodebooking) }}'" />
+                                    @endif
                                     <x-adminlte-button class="btn-xs" label="Batal" theme="danger"
                                         icon="fas fa-times" data-toggle="tooltop" title=""
                                         onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />

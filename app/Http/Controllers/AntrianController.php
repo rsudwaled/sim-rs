@@ -102,18 +102,47 @@ class AntrianController extends Controller
         }
         return $response;
     }
-    public function layanan($kodebooking)
+    public function baru_online($kodebooking)
     {
         $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
         $poli = Poliklinik::get();
-
-        return view('simrs.antrian_layanan', [
+        return view('simrs.antrian_baru_online', [
             'poli' => $poli,
-
             'antrian' => $antrian,
         ]);
     }
-
+    public function simpan_baru_online(Request $request)
+    {
+        $request->validate([
+            'nomorkartu' => 'required',
+            'nik' => 'required',
+            'nomorkk' => 'required',
+            'nama' => 'required',
+            'jeniskelamin' => 'required',
+            'tanggallahir' => 'required',
+            'nohp' => 'required',
+            'alamat' => 'required',
+            'kodeprop' => 'required',
+            'namaprop' => 'required',
+            'kodedati2' => 'required',
+            'namadati2' => 'required',
+            'kodekec' => 'required',
+            'namakec' => 'required',
+            'kodekel' => 'required',
+            'namakel' => 'required',
+            'rt' => 'required',
+            'rw' => 'required',
+        ]);
+    }
+    public function baru_offline($kodebooking)
+    {
+        $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
+        $poli = Poliklinik::get();
+        return view('simrs.antrian_baru_offline', [
+            'poli' => $poli,
+            'antrian' => $antrian,
+        ]);
+    }
     public function ref_poli()
     {
         $polis = Poliklinik::get();
@@ -204,5 +233,4 @@ class AntrianController extends Controller
         }
         return redirect()->route('antrian.ref.jadwaldokter');
     }
-
 }

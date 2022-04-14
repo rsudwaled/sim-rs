@@ -51,7 +51,7 @@
                         </dl>
                     </div>
                 </div>
-                <form action="{{ route('antrian.store') }}" method="post">
+                <form action="{{ route('antrian.simpan_baru_online') }}" method="post">
                     @csrf
                     <div class="row">
                         <div class="col-md-4">

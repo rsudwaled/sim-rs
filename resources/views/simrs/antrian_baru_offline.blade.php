@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Tambah Antrian Pasien Baru Online')
+@section('title', 'Tambah Antrian Pasien Baru Offline')
 
 @section('content_header')
-    <h1>Tambah Antrian Pasien Baru Online</h1>
+    <h1>Tambah Antrian Pasien Baru Offline</h1>
 @stop
 
 @section('content')
@@ -55,15 +55,15 @@
                     @csrf
                     <div class="row">
                         <div class="col-md-4">
-                            <x-adminlte-input name="nomorkartu" value="{{ $antrian->nomorkartu }}" label="Nomor Kartu" placeholder="Nomor Kartu"
-                                enable-old-support />
+                            <x-adminlte-input name="nomorkartu" value="{{ $antrian->nomorkartu }}" label="Nomor Kartu"
+                                placeholder="Nomor Kartu" enable-old-support />
                         </div>
                         <div class="col-md-4">
-                            <x-adminlte-input name="nik" value="{{ $antrian->nik }}" label="NIK" placeholder="Nomor Induk Kependudukan"
-                                enable-old-support />
+                            <x-adminlte-input name="nik" value="{{ $antrian->nik }}" label="NIK"
+                                placeholder="Nomor Induk Kependudukan" enable-old-support />
                         </div>
                         <div class="col-md-4">
-                            <x-adminlte-input name="nomorkk"  label="Nomor KK" placeholder="Nomor Kartu Keluarga"
+                            <x-adminlte-input name="nomorkk" label="Nomor KK" placeholder="Nomor Kartu Keluarga"
                                 enable-old-support />
                         </div>
                     </div>
@@ -80,13 +80,12 @@
                             @php
                                 $config = ['format' => 'YYYY-MM-DD'];
                             @endphp
-                            <x-adminlte-input-date name="tanggallahir"
-                                value="" label="Tanggal Lahir" Placeholder="Tanggal Lahir"
-                                :config="$config" />
+                            <x-adminlte-input-date name="tanggallahir" value="" label="Tanggal Lahir"
+                                placeholder="Tanggal Lahir" :config="$config" enable-old-support />
                         </div>
                         <div class="col-md-4">
-                            <x-adminlte-input name="nohp" value="{{ $antrian->nohp }}"  label="Nomor HP" placeholder="Nomor HP Yang Dapat Dihubungi"
-                                enable-old-support />
+                            <x-adminlte-input name="nohp" value="{{ $antrian->nohp }}" label="Nomor HP"
+                                placeholder="Nomor HP Yang Dapat Dihubungi" enable-old-support />
                         </div>
                     </div>
                     <div class="row">
