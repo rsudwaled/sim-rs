@@ -31,7 +31,7 @@
                         </tr>
                     @endforeach
                 </x-adminlte-datatable>
-                {{-- <a href="{{ route('antrian.ref.get_poli_bpjs') }}" class="btn btn-success">Refresh</a> --}}
+                <a href="{{ route('antrian.ref.get_poli_bpjs') }}" class="btn btn-success">Refresh</a>
             </x-adminlte-card>
             <x-adminlte-card title="Informasi Referensi Poliklinik" theme="info" icon="fas fa-info-circle" collapsible
                 maximizable>

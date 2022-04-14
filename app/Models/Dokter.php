@@ -5,15 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Poliklinik extends Model
+class Dokter extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'kodepoli',
-        'namapoli',
-        'kodesubspesialis',
-        'namasubspesialis',
-        'subspesialis'
+        'namadokter',
+        'kodedokter',
+        'nohp',
+        'status',
     ];
 }
