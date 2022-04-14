@@ -50,5 +50,4 @@
     @stack('js')
     @yield('js')
     @include('sweetalert::alert')
-
 @stop

@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Antrian;
+use App\Models\Dokter;
+use App\Models\Poliklinik;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -261,109 +265,109 @@ class AntrianBPJSController extends Controller
     //         return  $jadwals;
     //     }
     // }
-    // public function ambil_antrian(Request $request)
-    // {
-    //     $antrians = Antrian::where('kodepoli', $request->kodepoli)
-    //         ->where('tanggalperiksa', $request->tanggalperiksa)
-    //         ->count();
-    //     // get jadwal
-    //     $jadwals = $this->ref_jadwal_dokter($request);
-    //     if (isset($jadwals->response)) {
-    //         $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
-    //         if (empty($jadwal)) {
-    //             $response = [
-    //                 "metadata" => [
-    //                     "code" => 201,
-    //                     "message" => "Tidak ada jadwal dokter dihari tersebut."
-    //                 ]
-    //             ];
-    //             return $response;
-    //         }
-    //     } else {
-    //         return  $jadwals;
-    //     }
-    //     // pasien baru / lama
-    //     if (isset($request->norm)) {
-    //         $request['pasienbaru'] = 0;
-    //     } else {
-    //         $request['norm'] = "PASIEN BARU";
-    //         $request['pasienbaru'] = 1;
-    //     }
-    //     // pasien jkn / nonjkn
-    //     if (isset($request->nomorreferensi)) {
-    //         $request['jenispasien'] = 'JKN';
-    //     } else {
-    //         $request['jenispasien'] = 'NON JKN';
-    //     }
-    //     $request['kuotajkn'] = $jadwal->kapasitaspasien;
-    //     $request['jampraktek'] = $jadwal->jadwal;
-    //     $request['sisakuotajkn'] = $jadwal->kapasitaspasien - 1 - $antrians;
-    //     $request['kuotanonjkn'] = $jadwal->kapasitaspasien;
-    //     $request['sisakuotanonjkn'] = $jadwal->kapasitaspasien - 1 - $antrians;
-    //     $request['namapoli'] = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first()->namasubspesialis;
-    //     $request['namadokter'] = Dokter::where('kodedokter', $request->kodedokter)->first()->namadokter;
-    //     $request['estimasidilayani'] = 0;
-    //     $request['keterangan'] = 'Peserta harap 30 menit lebih awal guna checkin dan pencatatan administrasi.';
-    //     $request['nomorantrean'] = $request->kodepoli . '-' . $antrians + 1;
-    //     $request['angkaantrean'] = $antrians + 1;
-    //     $request['kodebooking'] = strtoupper(uniqid(6));
-    //     //tambah antrian database
-    //     $antrian = Antrian::create([
-    //         "kodebooking" => $request->kodebooking,
-    //         "nomorkartu" => $request->nomorkartu,
-    //         "nik" => $request->nik,
-    //         "nohp" => $request->nohp,
-    //         "kodepoli" => $request->kodepoli,
-    //         "norm" => $request->norm,
-    //         "pasienbaru" => $request->pasienbaru,
-    //         "tanggalperiksa" => $request->tanggalperiksa,
-    //         "kodedokter" => $request->kodedokter,
-    //         "jampraktek" => $request->jampraktek,
-    //         "jeniskunjungan" => $request->jeniskunjungan,
-    //         "nomorreferensi" => $request->nomorreferensi,
-    //         "jenispasien" => $request->jenispasien,
-    //         "namapoli" => $request->namapoli,
-    //         "namadokter" => $request->namadokter,
-    //         "nomorantrean" => $request->nomorantrean,
-    //         "angkaantrean" => $request->angkaantrean,
-    //         "estimasidilayani" => $request->estimasidilayani,
-    //         "sisakuotajkn" => $request->sisakuotajkn,
-    //         "kuotajkn" => $request->kuotajkn,
-    //         "sisakuotanonjkn" => $request->sisakuotanonjkn,
-    //         "kuotanonjkn" => $request->kuotanonjkn,
-    //         "keterangan" => $request->keterangan,
-    //     ]);
-    //     $response = [
-    //         "response" => [
-    //             "nomorantrean" => $request->nomorantrean,
-    //             "angkaantrean" => $request->angkaantrean,
-    //             "kodebooking" => $request->kodebooking,
-    //             "norm" => $request->norm,
-    //             "namapoli" => $request->namapoli,
-    //             "namadokter" => $request->namadokter,
-    //             "estimasidilayani" => $request->estimasidilayani,
-    //             "sisakuotajkn" => $request->sisakuotajkn,
-    //             "kuotajkn" => $request->kuotajkn,
-    //             "sisakuotanonjkn" => $request->sisakuotanonjkn,
-    //             "kuotanonjkn" => $request->kuotanonjkn,
-    //             "keterangan" => $request->keterangan,
-    //         ],
-    //         "metadata" => [
-    //             "message" => "Ok",
-    //             "code" => 200
-    //         ]
-    //     ];
-    //     //tambah antrian bpjs
-    //     $response = $this->tambah_antrian($request);
-    //     if ($response->metadata->code == 200) {
-    //         $antrian->update([
-    //             "status_bpjs" => 1
-    //         ]);
-    //         return $response;
-    //     } else {
-    //         return  $response;
-    //     }
-    // }
+    public function ambil_antrian(Request $request)
+    {
+        $antrians = Antrian::where('kodepoli', $request->kodepoli)
+            ->where('tanggalperiksa', $request->tanggalperiksa)
+            ->count();
+        // get jadwal
+        $jadwals = $this->ref_jadwal_dokter($request);
+        if (isset($jadwals->response)) {
+            $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
+            if (empty($jadwal)) {
+                $response = [
+                    "metadata" => [
+                        "code" => 201,
+                        "message" => "Tidak ada jadwal dokter dihari tersebut."
+                    ]
+                ];
+                return $response;
+            }
+        } else {
+            return  $jadwals;
+        }
+        // pasien baru / lama
+        if (isset($request->norm)) {
+            $request['pasienbaru'] = 0;
+        } else {
+            $request['norm'] = "PASIEN BARU";
+            $request['pasienbaru'] = 1;
+        }
+        // pasien jkn / nonjkn
+        if (isset($request->nomorreferensi)) {
+            $request['jenispasien'] = 'JKN';
+        } else {
+            $request['jenispasien'] = 'NON JKN';
+        }
+        $request['kuotajkn'] = $jadwal->kapasitaspasien;
+        $request['jampraktek'] = $jadwal->jadwal;
+        $request['sisakuotajkn'] = $jadwal->kapasitaspasien - 1 - $antrians;
+        $request['kuotanonjkn'] = $jadwal->kapasitaspasien;
+        $request['sisakuotanonjkn'] = $jadwal->kapasitaspasien - 1 - $antrians;
+        $request['namapoli'] = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first()->namasubspesialis;
+        $request['namadokter'] = Dokter::where('kodedokter', $request->kodedokter)->first()->namadokter;
+        $request['estimasidilayani'] = 0;
+        $request['keterangan'] = 'Peserta harap 30 menit lebih awal guna checkin dan pencatatan administrasi.';
+        $request['nomorantrean'] = $request->kodepoli . '-' . $antrians + 1;
+        $request['angkaantrean'] = $antrians + 1;
+        $request['kodebooking'] = strtoupper(uniqid(6));
+        //tambah antrian database
+        $antrian = Antrian::create([
+            "kodebooking" => $request->kodebooking,
+            "nomorkartu" => $request->nomorkartu,
+            "nik" => $request->nik,
+            "nohp" => $request->nohp,
+            "kodepoli" => $request->kodepoli,
+            "norm" => $request->norm,
+            "pasienbaru" => $request->pasienbaru,
+            "tanggalperiksa" => $request->tanggalperiksa,
+            "kodedokter" => $request->kodedokter,
+            "jampraktek" => $request->jampraktek,
+            "jeniskunjungan" => $request->jeniskunjungan,
+            "nomorreferensi" => $request->nomorreferensi,
+            "jenispasien" => $request->jenispasien,
+            "namapoli" => $request->namapoli,
+            "namadokter" => $request->namadokter,
+            "nomorantrean" => $request->nomorantrean,
+            "angkaantrean" => $request->angkaantrean,
+            "estimasidilayani" => $request->estimasidilayani,
+            "sisakuotajkn" => $request->sisakuotajkn,
+            "kuotajkn" => $request->kuotajkn,
+            "sisakuotanonjkn" => $request->sisakuotanonjkn,
+            "kuotanonjkn" => $request->kuotanonjkn,
+            "keterangan" => $request->keterangan,
+        ]);
+        $response = [
+            "response" => [
+                "nomorantrean" => $request->nomorantrean,
+                "angkaantrean" => $request->angkaantrean,
+                "kodebooking" => $request->kodebooking,
+                "norm" => $request->norm,
+                "namapoli" => $request->namapoli,
+                "namadokter" => $request->namadokter,
+                "estimasidilayani" => $request->estimasidilayani,
+                "sisakuotajkn" => $request->sisakuotajkn,
+                "kuotajkn" => $request->kuotajkn,
+                "sisakuotanonjkn" => $request->sisakuotanonjkn,
+                "kuotanonjkn" => $request->kuotanonjkn,
+                "keterangan" => $request->keterangan,
+            ],
+            "metadata" => [
+                "message" => "Ok",
+                "code" => 200
+            ]
+        ];
+        //tambah antrian bpjs
+        $response = $this->tambah_antrian($request);
+        if ($response->metadata->code == 200) {
+            $antrian->update([
+                "status_bpjs" => 1
+            ]);
+            return $response;
+        } else {
+            return  $response;
+        }
+    }
     // public function sisa_antrian(Request $request)
     // {
     //     $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
@@ -407,77 +411,72 @@ class AntrianBPJSController extends Controller
     //         return $response;
     //     }
     // }
-    // public function checkin_antrian(Request $request)
-    // {
-    //     Antrian::where('kodebooking', $request->kodebooking)->update([
-    //         'taskid' => $request->taskid,
-    //         'checkin' => $request->waktu,
-    //         'keterangan' => 'Pasien sudah checkin',
-    //     ]);
-    //     $response = [
-    //         "metadata" => [
-    //             "message" => "Ok",
-    //             "code" => 200,
-    //         ],
-    //     ];
-    //     return $response;
-    //     // $response = $this->update_antrian($request);
-    //     // if ($response->metadata->code == 200) {
-    //     // } else {
-    //     //     return $response;
-    //     // }
-    // }
-    // public function info_pasien_baru(Request $request)
-    // {
-    //     try {
-    //         $request['norm'] = random_int(1, 999999);
-    //         $request['status'] = 0;
-    //         $pasien = Pasien::updateOrCreate(
-    //             [
-    //                 "norm" => $request->norm,
-    //                 "nomorkartu" => $request->nomorkartu,
-    //                 "nik" => $request->nik,
-    //             ],
-    //             [
-    //                 "nomorkk" => $request->nomorkk,
-    //                 "nama" => $request->nama,
-    //                 "jeniskelamin" => $request->jeniskelamin,
-    //                 "tanggallahir" => $request->tanggallahir,
-    //                 "nohp" => $request->nohp,
-    //                 "alamat" => $request->alamat,
-    //                 "kodeprop" => $request->kodeprop,
-    //                 "namaprop" => $request->namaprop,
-    //                 "kodedati2" => $request->kodedati2,
-    //                 "namadati2" => $request->namadati2,
-    //                 "kodekec" => $request->kodekec,
-    //                 "namakec" => $request->namakec,
-    //                 "kodekel" => $request->kodekel,
-    //                 "namakel" => $request->namakel,
-    //                 "rw" => $request->rw,
-    //                 "rt" => $request->rt,
-    //                 "status" => $request->status,
-    //             ]
-    //         );
-    //         $response = [
-    //             "response" => [
-    //                 "norm" => $pasien->norm,
-    //             ],
-    //             "metadata" => [
-    //                 "message" => "Ok",
-    //                 "code" => 200,
-    //             ],
-    //         ];
-    //         return $response;
-    //     } catch (\Throwable $th) {
-    //         $response = [
-    //             "metadata" => [
-    //                 "message" => "Error Code " . $th->getCode(),
-    //                 "code" => 400,
-    //             ],
-    //         ];
-    //         return $response;
-    //     }
-    // }
+    public function checkin_antrian(Request $request)
+    {
+        Antrian::where('kodebooking', $request->kodebooking)->update([
+            'taskid' => $request->taskid,
+            'checkin' => $request->waktu,
+            'keterangan' => 'Pasien sudah checkin',
+        ]);
+        $response = [
+            "metadata" => [
+                "message" => "Ok",
+                "code" => 200,
+            ],
+        ];
+        return $response;
+    }
+    public function info_pasien_baru(Request $request)
+    {
+        try {
+            $request['norm'] = random_int(1, 999999);
+            $request['status'] = 0;
+            $pasien = Pasien::updateOrCreate(
+                [
+                    "norm" => $request->norm,
+                    "nomorkartu" => $request->nomorkartu,
+                    "nik" => $request->nik,
+                ],
+                [
+                    "nomorkk" => $request->nomorkk,
+                    "nama" => $request->nama,
+                    "jeniskelamin" => $request->jeniskelamin,
+                    "tanggallahir" => $request->tanggallahir,
+                    "nohp" => $request->nohp,
+                    "alamat" => $request->alamat,
+                    "kodeprop" => $request->kodeprop,
+                    "namaprop" => $request->namaprop,
+                    "kodedati2" => $request->kodedati2,
+                    "namadati2" => $request->namadati2,
+                    "kodekec" => $request->kodekec,
+                    "namakec" => $request->namakec,
+                    "kodekel" => $request->kodekel,
+                    "namakel" => $request->namakel,
+                    "rw" => $request->rw,
+                    "rt" => $request->rt,
+                    "status" => $request->status,
+                ]
+            );
+            $response = [
+                "response" => [
+                    "norm" => $pasien->norm,
+                ],
+                "metadata" => [
+                    "message" => "Ok",
+                    "code" => 200,
+                ],
+            ];
+            return $response;
+        } catch (\Throwable $th) {
+            $response = [
+                "metadata" => [
+                    "message" => "Error Code " . $th->getCode(),
+                    "code" => 400,
+                ],
+            ];
+            return $response;
+        }
+    }
     // public function jadwal_operasi_rs(Request $request)
     // {
     //     $jadwalops = JadwalOperasi::whereBetween('tanggaloperasi', [$request->tanggalawal, $request->tanggalakhir])->get();

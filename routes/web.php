@@ -32,12 +32,15 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     });
     Route::get('tambah', [AntrianController::class, 'tambah'])->name('tambah');
     Route::post('store', [AntrianController::class, 'store'])->name('store');
-    // Route::get('checkin', [AntrianController::class, 'checkin'])->name('checkin');
-    // Route::get('checkin_update', [AntrianController::class, 'checkin_update'])->name('checkin_update');
+
+    Route::get('checkin', [AntrianController::class, 'checkin'])->name('checkin');
+    Route::get('checkin_update', [AntrianController::class, 'checkin_update'])->name('checkin_update');
 
     // Route::get('offline', [AntrianController::class, 'offline'])->name('offline');
     // Route::get('offline/add/{poli}', [AntrianController::class, 'offline_add'])->name('offline_add');
 
-    // Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
-    // Route::get('panggil/{kodebooking}', [AntrianController::class, 'panggil'])->name('panggil');
+    Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
+    Route::get('panggil/{kodebooking}', [AntrianController::class, 'panggil'])->name('panggil');
+    Route::get('layanan/{kodebooking}', [AntrianController::class, 'layanan'])->name('layanan');
+
 });
