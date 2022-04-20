@@ -50,4 +50,14 @@
     @stack('js')
     @yield('js')
     @include('sweetalert::alert')
+    <script src="{{ asset('vendor/loading-overlay/loadingoverlay.min.js') }}">
+    </script>
+    <script>
+        $(function() {
+            $(".withLoad").click(function() {
+                $.LoadingOverlay("show");
+            });
+        })
+    </script>
+
 @stop

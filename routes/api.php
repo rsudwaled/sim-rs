@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AntrianBPJSController;
+use App\Http\Controllers\API\VclaimBPJSController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +32,10 @@ Route::prefix('antrian')->group(function () {
     Route::post('update', [AntrianBPJSController::class, 'update_antrian']);
     Route::post('batal', [AntrianBPJSController::class, 'batal_antrian_bpjs']);
     Route::post('listtask', [AntrianBPJSController::class, 'list_waktu_task']);
+});
+
+Route::prefix('vclaim')->group(function () {
+    Route::get('ref_provinsi', [VclaimBPJSController::class, 'ref_provinsi']);
+    Route::post('ref_kabupaten', [VclaimBPJSController::class, 'ref_kabupaten']);
+    Route::post('ref_kecamatan', [VclaimBPJSController::class, 'ref_kecamatan']);
 });

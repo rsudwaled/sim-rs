@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\API\AntrianBPJSController;
+use App\Http\Controllers\API\VclaimBPJSController;
 use App\Models\Antrian;
 use App\Models\Dokter;
 use App\Models\JadwalPoli;
+use App\Models\Pasien;
 use App\Models\Poliklinik;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -106,12 +108,15 @@ class AntrianController extends Controller
     {
         $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
         $poli = Poliklinik::get();
+        $api = new VclaimBPJSController();
+        $provinsis = $api->ref_provinsi()->response->list;
         return view('simrs.antrian_baru_online', [
             'poli' => $poli,
             'antrian' => $antrian,
+            'provinsis' => $provinsis,
         ]);
     }
-    public function simpan_baru_online(Request $request)
+    public function simpan_baru_online($kodebooking, Request $request)
     {
         $request->validate([
             'nomorkartu' => 'required',
@@ -123,16 +128,16 @@ class AntrianController extends Controller
             'nohp' => 'required',
             'alamat' => 'required',
             'kodeprop' => 'required',
-            'namaprop' => 'required',
-            'kodedati2' => 'required',
-            'namadati2' => 'required',
-            'kodekec' => 'required',
-            'namakec' => 'required',
-            'kodekel' => 'required',
-            'namakel' => 'required',
-            'rt' => 'required',
-            'rw' => 'required',
         ]);
+        // dd($kodebooking);
+        $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
+        $antrian->update([
+            'taskid' => 3,
+        ]);
+        $pasien = Pasien::count();
+        $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
+        Pasien::create($request->except('_token'));
+        dd($request->all());
     }
     public function baru_offline($kodebooking)
     {

@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Submit Antrian" />
-                    {{-- <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Tambah Antrian Offline" /> --}}
+                    <x-adminlte-button class="withLoad" theme="success" label="Tambah Antrian Offline" />
                 </form>
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
@@ -87,7 +87,7 @@
                                         <span class="badge bg-success">{{ $item->taskid }}. Proses Admisi</span>
                                     @endif
                                     @if ($item->taskid == 3)
-                                        <span class="badge bg-warning">{{ $item->taskid }}. Tunggu Poli</span>
+                                        <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
                                     @endif
                                     @if ($item->taskid == 4)
                                         <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>

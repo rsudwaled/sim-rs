@@ -42,7 +42,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
     Route::get('panggil/{kodebooking}', [AntrianController::class, 'panggil'])->name('panggil');
     Route::get('baru_online/{kodebooking}', [AntrianController::class, 'baru_online'])->name('baru_online');
-    Route::post('simpan_baru_online', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
+    Route::post('simpan_baru_online/{kodebooking}', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
 
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
 
