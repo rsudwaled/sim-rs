@@ -1,16 +1,16 @@
 @extends('adminlte::page')
 
-@section('title', 'Antrian Pendaftaran')
+@section('title', 'Antrian Poliklinik')
 
 @section('content_header')
-    <h1>Antrian Pendaftaran</h1>
+    <h1>Antrian Poliklinik</h1>
 @stop
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <x-adminlte-card title="Filter Data Antrian" theme="secondary" collapsible>
-                <form action="{{ route('antrian.pendaftaran') }}" method="get">
+                <form action="{{ route('antrian.poli') }}" method="get">
                     <div class="row">
                         <div class="col-md-3">
                             <x-adminlte-input name="user" label="User" readonly value="{{ Auth::user()->name }}" />
@@ -51,7 +51,7 @@
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
                 <x-adminlte-card
-                    title="Antrian Pendaftaran Sudah Checkin ({{ $antrians->where('taskid', 1)->count() }} Orang)"
+                    title="Antrian Poliklinik Sudah Checkin ({{ $antrians->where('taskid', 1)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
                     @php
                         $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status', 'Action'];
@@ -59,7 +59,7 @@
                     @endphp
                     <x-adminlte-datatable id="table1" :heads="$heads" :config="$config" striped bordered hoverable
                         compressed>
-                        @foreach ($antrians->where('taskid', '!=', 0) as $item)
+                        @foreach ($antrians as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
                                 <td>{{ $item->kodebooking }}<br>
@@ -89,7 +89,7 @@
                                         <span class="badge bg-success">{{ $item->taskid }}. Proses Admisi</span>
                                     @endif
                                     @if ($item->taskid == 3)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        <span class="badge bg-warning">{{ $item->taskid }}. Tunggu Poli</span>
                                     @endif
                                     @if ($item->taskid == 4)
                                         <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>
@@ -105,20 +105,13 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 1)
+                                    @if ($item->taskid == 3)
                                         <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
                                             icon="fas fa-volume-down" data-toggle="tooltop" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        @if ($item->pasienbaru == 1)
-                                            <x-adminlte-button class="btn-xs" label="Daftar" theme="success"
-                                                icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
-                                                onclick="window.location='{{ route('antrian.baru_online', $item->kodebooking) }}'" />
-                                        @endif
-                                        @if ($item->pasienbaru == 2)
-                                            <x-adminlte-button class="btn-xs" label="Daftar" theme="success"
-                                                icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
-                                                onclick="window.location='{{ route('antrian.baru_offline', $item->kodebooking) }}'" />
-                                        @endif
+                                        <x-adminlte-button class="btn-xs" label="Layani" theme="success"
+                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
+                                            onclick="window.location='{{ route('antrian.baru_online', $item->kodebooking) }}'" />
                                         <x-adminlte-button class="btn-xs" label="Batal" theme="danger"
                                             icon="fas fa-times" data-toggle="tooltop" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
@@ -129,7 +122,7 @@
                     </x-adminlte-datatable>
                 </x-adminlte-card>
                 <x-adminlte-card
-                    title="Antrian Pendaftaran Belum Checkin ({{ $antrians->where('taskid', 0)->count() }} Orang)"
+                    title="Antrian Poliklinik Belum Checkin ({{ $antrians->where('taskid', 0)->count() }} Orang)"
                     theme="secondary" icon="fas fa-info-circle" collapsible="collapsed">
                     @php
                         $heads = ['No', 'Nomor', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status'];

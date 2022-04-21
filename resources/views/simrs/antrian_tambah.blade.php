@@ -45,7 +45,7 @@
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="rujukan" label="Nomor Rujukan" placeholder="Nomor Rujukan"
+                            <x-adminlte-input name="nomorreferensi" label="Nomor Rujukan" placeholder="Nomor Rujukan"
                                 enable-old-support>
                                 <x-slot name="bottomSlot">
                                     <span class="text-sm text-danger">

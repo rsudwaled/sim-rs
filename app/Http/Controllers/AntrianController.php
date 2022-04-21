@@ -11,6 +11,7 @@ use App\Models\Pasien;
 use App\Models\Poliklinik;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -54,6 +55,17 @@ class AntrianController extends Controller
         }
         $antrians = Antrian::where('pasienbaru', '!=', 0)->get();
         return view('simrs.antrian_pendaftaran', [
+            'antrians' => $antrians,
+            'request' => $request,
+        ]);
+    }
+    public function poli(Request $request)
+    {
+        if ($request->tanggal == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        }
+        $antrians = Antrian::where('taskid', '>=', 3)->get();
+        return view('simrs.antrian_poli', [
             'antrians' => $antrians,
             'request' => $request,
         ]);
@@ -129,15 +141,27 @@ class AntrianController extends Controller
             'alamat' => 'required',
             'kodeprop' => 'required',
         ]);
-        // dd($kodebooking);
-        $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
-        $antrian->update([
-            'taskid' => 3,
-        ]);
-        $pasien = Pasien::count();
-        $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
-        Pasien::create($request->except('_token'));
-        dd($request->all());
+
+        $api = new AntrianBPJSController();
+        $request['taskid'] = 3;
+        $request['waktu'] = Carbon::now();
+        $request['kodebooking'] = $kodebooking;
+        $response = $api->update_antrian($request);
+        if ($response->metadata->code == 200) {
+            $pasien = Pasien::count();
+            $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
+            Pasien::create($request->except('_token'));
+            $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
+            $antrian->update([
+                'taskid' => 3,
+                'norm' => $pasien->norm,
+                'nama' => $pasien->nama,
+                'user' => Auth::user()->name,
+            ]);
+        } else {
+            Alert::error('Error', "Error Message " . $response->metadata->message);
+        }
+        return redirect()->route('antrian.pendaftaran');
     }
     public function baru_offline($kodebooking)
     {

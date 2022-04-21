@@ -294,6 +294,7 @@ class AntrianBPJSController extends Controller
             $request['pasienbaru'] = 1;
         }
         // pasien jkn / nonjkn
+        // dd($request->nomorreferensi);
         if (isset($request->nomorreferensi)) {
             $request['jenispasien'] = 'JKN';
         } else {
@@ -311,62 +312,64 @@ class AntrianBPJSController extends Controller
         $request['nomorantrean'] = $request->kodepoli . '-' . $antrians + 1;
         $request['angkaantrean'] = $antrians + 1;
         $request['kodebooking'] = strtoupper(uniqid(6));
-        //tambah antrian database
-        $antrian = Antrian::create([
-            "kodebooking" => $request->kodebooking,
-            "nomorkartu" => $request->nomorkartu,
-            "nik" => $request->nik,
-            "nohp" => $request->nohp,
-            "kodepoli" => $request->kodepoli,
-            "norm" => $request->norm,
-            "pasienbaru" => $request->pasienbaru,
-            "tanggalperiksa" => $request->tanggalperiksa,
-            "kodedokter" => $request->kodedokter,
-            "jampraktek" => $request->jampraktek,
-            "jeniskunjungan" => $request->jeniskunjungan,
-            "nomorreferensi" => $request->nomorreferensi,
-            "jenispasien" => $request->jenispasien,
-            "namapoli" => $request->namapoli,
-            "namadokter" => $request->namadokter,
-            "nomorantrean" => $request->nomorantrean,
-            "angkaantrean" => $request->angkaantrean,
-            "estimasidilayani" => $request->estimasidilayani,
-            "sisakuotajkn" => $request->sisakuotajkn,
-            "kuotajkn" => $request->kuotajkn,
-            "sisakuotanonjkn" => $request->sisakuotanonjkn,
-            "kuotanonjkn" => $request->kuotanonjkn,
-            "keterangan" => $request->keterangan,
-        ]);
-        $response = [
-            "response" => [
-                "nomorantrean" => $request->nomorantrean,
-                "angkaantrean" => $request->angkaantrean,
+
+        $response = $this->tambah_antrian($request);
+        if ($response->metadata->code == 200) {
+            //tambah antrian database
+            $antrian = Antrian::create([
                 "kodebooking" => $request->kodebooking,
+                "nomorkartu" => $request->nomorkartu,
+                "nik" => $request->nik,
+                "nohp" => $request->nohp,
+                "kodepoli" => $request->kodepoli,
                 "norm" => $request->norm,
+                "pasienbaru" => $request->pasienbaru,
+                "tanggalperiksa" => $request->tanggalperiksa,
+                "kodedokter" => $request->kodedokter,
+                "jampraktek" => $request->jampraktek,
+                "jeniskunjungan" => $request->jeniskunjungan,
+                "nomorreferensi" => $request->nomorreferensi,
+                "jenispasien" => $request->jenispasien,
                 "namapoli" => $request->namapoli,
                 "namadokter" => $request->namadokter,
+                "nomorantrean" => $request->nomorantrean,
+                "angkaantrean" => $request->angkaantrean,
                 "estimasidilayani" => $request->estimasidilayani,
                 "sisakuotajkn" => $request->sisakuotajkn,
                 "kuotajkn" => $request->kuotajkn,
                 "sisakuotanonjkn" => $request->sisakuotanonjkn,
                 "kuotanonjkn" => $request->kuotanonjkn,
                 "keterangan" => $request->keterangan,
-            ],
-            "metadata" => [
-                "message" => "Ok",
-                "code" => 200
-            ]
-        ];
-        //tambah antrian bpjs
-        $response = $this->tambah_antrian($request);
-        if ($response->metadata->code == 200) {
-            $antrian->update([
                 "status_bpjs" => 1
             ]);
+            $response = [
+                "response" => [
+                    "nomorantrean" => $request->nomorantrean,
+                    "angkaantrean" => $request->angkaantrean,
+                    "kodebooking" => $request->kodebooking,
+                    "norm" => $request->norm,
+                    "namapoli" => $request->namapoli,
+                    "namadokter" => $request->namadokter,
+                    "estimasidilayani" => $request->estimasidilayani,
+                    "sisakuotajkn" => $request->sisakuotajkn,
+                    "kuotajkn" => $request->kuotajkn,
+                    "sisakuotanonjkn" => $request->sisakuotanonjkn,
+                    "kuotanonjkn" => $request->kuotanonjkn,
+                    "keterangan" => $request->keterangan,
+                ],
+                "metadata" => [
+                    "message" => "Ok",
+                    "code" => 200
+                ]
+            ];
             return $response;
         } else {
             return  $response;
         }
+
+
+        //tambah antrian bpjs
+
     }
     // public function sisa_antrian(Request $request)
     // {
