@@ -22,10 +22,77 @@ class AntrianController extends Controller
     public function tambah()
     {
         $poli = Poliklinik::get();
-
         return view('simrs.antrian_tambah', [
             'poli' => $poli,
         ]);
+    }
+
+    public function console()
+    {
+        $poliklinik = Poliklinik::with(['antrians'])->where('status', 1)->get();
+        return view('simrs.antrian_console', [
+            'poliklinik' => $poliklinik,
+        ]);
+    }
+    public function tambah_offline($poli)
+    {
+        $tanggal = Carbon::now()->format('Y-m-d');
+        $antrian_poli = Antrian::where('tanggalperiksa', $tanggal)
+            ->where('kodepoli', $poli)
+            ->count();
+        $antrian_tgl = Antrian::where('tanggalperiksa', $tanggal)
+            ->count();
+        $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
+        $angkaantrean = $antrian_tgl + 1;
+        $kodebooking = strtoupper(uniqid(6));
+
+        $antrian = Antrian::create([
+            "kodebooking" => $kodebooking,
+            "nik" => 'Belum diisi',
+            "nohp" => 'Belum diisi',
+            "kodepoli" => $poli,
+            "norm" => 'Belum diisi',
+            "pasienbaru" => 2,
+            "tanggalperiksa" => Carbon::now()->format('Y-m-d'),
+            "kodedokter" => 'Belum diisi',
+            "jampraktek" => 'Belum diisi',
+            "jeniskunjungan" => 'Belum diisi',
+            "jenispasien" => 'Belum diisi',
+            "namapoli" => 'Belum diisi',
+            "namadokter" => 'Belum diisi',
+            "nomorantrean" =>  $nomorantrean,
+            "angkaantrean" =>  $angkaantrean,
+            "estimasidilayani" => 0,
+            "taskid" => 1,
+            "keterangan" => 'Antrian Offline',
+            "user" => 'System',
+        ]);
+
+        // try {
+        // $connector = new WindowsPrintConnector('Printer Receipt');
+        // $printer = new Printer($connector);
+        // $printer->setJustification(Printer::JUSTIFY_CENTER);
+        // $printer->setEmphasis(true);
+        // $printer->text("RSUD Waled\n");
+        // $printer->setEmphasis(false);
+        // $printer->text("Melayani Dengan Sepenuh Hati\n");
+        // $printer->text("------------------------------------------------\n");
+        // $printer->text("Karcis Antrian Pendaftaran Offline\n");
+        // $printer->text("Antrian Pendaftaran / Antrian Poliklinik :\n");
+        // $printer->setTextSize(2, 2);
+        // $printer->text($antrian->angkaantrean . " / " .  $antrian->nomorantrean . "\n");
+        // $printer->setTextSize(1, 1);
+        // $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
+        // $printer->setJustification(Printer::JUSTIFY_LEFT);
+        // $printer->text("Silahkan menunggu di Loket Pendaftaran\n");
+        // $printer->cut();
+        // $printer->close();
+        // } catch (Exception $e) {
+        //     Alert::error('Error', 'Error Message : ' . $e->getMessage());
+        //     return redirect()->route('antrian.console');
+        // }
+        Alert::success('Success', 'Antrian Berhasil Ditambahkan');
+        return redirect()->route('antrian.console');
     }
     public function store(Request $request)
     {

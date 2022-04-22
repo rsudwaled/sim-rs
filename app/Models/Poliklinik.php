@@ -14,6 +14,12 @@ class Poliklinik extends Model
         'namapoli',
         'kodesubspesialis',
         'namasubspesialis',
-        'subspesialis'
+        'subspesialis',
+        'status'
     ];
+
+    public function antrians()
+    {
+        return $this->hasMany(Antrian::class,  'kodepoli', 'kodesubspesialis');
+    }
 }

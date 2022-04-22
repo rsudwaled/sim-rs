@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AntrianController;
+use App\Http\Controllers\DokterController;
+use App\Http\Controllers\PoliklinikController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +24,13 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // antrian routes
 Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->group(function () {
+
+    Route::get('console', [AntrianController::class, 'console'])->name('console');
+    Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
+
+    Route::get('tambah_offline/{poli}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
+
+
     Route::prefix('ref')->name('ref.')->group(function () {
         Route::get('poli', [AntrianController::class, 'ref_poli'])->name('poli');
         Route::get('get_poli_bpjs', [AntrianController::class, 'get_poli_bpjs'])->name('get_poli_bpjs');
@@ -30,7 +39,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
         Route::get('jadwaldokter', [AntrianController::class, 'ref_jadwaldokter'])->name('jadwaldokter');
         Route::get('get_jadwal_bpjs', [AntrianController::class, 'get_jadwal_bpjs'])->name('get_jadwal_bpjs');
     });
-    Route::get('tambah', [AntrianController::class, 'tambah'])->name('tambah');
     Route::post('store', [AntrianController::class, 'store'])->name('store');
 
     Route::get('checkin', [AntrianController::class, 'checkin'])->name('checkin');
@@ -46,5 +54,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::post('simpan_baru_online/{kodebooking}', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
 
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
-
 });
+
+Route::resource('poli', PoliklinikController::class);
+Route::resource('dokter', DokterController::class);

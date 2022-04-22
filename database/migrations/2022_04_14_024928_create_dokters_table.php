@@ -15,8 +15,9 @@ return new class extends Migration
     {
         Schema::create('dokters', function (Blueprint $table) {
             $table->id();
+            $table->string('kodedokter')->index();
             $table->string('namadokter');
-            $table->string('kodedokter');
+            $table->string('status')->default(1);
             $table->timestamps();
         });
     }

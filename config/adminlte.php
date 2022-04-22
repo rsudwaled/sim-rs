@@ -250,62 +250,124 @@ return [
         ],
         //MENU APLIKASI ANTRIAN
         [
-            'text'    => 'Aplikasi Pendaftaran',
+            'text'    => 'Aplikasi Antrian',
             'icon'    => 'fas fa-sign-in-alt',
             // 'can' => 'admin',
             'submenu' => [
                 [
-                    'text' => 'Tambah Antrian',
-                    'icon'    => 'fas fa-plus-square',
-                    'url'  => 'antrian/tambah',
-                    'shift'   => 'ml-2',
-
-                    // 'can' => 'admin',
-                ],
-                [
-                    'text' => 'Antrian Pendaftaran',
-                    'icon'    => 'fas fa-user-plus',
-                    'url'  => 'antrian/pendaftaran',
-                    'shift'   => 'ml-2',
-
-                    // 'can' => 'admin',
-                ],
-                [
-                    'text' => 'Antrian Poliklinik',
-                    'icon'    => 'fas fa-clinic-medical',
-                    'url'  => 'antrian/poli',
-                    'shift'   => 'ml-2',
-
-                    // 'can' => 'admin',
-                ],
-                [
-                    'text' => 'Referensi Antrian',
-                    'icon'    => 'fas fa-info-circle',
+                    'text'    => 'Console Box Antrian',
+                    'icon'    => 'fas fa-desktop',
                     'shift'   => 'ml-2',
                     // 'can' => 'admin',
                     'submenu' => [
                         [
-                            'text' => 'Poliklinik',
+                            'text' => 'Antrian Pendaftaran & Poli',
+                            'icon'    => 'fas fa-desktop',
+                            'url'  => 'antrian/console',
+                            'shift'   => 'ml-3',
+                            // 'can' => 'admin',
+                        ],
+                        [
+                            'text' => 'Antrian Farmasi',
+                            'icon'    => 'fas fa-desktop',
+                            'url'  => 'antrian/farmasi',
+                            'shift'   => 'ml-3',
+                            // 'can' => 'admin',
+                        ],
+                    ],
+                ],
+                [
+                    'text'    => 'Pemanggil Antrian',
+                    'icon'    => 'fas fa-volume-down',
+                    // 'can' => 'admin',
+                    'shift'   => 'ml-2',
+                    'submenu' => [
+                        [
+                            'text' => 'Pemanggil Antrian Pendaftaran',
+                            'icon'    => 'fas fa-user-plus',
+                            'url'  => 'antrian/pendaftaran',
+                            'shift'   => 'ml-3',
+                            // 'can' => 'admin',
+                        ],
+                        [
+                            'text' => 'Pemanggil Antrian Poliklinik',
                             'icon'    => 'fas fa-clinic-medical',
-                            'url'  => 'antrian/ref/poli',
+                            'url'  => 'antrian/poli',
                             'shift'   => 'ml-3',
                             // 'can' => 'admin',
                         ],
                         [
-                            'text' => 'Dokter',
-                            'icon'    => 'fas fa-user-md',
-                            'url'  => 'antrian/ref/dokter',
+                            'text' => 'Pemanggil Antrian Farmasi',
+                            'icon'    => 'fas fa-pills',
+                            'url'  => 'antrian/farmasi',
+                            'shift'   => 'ml-3',
+                            // 'can' => 'admin',
+                        ],
+                    ],
+                ],
+                [
+                    'text'    => 'Display Antrian',
+                    'icon'    => 'fas fa-tv',
+                    // 'can' => 'admin',
+                    'shift'   => 'ml-2',
+                    'submenu' => [
+                        [
+                            'text' => 'Display Antrian Pendaftaran',
+                            'icon'    => 'fas fa-user-plus',
+                            'url'  => 'display/pendaftaran',
                             'shift'   => 'ml-3',
                             // 'can' => 'admin',
                         ],
                         [
-                            'text' => 'Jadwal Dokter',
-                            'icon'    => 'fas fa-user-md',
-                            'url'  => 'antrian/ref/jadwaldokter',
+                            'text' => 'Display Antrian Poliklinik',
+                            'icon'    => 'fas fa-clinic-medical',
+                            'url'  => 'display/poli',
                             'shift'   => 'ml-3',
                             // 'can' => 'admin',
                         ],
-                    ]
+                        [
+                            'text' => 'Display Antrian Farmasi',
+                            'icon'    => 'fas fa-pills',
+                            'url'  => 'display/farmasi',
+                            'shift'   => 'ml-3',
+                            // 'can' => 'admin',
+                        ],
+                    ],
+                ],
+                [
+                    'text' => 'Loket Antrian',
+                    'icon'    => 'fas fa-cash-register',
+                    // 'url'  => 'antrian/pendaftaran',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Poliklinik',
+            'icon'    => 'fas fa-clinic-medical',
+            // 'can' => 'admin',
+            'submenu' => [
+                [
+                    'text' => 'Pengaturan Poliklinik',
+                    'icon'    => 'fas fa-cog',
+                    'url'  => 'poli',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Dokter',
+            'icon'    => 'fas fa-user-md',
+            // 'can' => 'admin',
+            'submenu' => [
+                [
+                    'text' => 'Pengaturan Dokter',
+                    'icon'    => 'fas fa-user-cog',
+                    'url'  => 'dokter',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
                 ],
             ],
         ],

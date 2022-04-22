@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('polikliniks', function (Blueprint $table) {
             $table->id();
-            $table->string('kodepoli');
+            $table->string('kodepoli')->index();
             $table->string('namapoli');
-            $table->string('kodesubspesialis');
+            $table->string('kodesubspesialis')->index();
             $table->string('namasubspesialis');
             $table->string('subspesialis');
-            $table->char('active')->default(0);
+            $table->string('status')->default(0);
             $table->timestamps();
         });
     }

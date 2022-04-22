@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Poliklinik;
+use App\Models\Dokter;
 use Illuminate\Http\Request;
 
-class PoliklinikController extends Controller
+class DokterController extends Controller
 {
     public function index()
     {
-        $polis = Poliklinik::get();
-        return view('simrs.poli_index', [
-            'polis' => $polis
+        $dokters = Dokter::get();
+        return view('simrs.dokter_index', [
+            'dokters' => $dokters,
         ]);
     }
+
     public function create()
     {
         //
@@ -26,16 +27,7 @@ class PoliklinikController extends Controller
 
     public function show($id)
     {
-        $poli = Poliklinik::find($id);
-        if ($poli->status == '0') {
-            $status = 1;
-        } else {
-            $status = 0;
-        }
-        $poli->update([
-            'status' => $status,
-        ]);
-        return redirect()->route('poli.index');
+        //
     }
 
     public function edit($id)
@@ -45,6 +37,7 @@ class PoliklinikController extends Controller
 
     public function update(Request $request, $id)
     {
+        //
     }
 
     public function destroy($id)
