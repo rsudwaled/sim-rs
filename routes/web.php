@@ -27,8 +27,11 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
 
     Route::get('console', [AntrianController::class, 'console'])->name('console');
     Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
-
     Route::get('tambah_offline/{poli}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
+    Route::get('display_pendaftaran', [AntrianController::class, 'display_pendaftaran'])->name('display_pendaftaran');
+    Route::get('/', [AntrianController::class, 'index'])->name('index');
+    Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit');
+    Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline');
 
 
     Route::prefix('ref')->name('ref.')->group(function () {

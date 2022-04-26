@@ -314,7 +314,7 @@ return [
                         [
                             'text' => 'Display Antrian Pendaftaran',
                             'icon'    => 'fas fa-user-plus',
-                            'url'  => 'display/pendaftaran',
+                            'url'  => 'antrian/display_pendaftaran',
                             'shift'   => 'ml-3',
                             // 'can' => 'admin',
                         ],

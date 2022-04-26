@@ -43,7 +43,7 @@ class VclaimBPJSController extends Controller
 
     public function ref_provinsi()
     {
-        $url = $this->baseUrl . "/referensi/propinsi";
+        $url = $this->baseUrl . "referensi/propinsi";
         $signature = $this->signature();
         $response = Http::withHeaders($signature)->get($url);
         $response = json_decode($response);

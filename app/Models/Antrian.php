@@ -35,5 +35,6 @@ class Antrian extends Model
         "taskid",
         "keterangan",
         "status_api",
+        "user",
     ];
 }

@@ -26,7 +26,6 @@ class AntrianController extends Controller
             'poli' => $poli,
         ]);
     }
-
     public function console()
     {
         $poliklinik = Poliklinik::with(['antrians'])->where('status', 1)->get();
@@ -94,6 +93,14 @@ class AntrianController extends Controller
         Alert::success('Success', 'Antrian Berhasil Ditambahkan');
         return redirect()->route('antrian.console');
     }
+    public function display_pendaftaran(Request $request)
+    {
+        $poliklinik = Poliklinik::with(['antrians'])->where('status', 1)->get();
+        return view('simrs.display_pendaftaran', [
+            'poliklinik' => $poliklinik,
+            'request' => $request,
+        ]);
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -120,11 +127,101 @@ class AntrianController extends Controller
         if ($request->tanggal == null) {
             $request['tanggal'] = Carbon::now()->format('Y-m-d');
         }
+        $polis = Poliklinik::where('status', 1)->get();
         $antrians = Antrian::where('pasienbaru', '!=', 0)->get();
+        $api = new VclaimBPJSController();
+        $provinsis = $api->ref_provinsi()->response->list;
         return view('simrs.antrian_pendaftaran', [
             'antrians' => $antrians,
             'request' => $request,
+            'polis' => $polis,
+            'provinsis' => $provinsis,
         ]);
+    }
+    public function edit($id)
+    {
+        $antrian = Antrian::find($id);
+        return response()->json($antrian);
+    }
+    public function update_offline(Request $request)
+    {
+        $request->validate([
+            'jeniskunjungan' => 'required',
+            'kodepoli' => 'required',
+            'tanggalperiksa' => 'required',
+            'kodedokter' => 'required',
+            'nik' => 'required',
+            'nik' => 'required',
+            'nomorkk' => 'required',
+            'nama' => 'required',
+            'jeniskelamin' => 'required',
+            'tanggallahir' => 'required',
+            'nohp' => 'required',
+            'alamat' => 'required',
+            'kodeprop' => 'required',
+        ]);
+        try {
+            $antrian = Antrian::find($request->antrianid);
+            $pasien = Pasien::count();
+            $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
+            $api = new AntrianBPJSController();
+            $response = $api->ref_jadwal_dokter($request);
+            if ($response->metadata->code == '200') {
+                $jadwal = collect($response->response)->where('kodedokter', $request->kodedokter)->first();
+            } else {
+                # code...
+            }
+            if (isset($request->nomorreferensi)) {
+                $jenispasien = 'JKN';
+            } else {
+                $jenispasien = 'NON JKN';
+            }
+            $pasien = Pasien::updateOrCreate(
+                [
+                    "nik" => $request->nik,
+                ],
+                [
+                    "norm" => $request->norm,
+                    "nomorkartu" => $request->nomorkartu,
+                    "nomorkk" => $request->nomorkk,
+                    "nama" => $request->nama,
+                    "jeniskelamin" => $request->jeniskelamin,
+                    "tanggallahir" => $request->tanggallahir,
+                    "nohp" => $request->nohp,
+                    "alamat" => $request->alamat,
+                    "kodeprop" => $request->kodeprop,
+                    "namaprop" => $request->namaprop,
+                    "kodedati2" => $request->kodedati2,
+                    "namadati2" => $request->namadati2,
+                    "kodekec" => $request->kodekec,
+                    "namakec" => $request->namakec,
+                    "kodekel" => $request->kodekel,
+                    "namakel" => $request->namakel,
+                    "rt" => $request->rt,
+                    "rt" => $request->rt,
+                ]
+            );
+            $antrian->update([
+                "nomorkartu" => $request->nomorkartu,
+                "nik" => $request->nik,
+                "nohp" => $request->nohp,
+                "norm" => $pasien->norm,
+                "jampraktek" => $jadwal->jadwal,
+                "jeniskunjungan" => $request->jeniskunjungan,
+                "nomorreferensi" => $request->nomorreferensi,
+                "jenispasien" => $jenispasien,
+                "namapoli" => $jadwal->namasubspesialis,
+                "namadokter" => $jadwal->namadokter,
+                "taskid" => 3,
+                "user" => Auth::user()->name,
+                "status_api" => 1,
+            ]);
+            Alert::success('Success', 'Success Message');
+            return redirect()->back();
+        } catch (\Throwable $th) {
+            Alert::error('Error', $th);
+            return redirect()->back();
+        }
     }
     public function poli(Request $request)
     {
