@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JadwalPoli;
 use App\Models\Poliklinik;
 use Illuminate\Http\Request;
 
@@ -12,6 +13,15 @@ class PoliklinikController extends Controller
         $polis = Poliklinik::get();
         return view('simrs.poli_index', [
             'polis' => $polis
+        ]);
+    }
+    public function jadwaldokter()
+    {
+        $poli = Poliklinik::where('status', 1)->get();
+        $jadwals = JadwalPoli::get();
+        return view('simrs.jadwaldokter_index', [
+            'poli' => $poli,
+            'jadwals' => $jadwals,
         ]);
     }
     public function create()

@@ -349,6 +349,13 @@ return [
             // 'can' => 'admin',
             'submenu' => [
                 [
+                    'text' => 'Jadwal Dokter Poliklinik',
+                    'icon'    => 'fas fa-calendar-alt',
+                    'shift'   => 'ml-2',
+                    'url'  => 'jadwaldokter',
+                    // 'can' => 'admin',
+                ],
+                [
                     'text' => 'Pengaturan Poliklinik',
                     'icon'    => 'fas fa-cog',
                     'url'  => 'poli',

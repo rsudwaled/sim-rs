@@ -22,4 +22,8 @@ class Poliklinik extends Model
     {
         return $this->hasMany(Antrian::class,  'kodepoli', 'kodesubspesialis');
     }
+    public function jadwals()
+    {
+        return $this->hasMany(JadwalPoli::class,  'kodepoli', 'kodepoli');
+    }
 }

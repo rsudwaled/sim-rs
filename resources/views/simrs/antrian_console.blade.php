@@ -34,10 +34,13 @@
                         <div class="row">
                             @foreach ($poliklinik as $poli)
                                 <div class="col-md-3">
-                                    <a class="withLoad"
-                                        href="{{ route('antrian.tambah_offline', $poli->kodesubspesialis) }}">
-                                        <x-adminlte-info-box text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }}" title="POLI {{ $poli->namasubspesialis }}" theme="success" />
-                                    </a>
+                                    {{-- <a class="withLoad"
+                                        href="{{ route('antrian.tambah_offline', $poli->kodesubspesialis) }}"> --}}
+                                    <x-adminlte-info-box
+                                        text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->sum('kapasitaspasien') }}"
+                                        title="POLI {{ $poli->namasubspesialis }} "
+                                        class="tombolPoli" data-id="{{ $poli->kodesubspesialis }}" theme="success" />
+                                    {{-- </a> --}}
                                 </div>
                             @endforeach
                         </div>
@@ -46,6 +49,12 @@
             </div>
         </div>
     </div>
+    {{-- Themed --}}
+    <x-adminlte-modal id="modalDokter" size="lg" title="Pilih Dokter Poliklinik" theme="success" icon="fas fa-user-md">
+        <div id="btnDokter">
+        </div>
+    </x-adminlte-modal>
+    {{-- Example button to open modal --}}
 @stop
 
 @section('adminlte_js')
@@ -109,6 +118,35 @@
                         location.reload();
                         $('#status').html('-');
                     }, 3000);
+                });
+            });
+        });
+    </script>
+    {{-- btn poli --}}
+    <script>
+        $(function() {
+            $('.tombolPoli').click(function() {
+                $.LoadingOverlay("show");
+                var kodepoli = $(this).data('id');
+                var tanggalperiksa = "{{ \Carbon\Carbon::now()->format('Y-m-d') }}";
+                var url =
+                    "http://127.0.0.1:8000/api/antrian/ref/jadwal?kodepoli=" + kodepoli +
+                    "&tanggalperiksa=" + tanggalperiksa;
+                $.get(url, function(data) {
+                    console.log(data);
+                    $.LoadingOverlay("hide", true);
+                    $('#modalDokter').modal('show');
+                    $('.btnPilihDokter').remove();
+
+                    $.each(data.response, function(value) {
+                        console.log(data.response[value].namadokter);
+                        $('#btnDokter').append(
+                            "<a href='#' class='btn btn-lg bg-success m-2 btnPilihDokter'>" +
+                            data
+                            .response[value].jadwal + " " + data
+                            .response[value].namadokter + " (" + data
+                            .response[value].kapasitaspasien + ") </a>");
+                    });
                 });
             });
         });

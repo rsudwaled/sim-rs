@@ -28,7 +28,8 @@ class AntrianController extends Controller
     }
     public function console()
     {
-        $poliklinik = Poliklinik::with(['antrians'])->where('status', 1)->get();
+        $poliklinik = Poliklinik::with(['antrians', 'jadwals'])->where('status', 1)->get();
+        // dd($poliklinik->first()->jadwals->where('hari',3)->sum('kapasitaspasien'));
         return view('simrs.antrian_console', [
             'poliklinik' => $poliklinik,
         ]);
@@ -456,6 +457,6 @@ class AntrianController extends Controller
         } else {
             Alert::error('Error Title', 'Error Message');
         }
-        return redirect()->route('antrian.ref.jadwaldokter');
+        return redirect()->route('jadwaldokter');
     }
 }

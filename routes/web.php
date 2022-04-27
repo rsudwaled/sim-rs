@@ -61,4 +61,5 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
 });
 
 Route::resource('poli', PoliklinikController::class);
+Route::get('jadwaldokter', [PoliklinikController::class, 'jadwaldokter'])->name('jadwaldokter');
 Route::resource('dokter', DokterController::class);
