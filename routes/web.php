@@ -31,6 +31,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('display_pendaftaran', [AntrianController::class, 'display_pendaftaran'])->name('display_pendaftaran');
     Route::get('/', [AntrianController::class, 'index'])->name('index');
     Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit');
+    Route::get('cari_pasien/{nik}', [AntrianController::class, 'cari_pasien'])->name('cari_pasien');
     Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline');
 
 
