@@ -37,7 +37,7 @@
                                     {{-- <a class="withLoad"
                                         href="{{ route('antrian.tambah_offline', $poli->kodesubspesialis) }}"> --}}
                                     <x-adminlte-info-box
-                                        text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->sum('kapasitaspasien') }}"
+                                        text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien') }}"
                                         title="POLI {{ $poli->namasubspesialis }} " class="tombolPoli"
                                         data-id="{{ $poli->kodesubspesialis }}" theme="success" />
                                     {{-- </a> --}}
@@ -130,28 +130,25 @@
                 var kodepoli = $(this).data('id');
                 var tanggalperiksa = "{{ \Carbon\Carbon::now()->format('Y-m-d') }}";
                 var url =
-                    "http://127.0.0.1:8000/api/antrian/ref/jadwal?kodepoli=" + kodepoli +
-                    "&tanggalperiksa=" + tanggalperiksa;
+                    "http://127.0.0.1:8000/antrian/console_jadwaldokter/" + kodepoli +
+                    "/" + tanggalperiksa;
+                console.log(url);
+
                 $.get(url, function(data) {
                     console.log(data);
                     $.LoadingOverlay("hide", true);
                     $('#modalDokter').modal('show');
                     $('.btnPilihDokter').remove();
-
-                    $.each(data.response, function(value) {
-                        console.log(data.response[value].namadokter);
+                    $.each(data, function(value) {
+                        console.log(data[value].namadokter);
                         $('#btnDokter').append(
                             "<a href='http://127.0.0.1:8000/antrian/tambah_offline/" +
-                            data
-                            .response[
-                                value].kodepoli +
-                            "/" + data.response[value].kodedokter + "/" + data
-                            .response[value].jadwal +
+                            data[
+                                value].kodesubspesialis +
+                            "/" + data[value].kodedokter + "/" + data[value].jadwal +
                             "' class='btn btn-lg bg-success m-2 btnPilihDokter'>" +
-                            data
-                            .response[value].jadwal + " " + data
-                            .response[value].namadokter + " (" + data
-                            .response[value].kapasitaspasien + ") </a>");
+                            data[value].jadwal + " " + data[value].namadokter + " (" +
+                            data[value].kapasitaspasien + ") </a>");
                     });
                 });
             });

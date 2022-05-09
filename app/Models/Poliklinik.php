@@ -24,6 +24,6 @@ class Poliklinik extends Model
     }
     public function jadwals()
     {
-        return $this->hasMany(JadwalPoli::class,  'kodepoli', 'kodepoli');
+        return $this->hasMany(JadwalDokter::class,  'kodepoli', 'kodepoli');
     }
 }

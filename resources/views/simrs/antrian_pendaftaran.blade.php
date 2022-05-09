@@ -84,7 +84,7 @@
                                 </td>
                                 <td>{{ $item->norm }}</td>
                                 <td>{{ $item->jenispasien }}</td>
-                                <td>{{ $item->namapoli }}</td>
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
                                 <td>{{ $item->jampraktek }}</td>
                                 <td>
                                     @if ($item->taskid == 0)

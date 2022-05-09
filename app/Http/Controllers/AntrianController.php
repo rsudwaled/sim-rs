@@ -34,6 +34,14 @@ class AntrianController extends Controller
             'poliklinik' => $poliklinik,
         ]);
     }
+    public function console_jadwaldokter($poli, $tanggal)
+    {
+        // dd(Carbon::parse($tanggal)->dayOfWeek);
+        $poli = Poliklinik::with(['antrians', 'jadwals'])->firstWhere('kodesubspesialis', $poli);
+        $jadwals = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)
+        ->where('kodesubspesialis', $poli->kodesubspesialis);
+        return response()->json($jadwals);
+    }
     public function tambah_offline($poli, $dokter, $jadwal)
     {
         $tanggal = Carbon::now()->format('Y-m-d');
@@ -45,13 +53,13 @@ class AntrianController extends Controller
         $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
         $angkaantrean = $antrian_tgl + 1;
         $kodebooking = strtoupper(uniqid(6));
-        $poli = Poliklinik::where('kodepoli', $poli)->first();
+        $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
         $dokter = Dokter::where('kodedokter', $dokter)->first();
         $antrian = Antrian::create([
             "kodebooking" => $kodebooking,
             "nik" => 'Offline',
             "nohp" => 'Offline',
-            "kodepoli" => $poli->kodepoli,
+            "kodepoli" => $poli->kodesubspesialis,
             "norm" => 'Offline',
             "pasienbaru" => 2,
             "tanggalperiksa" => Carbon::now()->format('Y-m-d'),
@@ -59,7 +67,7 @@ class AntrianController extends Controller
             "jampraktek" => $jadwal,
             "jeniskunjungan" => 'Offline',
             "jenispasien" => 'Offline',
-            "namapoli" =>  $poli->namapoli,
+            "namapoli" =>  $poli->namasubspesialis,
             "namadokter" => $dokter->namadokter,
             "nomorantrean" =>  $nomorantrean,
             "angkaantrean" =>  $angkaantrean,

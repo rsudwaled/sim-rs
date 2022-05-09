@@ -26,6 +26,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // antrian routes
 Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('console', [AntrianController::class, 'console'])->name('console');
+    Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
     Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
     Route::get('display_pendaftaran', [AntrianController::class, 'display_pendaftaran'])->name('display_pendaftaran');
