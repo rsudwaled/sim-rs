@@ -14,6 +14,7 @@ class AntrianBPJSController extends Controller
 {
     // function WS BPJS
     public $baseUrl = 'https://apijkn-dev.bpjs-kesehatan.go.id/antreanrs_dev/';
+
     public static function signature()
     {
         $cons_id =  env('ANTRIAN_CONS_ID');

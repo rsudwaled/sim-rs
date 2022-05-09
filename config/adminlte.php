@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'SIMRS Waled',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -30,7 +30,7 @@ return [
     |
     */
 
-    'use_ico_only' => false,
+    'use_ico_only' => true,
     'use_full_favicon' => false,
 
     /*
@@ -45,12 +45,12 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-    'logo_img_class' => 'brand-image img-circle elevation-3',
+    'logo' => '<b>SIMRS Waled</b>',
+    'logo_img' => 'vendor/adminlte/dist/img/rswaledico.png',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'AdminLTE',
+    'logo_img_alt' => 'SIMRS Waled',
 
     /*
     |--------------------------------------------------------------------------
@@ -242,7 +242,6 @@ return [
             'text' => 'search',
         ],
         ['header' => 'MENU UTAMA'],
-
         [
             'text'        => 'Dashboard',
             'url'         => 'home',
@@ -344,10 +343,24 @@ return [
             ],
         ],
         [
-            'text' => 'Poliklinik',
-            'icon'    => 'fas fa-clinic-medical',
+            'text' => 'Pelayanan Medis',
+            'icon'    => 'fas fa-stethoscope',
             // 'can' => 'admin',
             'submenu' => [
+                [
+                    'text' => 'Dokter',
+                    'icon'    => 'fas fa-user-md',
+                    'url'  => 'dokter',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+                [
+                    'text' => 'Poliklinik',
+                    'icon'    => 'fas fa-clinic-medical',
+                    'url'  => 'poli',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
                 [
                     'text' => 'Jadwal Dokter Poliklinik',
                     'icon'    => 'fas fa-calendar-alt',
@@ -355,27 +368,7 @@ return [
                     'url'  => 'jadwaldokter',
                     // 'can' => 'admin',
                 ],
-                [
-                    'text' => 'Pengaturan Poliklinik',
-                    'icon'    => 'fas fa-cog',
-                    'url'  => 'poli',
-                    'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
-            ],
-        ],
-        [
-            'text' => 'Dokter',
-            'icon'    => 'fas fa-user-md',
-            // 'can' => 'admin',
-            'submenu' => [
-                [
-                    'text' => 'Pengaturan Dokter',
-                    'icon'    => 'fas fa-user-cog',
-                    'url'  => 'dokter',
-                    'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
+
             ],
         ],
         [

@@ -38,8 +38,8 @@
                                         href="{{ route('antrian.tambah_offline', $poli->kodesubspesialis) }}"> --}}
                                     <x-adminlte-info-box
                                         text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->sum('kapasitaspasien') }}"
-                                        title="POLI {{ $poli->namasubspesialis }} "
-                                        class="tombolPoli" data-id="{{ $poli->kodesubspesialis }}" theme="success" />
+                                        title="POLI {{ $poli->namasubspesialis }} " class="tombolPoli"
+                                        data-id="{{ $poli->kodesubspesialis }}" theme="success" />
                                     {{-- </a> --}}
                                 </div>
                             @endforeach
@@ -141,7 +141,13 @@
                     $.each(data.response, function(value) {
                         console.log(data.response[value].namadokter);
                         $('#btnDokter').append(
-                            "<a href='#' class='btn btn-lg bg-success m-2 btnPilihDokter'>" +
+                            "<a href='http://127.0.0.1:8000/antrian/tambah_offline/" +
+                            data
+                            .response[
+                                value].kodepoli +
+                            "/" + data.response[value].kodedokter + "/" + data
+                            .response[value].jadwal +
+                            "' class='btn btn-lg bg-success m-2 btnPilihDokter'>" +
                             data
                             .response[value].jadwal + " " + data
                             .response[value].namadokter + " (" + data
