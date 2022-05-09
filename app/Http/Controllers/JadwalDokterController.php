@@ -5,18 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Dokter;
 use App\Models\JadwalPoli;
 use App\Models\Poliklinik;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class PoliklinikController extends Controller
+class JadwalDokterController extends Controller
 {
     public function index()
     {
-        $polis = Poliklinik::get();
-        return view('simrs.poli_index', [
-            'polis' => $polis
+        $poli = Poliklinik::where('status', 1)->get();
+        $dokters = Dokter::get();
+        $jadwals = JadwalPoli::get();
+        return view('simrs.jadwaldokter_index', [
+            'poli' => $poli,
+            'jadwals' => $jadwals,
+            'dokters' => $dokters,
         ]);
     }
+
     public function create()
     {
         //
@@ -29,25 +33,18 @@ class PoliklinikController extends Controller
 
     public function show($id)
     {
-        $poli = Poliklinik::find($id);
-        if ($poli->status == '0') {
-            $status = 1;
-        } else {
-            $status = 0;
-        }
-        $poli->update([
-            'status' => $status,
-        ]);
-        return redirect()->route('poli.index');
+
     }
 
     public function edit($id)
     {
-        //
+        $jadwal = JadwalPoli::find($id);
+        return response()->json($jadwal);
     }
 
     public function update(Request $request, $id)
     {
+        //
     }
 
     public function destroy($id)

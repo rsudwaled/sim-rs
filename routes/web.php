@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\DokterController;
+use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\PoliklinikController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,5 +62,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
 });
 
 Route::resource('poli', PoliklinikController::class);
-Route::get('jadwaldokter', [PoliklinikController::class, 'jadwaldokter'])->name('jadwaldokter');
+Route::resource('jadwaldokter', JadwalDokterController::class);
+// Route::get('jadwaldokter', [PoliklinikController::class, 'jadwaldokter'])->name('jadwaldokter');
 Route::resource('dokter', DokterController::class);

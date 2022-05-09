@@ -453,10 +453,10 @@ class AntrianController extends Controller
                     'kapasitaspasien' => $jadwal->kapasitaspasien,
                 ]);
             }
-            Alert::success('Success Title', 'Success Message');
+            Alert::success('Success', 'Jadwal Telah Ditambahkan');
         } else {
             Alert::error('Error Title', 'Error Message');
         }
-        return redirect()->route('jadwaldokter');
+        return redirect()->route('jadwaldokter.index');
     }
 }
