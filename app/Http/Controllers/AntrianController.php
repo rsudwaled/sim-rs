@@ -48,11 +48,22 @@ class AntrianController extends Controller
             ->count();
         $antrian_tgl = Antrian::where('tanggalperiksa', $tanggal)
             ->count();
+        $antrian_dokter = Antrian::where('tanggalperiksa', $tanggal)
+            ->where('kodepoli', $poli)
+            ->where('kodedokter', $dokter)
+            ->count();
         $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
         $angkaantrean = $antrian_tgl + 1;
         $kodebooking = strtoupper(uniqid(6));
+
         $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
+        $jadwal = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)->where('kodedokter', $dokter)->first();
         $dokter = Dokter::where('kodedokter', $dokter)->first();
+
+        if ($antrian_dokter >= $jadwal->kapasitaspasien) {
+            Alert::error('Error', 'Antrian poliklinik jadwal dokter tersebut telah penuh');
+            return redirect()->route('antrian.console');
+        }
         $antrian = Antrian::create([
             "kodebooking" => $kodebooking,
             "nik" => 'Offline',
@@ -62,7 +73,7 @@ class AntrianController extends Controller
             "pasienbaru" => 2,
             "tanggalperiksa" => Carbon::now()->format('Y-m-d'),
             "kodedokter" => $dokter->kodedokter,
-            "jampraktek" => $jadwal,
+            "jampraktek" => $jadwal->jadwal,
             "jeniskunjungan" => 'Offline',
             "jenispasien" => 'Offline',
             "namapoli" =>  $poli->namasubspesialis,
@@ -124,9 +135,9 @@ class AntrianController extends Controller
                 'kodeprop' => 'required',
             ]);
         }
-        // dd($request->all());
         // init
         $antrian = Antrian::find($request->antrianid);
+        $poli = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first();
         $api = new AntrianBPJSController();
         if (isset($request->nomorreferensi)) {
             $jenispasien = 'JKN';
@@ -146,7 +157,6 @@ class AntrianController extends Controller
         $request['sisakuotanonjkn'] = 5;
         $request['kuotajkn'] = 20;
         $request['kuotanonjkn'] = 20;
-
         // update pasien baru
         if ($request->statuspasien == "BARU") {
             $request['pasienbaru'] = 1;
@@ -184,6 +194,8 @@ class AntrianController extends Controller
             ]);
             $request['pasienbaru'] = 0;
         }
+        $request['namapoli'] = $poli->namapoli;
+        $request['kodepoli'] = $poli->kodepoli;
         $res_antrian = $api->tambah_antrian($request);
         // dd($res_antrian->metadata->code);
         if ($res_antrian->metadata->code == 200) {

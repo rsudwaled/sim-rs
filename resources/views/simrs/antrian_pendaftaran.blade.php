@@ -66,8 +66,8 @@
                         $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Poliklinik', 'Jam', 'Status', 'Action'];
                         $config['order'] = ['8', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" :heads="$heads" :config="$config" striped bordered hoverable
-                        compressed>
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
+                        bordered hoverable compressed>
                         @foreach ($antrians->where('taskid', '!=', 0) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -124,7 +124,7 @@
                                         <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
                                             icon="fas fa-volume-down" data-toggle="tooltop" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        <x-adminlte-button class="btn-xs btnDaftar" label="Daftar" theme="primary"
+                                        <x-adminlte-button class="btn-xs btnDaftar withLoad" label="Daftar" theme="primary"
                                             icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Daftar"
                                             data-id="{{ $item->id }}" />
                                         <x-adminlte-button class="btn-xs" theme="success" icon="fas fa-check"

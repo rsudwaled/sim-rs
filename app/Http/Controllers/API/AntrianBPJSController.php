@@ -271,7 +271,7 @@ class AntrianBPJSController extends Controller
     {
         $antrians = Antrian::where('kodepoli', $request->kodepoli)
             ->where('tanggalperiksa', $request->tanggalperiksa)
-            ->count(); 
+            ->count();
         // get jadwal
         $jadwals = $this->ref_jadwal_dokter($request);
         if (isset($jadwals->response)) {
