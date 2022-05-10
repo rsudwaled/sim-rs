@@ -37,4 +37,9 @@ class Antrian extends Model
         "status_api",
         "user",
     ];
+
+    public function pasien()
+    {
+        return $this->belongsTo(Pasien::class, 'nik', 'nik');
+    }
 }

@@ -64,7 +64,7 @@
                     @endif
                     @php
                         $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Poliklinik', 'Jam', 'Status', 'Action'];
-                        $config['order'] = ['9', 'asc'];
+                        $config['order'] = ['8', 'asc'];
                     @endphp
                     <x-adminlte-datatable id="table1" :heads="$heads" :config="$config" striped bordered hoverable
                         compressed>
@@ -77,13 +77,20 @@
                                 <td>{{ $item->tanggalperiksa }}</td>
                                 <td>
                                     {{ $item->nik }}
+                                    @isset($item->pasien)
+                                        <br>
+                                        {{ $item->pasien->nama }}
+                                    @endisset
+
+                                </td>
+                                <td>{{ $item->norm }}</td>
+                                <td>
+                                    {{ $item->jenispasien }}
                                     @isset($item->nomorkartu)
                                         <br>
                                         {{ $item->nomorkartu }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->norm }}</td>
-                                <td>{{ $item->jenispasien }}</td>
                                 <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
                                 <td>{{ $item->jampraktek }}</td>
                                 <td>
@@ -94,7 +101,7 @@
                                         <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
                                     @endif
                                     @if ($item->taskid == 2)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Proses Admisi</span>
+                                        <span class="badge bg-primary">{{ $item->taskid }}. Pembayaran</span>
                                     @endif
                                     @if ($item->taskid == 3)
                                         <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
@@ -126,7 +133,12 @@
                                         <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                             data-toggle="tooltop" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
+                                    @else
+                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
+                                            icon="fas fa-print" data-toggle="tooltop" title=""
+                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
                                     @endif
+
                                 </td>
                             </tr>
                         @endforeach
@@ -211,7 +223,8 @@
                         <x-adminlte-input name="norm" label="Nomor RM" placeholder="Nomor RM" readonly enable-old-support />
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-input name="statuspasien" label="Status Pasien" placeholder="Status Pasien" readonly enable-old-support />
+                        <x-adminlte-input name="statuspasien" label="Status Pasien" placeholder="Status Pasien" readonly
+                            enable-old-support />
                     </div>
                     <div class="col-md-4">
                         <x-adminlte-input name="nomorkk" label="Nomor KK" placeholder="Nomor KK" enable-old-support />
@@ -242,7 +255,17 @@
                             </x-slot>
                         </x-adminlte-input>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <input type="hidden" name="kodepoli" id="kodepoli" value="">
+                        <x-adminlte-input name="namapoli" label="Poliklinik" placeholder="Nama Poliklinik" readonly
+                            enable-old-support />
+                    </div>
+                    <div class="col-md-8">
+                        <input type="hidden" name="kodedokter" id="kodedokter" value="">
+                        <x-adminlte-input name="namadokter" label="Dokter" placeholder="Nama Dokter" readonly
+                            enable-old-support />
+                    </div>
+                    <div class="col-md-4">
                         <x-adminlte-select id="jeniskunjungan" name="jeniskunjungan" label="Jenis Kunjungan"
                             enable-old-support>
                             <option disabled selected>PILIH JENIS KUNJUNGAN</option>
@@ -252,28 +275,18 @@
                             <option value="4">RUJUKAN ANTAR RS</option>
                         </x-adminlte-select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         @php
                             $config = ['format' => 'YYYY-MM-DD'];
                         @endphp
                         <x-adminlte-input-date name="tanggalperiksa" value="{{ Carbon\Carbon::now()->format('Y-m-d') }}"
-                            label="Tanggal Periksa" :config="$config" />
+                            label="Tanggal Periksa" readonly :config="$config" />
                     </div>
                     <div class="col-md-4">
-                        <x-adminlte-select2 name="kodepoli" id="kodepoli" label="Poliklinik">
-                            <option value="" disabled selected>PILIH POLIKLINIK</option>
-                            @foreach ($polis as $item)
-                                <option value="{{ $item->kodesubspesialis }}">{{ $item->kodesubspesialis }}
-                                    -
-                                    {{ $item->namasubspesialis }}
-                                </option>
-                            @endforeach
-                        </x-adminlte-select2>
+                        <x-adminlte-input name="jampraktek" label="Jadwal Praktek" placeholder="Waktu Jadwal Praktek"
+                            readonly enable-old-support />
                     </div>
-                    <div class="col-md-8">
-                        <x-adminlte-select2 id="kodedokter" name="kodedokter" label="Jadwal Dokter" enable-old-support>
-                        </x-adminlte-select2>
-                    </div>
+
                 </div>
             </x-adminlte-card>
             <x-adminlte-card id="formPasien" theme="primary" title="Informasi Pasien Berobat">
@@ -345,7 +358,7 @@
 @section('plugins.TempusDominusBs4', true)
 
 @section('js')
-    <script type="text/javascript">
+    <script>
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -356,7 +369,6 @@
             $('.btnDaftar').click(function() {
                 var antrianid = $(this).data('id');
                 $.LoadingOverlay("show");
-
                 $.get("{{ route('antrian.index') }}" + '/' + antrianid + '/edit', function(data) {
                     // console.log($data);
                     $('#kodebooking').html(data.kodebooking);
@@ -364,19 +376,21 @@
                     $('#nomorantrean').html(data.nomorantrean);
                     $('#user').html(data.user);
                     $('#antrianid').val(antrianid);
+                    $('#namapoli').val(data.namapoli);
+                    $('#namadokter').val(data.namadokter);
+                    $('#kodepoli').val(data.kodepoli);
+                    $('#kodedokter').val(data.kodedokter);
+                    $('#jampraktek').val(data.jampraktek);
+                    // $('#kodepoli').val(data.kodepoli).trigger('change');
                     $('#modalDaftar').modal('show');
+
                     $.LoadingOverlay("hide", true);
-                    //     $('#modelHeading').html("Edit Product");
-                    //     $('#saveBtn').val("edit-user");
-                    //     $('#ajaxModel').modal('show');
-                    //     $('#product_id').val(data.id);
-                    //     $('#name').val(data.name);
-                    //     $('#detail').val(data.detail);
                 })
             });
         });
     </script>
-    <script>
+    {{-- js jadwal --}}
+    {{-- <script>
         $(function() {
             $("#kodepoli").change(function() {
                 var url = 'http://127.0.0.1:8000/api/antrian/ref/jadwal';
@@ -414,7 +428,8 @@
                 });
             });
         });
-    </script>
+    </script> --}}
+    {{-- js pasien baru / lama --}}
     <script>
         $(function() {
             $('#formPasien').hide();
@@ -454,6 +469,7 @@
             });
         });
     </script>
+    {{-- js provinsi --}}
     <script>
         $(function() {
             $('#kodeprop').on('change', function() {

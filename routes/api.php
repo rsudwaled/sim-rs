@@ -34,8 +34,21 @@ Route::prefix('antrian')->group(function () {
     Route::post('listtask', [AntrianBPJSController::class, 'list_waktu_task']);
 });
 
+Route::get('token', [AntrianBPJSController::class, 'token']);
+Route::prefix('wsrs')->group(function () {
+    Route::post('ambil_antrian', [AntrianBPJSController::class, 'ambil_antrian']);
+    Route::post('status_antrian', [AntrianBPJSController::class, 'status_antrian']);
+    Route::post('sisa_antrian', [AntrianBPJSController::class, 'sisa_antrian']);
+    Route::post('batal_antrian', [AntrianBPJSController::class, 'batal_antrian']);
+    Route::post('checkin_antrian', [AntrianBPJSController::class, 'checkin_antrian']);
+    Route::post('info_pasien_baru', [AntrianBPJSController::class, 'info_pasien_baru']);
+    Route::post('jadwal_operasi_rs', [AntrianBPJSController::class, 'jadwal_operasi_rs']);
+    Route::post('jadwal_operasi_pasien', [AntrianBPJSController::class, 'jadwal_operasi_pasien']);
+});
+
 Route::prefix('vclaim')->group(function () {
     Route::get('ref_provinsi', [VclaimBPJSController::class, 'ref_provinsi']);
     Route::post('ref_kabupaten', [VclaimBPJSController::class, 'ref_kabupaten']);
     Route::post('ref_kecamatan', [VclaimBPJSController::class, 'ref_kecamatan']);
 });
+
