@@ -115,6 +115,7 @@ class AntrianBPJSController extends Controller
             $request->nomorkartu = "";
             $request->nomorreferensi = "";
         }
+        // dd($request->all());
         $response = $client->request('POST', $url, [
             'headers' => $signature,
             'body' => json_encode([
@@ -270,7 +271,7 @@ class AntrianBPJSController extends Controller
     {
         $antrians = Antrian::where('kodepoli', $request->kodepoli)
             ->where('tanggalperiksa', $request->tanggalperiksa)
-            ->count();
+            ->count(); 
         // get jadwal
         $jadwals = $this->ref_jadwal_dokter($request);
         if (isset($jadwals->response)) {
