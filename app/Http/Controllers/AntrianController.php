@@ -112,6 +112,22 @@ class AntrianController extends Controller
         Alert::success('Success', 'Antrian Berhasil Ditambahkan');
         return redirect()->route('antrian.console');
     }
+    public function pendaftaran(Request $request)
+    {
+        if ($request->tanggal == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        }
+        $polis = Poliklinik::where('status', 1)->get();
+        $antrians = Antrian::where('pasienbaru', '!=', 0)->get();
+        $api = new VclaimBPJSController();
+        $provinsis = $api->ref_provinsi()->response->list;
+        return view('simrs.antrian_pendaftaran', [
+            'antrians' => $antrians,
+            'request' => $request,
+            'polis' => $polis,
+            'provinsis' => $provinsis,
+        ]);
+    }
     public function update_offline(Request $request)
     {
         // validation
@@ -197,7 +213,6 @@ class AntrianController extends Controller
         $request['namapoli'] = $poli->namapoli;
         $request['kodepoli'] = $poli->kodepoli;
         $res_antrian = $api->tambah_antrian($request);
-        // dd($res_antrian->metadata->code);
         if ($res_antrian->metadata->code == 200) {
             $antrian->update([
                 "nomorkartu" => $request->nomorkartu,
@@ -221,6 +236,42 @@ class AntrianController extends Controller
             Alert::error('Error', 'Error Message : ' . $res_antrian->metadata->message);
             return redirect()->back();
         }
+    }
+    public function batal_antrian($antrianid)
+    {
+        $antrian = Antrian::find($antrianid);
+        $antrian->update([
+            "taskid" => 99,
+            "user" => Auth::user()->name,
+            "status_api" => 1,
+        ]);
+        Alert::success('Success', 'Antrian berhasil dibatalkan');
+        return redirect()->back();
+    }
+    public function pembayaran(Request $request)
+    {
+        if ($request->tanggal == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        }
+        $polis = Poliklinik::where('status', 1)->get();
+        $antrians = Antrian::where('taskid', '>=', 2)->get();
+        return view('simrs.antrian_pembayaran', [
+            'antrians' => $antrians,
+            'request' => $request,
+            'polis' => $polis,
+        ]);
+    }
+    public function update_pembayaran(Request $request)
+    {
+        # code...
+        $antrian = Antrian::find($request->antrianid);
+        $antrian->update([
+            "taskid" => 3,
+            "user" => Auth::user()->name,
+            "status_api" => 1,
+        ]);
+        Alert::success('Success', 'Pembayaran berhasil diupdate');
+        return redirect()->back();
     }
     public function display_pendaftaran(Request $request)
     {
@@ -250,22 +301,6 @@ class AntrianController extends Controller
             Alert::error('Error Title', "Error Message " . $response->metadata->message);
             return redirect()->route('antrian.tambah');
         }
-    }
-    public function pendaftaran(Request $request)
-    {
-        if ($request->tanggal == null) {
-            $request['tanggal'] = Carbon::now()->format('Y-m-d');
-        }
-        $polis = Poliklinik::where('status', 1)->get();
-        $antrians = Antrian::where('pasienbaru', '!=', 0)->get();
-        $api = new VclaimBPJSController();
-        $provinsis = $api->ref_provinsi()->response->list;
-        return view('simrs.antrian_pendaftaran', [
-            'antrians' => $antrians,
-            'request' => $request,
-            'polis' => $polis,
-            'provinsis' => $provinsis,
-        ]);
     }
     public function cari_pasien($nik)
     {

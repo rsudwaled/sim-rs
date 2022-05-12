@@ -262,17 +262,16 @@ return [
                     // 'can' => 'admin',
                 ],
                 [
-                    'text' => 'Antrian Farmasi',
-                    'icon'    => 'fas fa-desktop',
-                    'url'  => 'antrian/farmasi',
-                    'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
-
-                [
                     'text' => 'Pemanggil Antrian Pendaftaran',
                     'icon'    => 'fas fa-user-plus',
                     'url'  => 'antrian/pendaftaran',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+                [
+                    'text' => 'Pemanggil Antrian Pembayaran',
+                    'icon'    => 'fas fa-cash-register',
+                    'url'  => 'antrian/pembayaran',
                     'shift'   => 'ml-2',
                     // 'can' => 'admin',
                 ],
