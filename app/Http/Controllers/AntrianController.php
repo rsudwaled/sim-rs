@@ -263,7 +263,6 @@ class AntrianController extends Controller
     }
     public function update_pembayaran(Request $request)
     {
-        # code...
         $antrian = Antrian::find($request->antrianid);
         $antrian->update([
             "taskid" => 3,
@@ -272,6 +271,31 @@ class AntrianController extends Controller
         ]);
         Alert::success('Success', 'Pembayaran berhasil diupdate');
         return redirect()->back();
+    }
+    public function poli(Request $request)
+    {
+        if ($request->tanggal == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        }
+        $antrians = Antrian::where('taskid', '>=', 3)->get();
+        $polis = Poliklinik::where('status', 1)->get();
+        $dokters = Dokter::get();
+        return view('simrs.antrian_poli', [
+            'antrians' => $antrians,
+            'request' => $request,
+            'polis' => $polis,
+            'dokters' => $dokters,
+        ]);
+    }
+    public function show($kodebooking, Request $request)
+    {
+        dd($request->all());
+        $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
+        $poli = Poliklinik::get();
+        return view('simrs.antrian_baru_offline', [
+            'poli' => $poli,
+            'antrian' => $antrian,
+        ]);
     }
     public function display_pendaftaran(Request $request)
     {
@@ -325,17 +349,6 @@ class AntrianController extends Controller
     {
         $antrian = Antrian::find($id);
         return response()->json($antrian);
-    }
-    public function poli(Request $request)
-    {
-        if ($request->tanggal == null) {
-            $request['tanggal'] = Carbon::now()->format('Y-m-d');
-        }
-        $antrians = Antrian::where('taskid', '>=', 3)->get();
-        return view('simrs.antrian_poli', [
-            'antrians' => $antrians,
-            'request' => $request,
-        ]);
     }
     public function checkin()
     {

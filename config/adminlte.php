@@ -346,6 +346,13 @@ return [
                     'url'  => 'jadwaldokter',
                     // 'can' => 'admin',
                 ],
+                [
+                    'text' => 'Tarif Kelompok Layanan',
+                    'icon'    => 'fas fa-hand-holding-medical',
+                    'url'  => 'tarif_kelompok_layanan',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
 
             ],
         ],

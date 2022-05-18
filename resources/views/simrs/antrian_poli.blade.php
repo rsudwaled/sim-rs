@@ -29,36 +29,48 @@
                             </x-adminlte-input-date>
                         </div>
                         <div class="col-md-3">
-                            <x-adminlte-select name="loket" label="Loket">
-                                <x-adminlte-options :options="[
-                                    1 => 'Loket 1',
-                                    2 => 'Loket 2',
-                                    3 => 'Loket 3',
-                                    4 => 'Loket 4',
-                                    5 => 'Loket 5',
-                                ]" :selected="$request->loket ?? 1" />
-                            </x-adminlte-select>
+                            <x-adminlte-select2 name="poli" id="poli" label="Poliklinik">
+                                <option value="00000">00000 - SEMUA POLIKLINIK</option>
+                                @foreach ($polis as $item)
+                                    <option value="{{ $item->kodesubspesialis }}">{{ $item->kodesubspesialis }} -
+                                        {{ $item->namasubspesialis }}
+                                    </option>
+                                @endforeach
+                            </x-adminlte-select2>
                         </div>
                         <div class="col-md-3">
-                            <x-adminlte-select name="lantai" label="Lantai">
-                                <x-adminlte-options :options="[1 => 'Lantai 1', 2 => 'Lantai 2']" />
-                            </x-adminlte-select>
+                            <x-adminlte-select2 name="dokter" label="Dokter">
+                                <option value="00000">00000 - SEMUA DOKTER</option>
+                                @foreach ($dokters as $item)
+                                    <option value="{{ $item->kodedokter }}">{{ $item->kodedokter }} -
+                                        {{ $item->namadokter }}
+                                    </option>
+                                @endforeach
+                                </x-adminlte-select>
                         </div>
                     </div>
                     <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Submit Antrian" />
                     <x-adminlte-button class="withLoad" theme="success" label="Tambah Antrian Offline" />
                 </form>
             </x-adminlte-card>
-            @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
-                <x-adminlte-card
-                    title="Antrian Poliklinik Sudah Checkin ({{ $antrians->where('taskid', 1)->count() }} Orang)"
+            @if (isset($request->poli) && isset($request->dokter) && isset($request->tanggal))
+                <x-adminlte-card title="Antrian Pelayanan Poliklinik ({{ $antrians->where('taskid', 3)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
+                    @if ($errors->any())
+                        <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </x-adminlte-alert>
+                    @endif
                     @php
-                        $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status', 'Action'];
-                        $config['order'] = ['9', 'asc'];
+                        $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Poliklinik', 'Jam', 'Status', 'Action'];
+                        $config['order'] = ['8', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" :heads="$heads" :config="$config" striped bordered hoverable
-                        compressed>
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
+                        bordered hoverable compressed>
                         @foreach ($antrians as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -68,95 +80,59 @@
                                 <td>{{ $item->tanggalperiksa }}</td>
                                 <td>
                                     {{ $item->nik }}
+                                    @isset($item->pasien)
+                                        <br>
+                                        {{ $item->pasien->nama }}
+                                    @endisset
+
+                                </td>
+                                <td>{{ $item->norm }}</td>
+                                <td>
+                                    {{ $item->jenispasien }}
                                     @isset($item->nomorkartu)
                                         <br>
                                         {{ $item->nomorkartu }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->norm }}</td>
-                                <td>{{ $item->jenispasien }}</td>
-                                <td>{{ $item->jeniskunjungan }}</td>
-                                <td>{{ $item->namapoli }}</td>
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
                                 <td>{{ $item->jampraktek }}</td>
                                 <td>
-                                    @if ($item->taskid == 0)
-                                        <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
-                                    @endif
-                                    @if ($item->taskid == 1)
-                                        <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
-                                    @endif
-                                    @if ($item->taskid == 2)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Proses Admisi</span>
-                                    @endif
                                     @if ($item->taskid == 3)
-                                        <span class="badge bg-warning">{{ $item->taskid }}. Tunggu Poli</span>
+                                        <span class="badge bg-danger">{{ $item->taskid }}. Tunggu Poli</span>
                                     @endif
                                     @if ($item->taskid == 4)
                                         <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>
                                     @endif
+                                    @if ($item->taskid == 5)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Tunggu Farmasi</span>
+                                    @endif
+                                    @if ($item->taskid == 6)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Racik Obat</span>
+                                    @endif
+                                    @if ($item->taskid == 6)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Selesai</span>
+                                    @endif
                                     @if ($item->taskid == 99)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
-                                    @endif
-                                    @if ($item->pasienbaru == 1)
-                                        <br> <span class="badge bg-primary">{{ $item->pasienbaru }}. Online</span>
-                                    @endif
-                                    @if ($item->pasienbaru == 2)
-                                        <br> <span class="badge bg-danger">{{ $item->pasienbaru }}. Offline</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if ($item->taskid == 3)
                                         <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
-                                            icon="fas fa-volume-down" data-toggle="tooltop" title=""
+                                            icon="fas fa-volume-down" data-toggle="tooltop" title="Panggil"
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        <x-adminlte-button class="btn-xs" label="Layani" theme="success"
-                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title=""
-                                            onclick="window.location='{{ route('antrian.baru_online', $item->kodebooking) }}'" />
-                                        <x-adminlte-button class="btn-xs" label="Batal" theme="danger"
-                                            icon="fas fa-times" data-toggle="tooltop" title=""
+                                        <x-adminlte-button class="btn-xs btnLayani" label="Layani" theme="success"
+                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Layani"
+                                            data-id="{{ $item->id }}" />
+                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                            data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
+                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->id) }}'" />
+                                    @else
+                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
+                                            icon="fas fa-print" data-toggle="tooltop" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
                                     @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </x-adminlte-datatable>
-                </x-adminlte-card>
-                <x-adminlte-card
-                    title="Antrian Poliklinik Belum Checkin ({{ $antrians->where('taskid', 0)->count() }} Orang)"
-                    theme="secondary" icon="fas fa-info-circle" collapsible="collapsed">
-                    @php
-                        $heads = ['No', 'Nomor', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status'];
-                    @endphp
-                    <x-adminlte-datatable id="table2" :heads="$heads" striped bordered hoverable compressed>
-                        @foreach ($antrians->where('taskid', 0) as $item)
-                            <tr>
-                                <td>{{ $item->angkaantrean }}</td>
-                                <td>{{ $item->nomorantrean }} <br>
-                                    {{ $item->kodebooking }}
-                                </td>
-                                <td>{{ $item->tanggalperiksa }}</td>
-                                <td>
-                                    {{ $item->nik }}
-                                    @isset($item->nomorkartu)
-                                        <br>
-                                        {{ $item->nomorkartu }}
-                                    @endisset
-                                </td>
-                                <td>{{ $item->norm }}</td>
-                                <td>{{ $item->jenispasien }}</td>
-                                <td>{{ $item->jeniskunjungan }}</td>
-                                <td>{{ $item->namapoli }}</td>
-                                <td>{{ $item->jampraktek }}</td>
-                                <td>
-                                    @if ($item->taskid == 0)
-                                        <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
-                                    @endif
-                                    @if ($item->taskid == 1)
-                                        <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
-                                    @endif
-                                    @if ($item->taskid == 99)
-                                        <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
-                                    @endif
+
                                 </td>
                             </tr>
                         @endforeach
@@ -165,8 +141,119 @@
             @endif
         </div>
     </div>
+    <x-adminlte-modal id="modalPembayaran" title="Pembayaran Antrian Pasien" size="xl" theme="success"
+        icon="fas fa-user-plus" v-centered>
+        <form name="formBayar" id="formBayar" action="{{ route('antrian.update_pembayaran') }}" method="post">
+            @csrf
+            <input type="hidden" name="antrianid" id="antrianid" value="">
+            <dl class="row">
+                <dt class="col-sm-3">Kode Booking</dt>
+                <dd class="col-sm-8">: <span id="kodebooking"></span></dd>
+                <dt class="col-sm-3">Antrian</dt>
+                <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span id="nomorantrean"></span></dd>
+                <dt class="col-sm-3 ">Tanggal Perikasa</dt>
+                <dd class="col-sm-8">: <span id="tanggalperiksa"></span></dd>
+                <dt class="col-sm-3">Administrator</dt>
+                <dd class="col-sm-8">: {{ Auth::user()->name }}</dd>
+            </dl>
+            <x-adminlte-card theme="primary" title="Informasi Kunjungan Berobat">
+                <div class="row">
+                    <div class="col-md-5">
+                        <dl class="row">
+                            <dt class="col-sm-4">No RM</dt>
+                            <dd class="col-sm-8">: <span id="norm"></span></dd>
+                            <dt class="col-sm-4">NIK</dt>
+                            <dd class="col-sm-8">: <span id="nik"></span></dd>
+                            <dt class="col-sm-4">No BPJS</dt>
+                            <dd class="col-sm-8">: <span id="nomorkartu"></span></dd>
+                            <dt class="col-sm-4">Nama</dt>
+                            <dd class="col-sm-8">: <span id="nama"></span></dd>
+                            <dt class="col-sm-4">No HP</dt>
+                            <dd class="col-sm-8">: <span id="nohp"></span></dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-7">
+                        <dl class="row">
+                            <dt class="col-sm-4">No Rujukan</dt>
+                            <dd class="col-sm-8">: <span id="nomorreferensi"></span></dd>
+                            <dt class="col-sm-4">Poliklinik</dt>
+                            <dd class="col-sm-8">: <span id="namapoli"></span></dd>
+                            <dt class="col-sm-4">Dokter</dt>
+                            <dd class="col-sm-8">: <span id="namadokter"></span></dd>
+                            <dt class="col-sm-4">Jadwal</dt>
+                            <dd class="col-sm-8">: <span id="jampraktek"></span></dd>
+                            <dt class="col-sm-4">Jenis Kunjungan</dt>
+                            <dd class="col-sm-8">: <span id="jeniskunjungan"></span></dd>
+                        </dl>
+                    </div>
+                </div>
+            </x-adminlte-card>
+            <x-adminlte-card theme="primary" title="Informasi Biaya Berobat">
+                <div class="row">
+                    <table>
+
+                    </table>
+                    <div class="col-md-6">
+                        <x-adminlte-input name="biaya" label="Biaya Dibayarkan" placeholder="Biaya Dibayarkan"
+                            enable-old-support />
+                    </div>
+                </div>
+            </x-adminlte-card>
+            <x-slot name="footerSlot">
+                <x-adminlte-button label="Bayar" form="formBayar" class="mr-auto" type="submit" theme="success"
+                    icon="fas fa-money-bill" />
+                <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
+            </x-slot>
+        </form>
+    </x-adminlte-modal>
 @stop
 
 @section('plugins.Select2', true)
 @section('plugins.Datatables', true)
 @section('plugins.TempusDominusBs4', true)
+
+@section('js')
+    <script>
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $('.btnLayani').click(function() {
+                var antrianid = $(this).data('id');
+                $.LoadingOverlay("show");
+                $.get("{{ route('antrian.index') }}" + '/' + antrianid + '/edit', function(data) {
+                    // console.log(data);
+                    $('#kodebooking').html(data.kodebooking);
+                    $('#angkaantrean').html(data.angkaantrean);
+                    $('#nomorantrean').html(data.nomorantrean);
+                    $('#tanggalperiksa').html(data.tanggalperiksa);
+
+                    $('#norm').html(data.norm);
+                    $('#nik').html(data.nik);
+                    $('#nomorkartu').html(data.nomorkartu);
+                    $('#nama').html(data.nama);
+                    $('#nohp').html(data.nohp);
+
+                    $('#nomorreferensi').html(data.nomorreferensi);
+                    $('#namapoli').html(data.namapoli);
+                    $('#namadokter').html(data.namadokter);
+                    $('#jampraktek').html(data.jampraktek);
+                    $('#jeniskunjungan').html(data.jeniskunjungan);
+
+                    $('#user').html(data.user);
+                    $('#antrianid').val(antrianid);
+                    $('#namapoli').val(data.namapoli);
+                    $('#namadokter').val(data.namadokter);
+                    $('#kodepoli').val(data.kodepoli);
+                    $('#kodedokter').val(data.kodedokter);
+                    $('#jampraktek').val(data.jampraktek);
+                    // $('#kodepoli').val(data.kodepoli).trigger('change');
+                    $('#modalPembayaran').modal('show');
+                    $.LoadingOverlay("hide", true);
+                })
+            });
+        });
+    </script>
+@endsection

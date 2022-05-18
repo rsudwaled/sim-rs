@@ -4,6 +4,8 @@ use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\PoliklinikController;
+use App\Http\Controllers\TarifKelompokLayananController;
+use App\Models\TarifKelompokLayanan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,17 +27,20 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // antrian routes
 Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->group(function () {
+    // console
     Route::get('console', [AntrianController::class, 'console'])->name('console');
     Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
-
+    // pendafataran
     Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
     Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline');
     Route::get('{antrianid}/batal_antrian', [AntrianController::class, 'batal_antrian'])->name('batal_antrian');
-
-
+    // pembayaran
     Route::get('pembayaran', [AntrianController::class, 'pembayaran'])->name('pembayaran');
     Route::post('update_pembayaran', [AntrianController::class, 'update_pembayaran'])->name('update_pembayaran');
+    // poliklinik
+    Route::get('poli', [AntrianController::class, 'poli'])->name('poli');
+    Route::get('{kodebookig}/show', [AntrianController::class, 'show'])->name('show');
 
     Route::get('display_pendaftaran', [AntrianController::class, 'display_pendaftaran'])->name('display_pendaftaran');
     Route::get('/', [AntrianController::class, 'index'])->name('index');
@@ -58,7 +63,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     // Route::get('offline', [AntrianController::class, 'offline'])->name('offline');
     // Route::get('offline/add/{poli}', [AntrianController::class, 'offline_add'])->name('offline_add');
     Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
-    Route::get('poli', [AntrianController::class, 'poli'])->name('poli');
     Route::get('panggil/{kodebooking}', [AntrianController::class, 'panggil'])->name('panggil');
     Route::get('baru_online/{kodebooking}', [AntrianController::class, 'baru_online'])->name('baru_online');
     Route::post('simpan_baru_online/{kodebooking}', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
@@ -69,3 +73,4 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
 Route::resource('poli', PoliklinikController::class);
 Route::resource('jadwaldokter', JadwalDokterController::class);
 Route::resource('dokter', DokterController::class);
+Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);

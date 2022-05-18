@@ -122,28 +122,24 @@
                                 <td>
                                     @if ($item->taskid == 1)
                                         <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
-                                            icon="fas fa-volume-down" data-toggle="tooltop" title=""
+                                            icon="fas fa-volume-down" data-toggle="tooltip" title=""
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        {{-- @if ($item->pasienbaru == 1) --}}
-                                        <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar o" theme="primary"
-                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Daftar"
-                                            data-id="{{ $item->id }}" />
-                                        {{-- @endif --}}
-                                        {{-- @if ($item->pasienbaru == 2) --}}
-                                        <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
-                                            theme="primary" icon="fas fa-hand-holding-medical" data-toggle="tooltop"
-                                            title="Daftar" data-id="{{ $item->id }}" />
-                                        {{-- @endif --}}
-
-                                        <x-adminlte-button class="btn-xs" theme="success" icon="fas fa-check"
-                                            data-toggle="tooltop" title=""
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
+                                        @if ($item->pasienbaru == 1)
+                                            <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar" theme="success"
+                                                icon="fas fa-hand-holding-medical" data-toggle="tooltip"
+                                                title="Daftar Online" data-id="{{ $item->id }}" />
+                                        @endif
+                                        @if ($item->pasienbaru == 2)
+                                            <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
+                                                theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
+                                                title="Daftar Offline" data-id="{{ $item->id }}" />
+                                        @endif
                                         <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltop" title=""
+                                            data-toggle="tooltip" title="Batal Antrian"
                                             onclick="window.location='{{ route('antrian.batal_antrian', $item->id) }}'" />
                                     @else
                                         <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
-                                            icon="fas fa-print" data-toggle="tooltop" title=""
+                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis"
                                             onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
                                     @endif
 
