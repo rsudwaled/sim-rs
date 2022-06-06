@@ -5,7 +5,7 @@ use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\TarifKelompokLayananController;
-use App\Models\TarifKelompokLayanan;
+use App\Http\Controllers\TarifLayananController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -74,3 +74,4 @@ Route::resource('poli', PoliklinikController::class);
 Route::resource('jadwaldokter', JadwalDokterController::class);
 Route::resource('dokter', DokterController::class);
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);
+Route::resource('tarif_layanan', TarifLayananController::class);

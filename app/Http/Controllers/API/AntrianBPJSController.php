@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Antrian;
 use App\Models\Dokter;
 use App\Models\Poliklinik;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class AntrianBPJSController extends Controller
 {
@@ -108,6 +111,34 @@ class AntrianBPJSController extends Controller
     }
     public function tambah_antrian(Request $request)
     {
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+            // "nomorkartu" =>  "required",
+            // "nomorreferensi" =>  "required",
+            "nik" =>  "required",
+            "nohp" => "required",
+            "kodepoli" =>  "required",
+            "norm" =>  "required",
+            "pasienbaru" =>  "required",
+            "tanggalperiksa" =>  "required",
+            "kodedokter" =>  "required",
+            "jampraktek" =>  "required",
+            "jeniskunjungan" => "required",
+            "jenispasien" =>  "required",
+            "namapoli" =>  "required",
+            "namadokter" =>  "required",
+            "nomorantrean" =>  "required",
+            "angkaantrean" =>  "required",
+            "estimasidilayani" =>  "required",
+            "sisakuotajkn" =>  "required",
+            "kuotajkn" => "required",
+            "sisakuotanonjkn" => "required",
+            "kuotanonjkn" => "required",
+            "keterangan" =>  "required",
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         $url = $this->baseUrl . "antrean/add";
         $signature = $this->signature();
         $client = new Client();
@@ -149,6 +180,15 @@ class AntrianBPJSController extends Controller
     }
     public function update_antrian(Request $request)
     {
+        $request['waktu'] = Carbon::now();
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+            "taskid" => "required",
+            "waktu" => "required",
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         $url = $this->baseUrl . "antrean/updatewaktu";
         $signature = $this->signature();
         $client = new Client();
@@ -165,6 +205,13 @@ class AntrianBPJSController extends Controller
     }
     public function batal_antrian_bpjs(Request $request)
     {
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+            "keterangan" => "required",
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         $url = $this->baseUrl . "antrean/batal";
         $signature = $this->signature();
         $client = new Client();
@@ -180,13 +227,19 @@ class AntrianBPJSController extends Controller
     }
     public function list_waktu_task(Request $request)
     {
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         $url = $this->baseUrl . "antrean/getlisttask";
         $signature = $this->signature();
         $client = new Client();
         $response = $client->request('POST', $url, [
             'headers' => $signature,
             'body' => json_encode([
-                "kodebooking" => "16032021A001",
+                "kodebooking" => $request->kodebooking,
             ]),
         ]);
         $response = json_decode($response->getBody());
