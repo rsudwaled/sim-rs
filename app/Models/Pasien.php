@@ -29,6 +29,6 @@ class Pasien extends Model
         "namakel",
         "rw",
         "rt",
+        "status",
     ];
-
 }
