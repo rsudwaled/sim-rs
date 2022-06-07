@@ -12,4 +12,9 @@ class TarifLayananDB extends Model
     protected $table = 'mt_tarif_header';
     // protected $primaryKey = 'KODE_TARIF_HEADER';
     public $timestamps = false;
+
+    public function tarifdeails()
+    {
+        return $this->hasMany(TarifLayananDetailDB::class, 'KODE_TARIF_HEADER', 'KODE_TARIF_HEADER');
+    }
 }

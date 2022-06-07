@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class TarifLayananDetail extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'kodetarifdetail',
+        'kodetarif',
+        'kelas',
+        'totaltarif',
+        'userid',
+    ];
 }

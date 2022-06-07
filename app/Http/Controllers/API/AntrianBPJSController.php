@@ -6,9 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Antrian;
 use App\Models\Dokter;
 use App\Models\JadwalOperasi;
+use App\Models\KunjunganDB;
+use App\Models\LayananDB;
+use App\Models\LayananDetailDB;
 use App\Models\Pasien;
 use App\Models\PasienDB;
 use App\Models\Poliklinik;
+use App\Models\TarifLayananDB;
+use App\Models\TarifLayananDetailDB;
+use App\Models\UnitDB;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -392,7 +398,8 @@ class AntrianBPJSController extends Controller
             $request['norm'] = $pasien->no_rm;
             $request['pasienbaru'] = 0;
         } else {
-            $request['norm'] = "PASIEN BARU";
+            // $request['norm'] = $this->generate_norm();
+            // $request['norm'] = "PASIEN BARU";
             $request['pasienbaru'] = 1;
         }
         // cek jenis pasien
@@ -542,7 +549,10 @@ class AntrianBPJSController extends Controller
     }
     public function checkin_antrian(Request $request)
     {
+        $now = Carbon::now();
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
+        $unit = UnitDB::firstWhere('KDPOLI', $antrian->kodepoli);
+        // jika antrian ditemukan
         if (isset($antrian)) {
             if ($antrian->pasienbaru == 0) {
                 $request['taskid'] = 3;
@@ -553,12 +563,93 @@ class AntrianBPJSController extends Controller
                 $request['keterangan'] = "Silahkan menunggu panggilan di loket pendaftaran pasien baru";
             }
             $response = $this->update_antrian($request);
+            // jika antrian berhasil diupdate di bpjs
             if ($response->metadata->code == 200) {
+                // update antrian
                 Antrian::where('kodebooking', $request->kodebooking)->update([
                     "taskid" => $request->taskid,
                     "keterangan" => $request->keterangan,
                     "checkin" => Carbon::now(),
                 ]);
+                // insert ts kunjungan
+                $kunjungan = KunjunganDB::where('no_rm', $antrian->norm)->orderBy('counter', 'DESC')->first();
+                if (empty($kunjungan)) {
+                    $kunjunganbaru = KunjunganDB::create(
+                        [
+                            'counter' => 1,
+                            'no_rm' => $antrian->norm,
+                            'kode_unit' => $unit->kode_unit,
+                            'tgl_masuk' => $now,
+                            'kode_paramedis' => $antrian->kodedokter,
+                            'status_kunjungan' => 1,
+                        ]
+                    );
+                } else {
+                    $kunjunganbaru = KunjunganDB::create(
+                        [
+                            'counter' => $kunjungan->counter + 1,
+                            'no_rm' => $antrian->norm,
+                            'kode_unit' => $antrian->kodepoli,
+                            'tgl_masuk' => $now,
+                            'kode_paramedis' => $antrian->kodedokter,
+                            'status_kunjungan' => 1,
+                        ]
+                    );
+                }
+                // insert layanan header dan detail karcis admin konsul 25 + 5 = 30
+                $kunjungan = KunjunganDB::where('no_rm', $antrian->norm)->where('counter', $kunjunganbaru->counter)->first();
+                $layananpoli = LayananDB::where('kode_unit', $unit->kode_unit)
+                    ->whereBetween('tgl_entry', [Carbon::now()->startOfDay(), [Carbon::now()->endOfDay()]])
+                    ->count();
+                $kodelayanan = $unit->KDPOLI . $now->yearIso . $now->month . $now->day . $layananpoli + 1;
+                $layananbaru = LayananDB::create(
+                    [
+                        'kode_layanan_header' => $kodelayanan,
+                        'tgl_entry' => $now,
+                        'kode_kunjungan' => $kunjungan->kode_kunjungan,
+                        'kode_unit' => $unit->kode_unit,
+                        'kode_tipe_transaksi' => 2,
+                        'status_layanan' => 1,
+                        'pic' => 'ANTRIAN SYSTEM',
+                        'keterangan' => 'Layanan header melalui antrian sistem',
+                    ]
+                );
+                $tarifkarcis = TarifLayananDetailDB::firstWhere('KODE_TARIF_DETAIL', $unit->kode_tarif_karcis);
+                $tarifadm = TarifLayananDetailDB::firstWhere('KODE_TARIF_DETAIL', $unit->kode_tarif_adm);
+                $karcis = LayananDetailDB::create(
+                    [
+                        'id_layanan_detail' => "DET" . $now->yearIso . $now->month . $now->day .  "01",
+                        'row_id_header' => $layananbaru->id,
+                        'kode_layanan_header' => $layananbaru->kode_layanan_header,
+                        'kode_tarif_detail' => $tarifkarcis->KODE_TARIF_DETAIL,
+                        'total_tarif' => $tarifkarcis->TOTAL_TARIF_NEW,
+                        'jumlah_layanan' => 1,
+                        'total_layanan' => $tarifkarcis->TOTAL_TARIF_NEW,
+                        'grantotal_layanan' => $tarifkarcis->TOTAL_TARIF_NEW,
+                        'kode_dokter1' => $antrian->kodedokter,
+                        'tgl_layanan_detail' => Carbon::now(),
+                    ]
+                );
+                $adm = LayananDetailDB::create(
+                    [
+                        'id_layanan_detail' => "DET" . $now->yearIso . $now->month . $now->day .  "01",
+                        'row_id_header' => $layananbaru->id,
+                        'kode_layanan_header' => $layananbaru->kode_layanan_header,
+                        'kode_tarif_detail' => $tarifadm->KODE_TARIF_DETAIL,
+                        'total_tarif' => $tarifadm->TOTAL_TARIF_NEW,
+                        'jumlah_layanan' => 1,
+                        'total_layanan' => $tarifadm->TOTAL_TARIF_NEW,
+                        'grantotal_layanan' => $tarifadm->TOTAL_TARIF_NEW,
+                        'kode_dokter1' => $antrian->kodedokter,
+                        'tgl_layanan_detail' => Carbon::now(),
+                    ]
+                );
+                $layananbaru->update([
+                    'total_layanan' => $tarifkarcis->TOTAL_TARIF_NEW + $tarifadm->TOTAL_TARIF_NEW,
+                ]);
+                // tracer
+
+                // ts sep
                 $berhasil = [
                     "metadata" => [
                         "message" => "Ok",
@@ -566,10 +657,14 @@ class AntrianBPJSController extends Controller
                     ],
                 ];
                 return $berhasil;
-            } else {
+            }
+            // jika antrian gagal diupdate di bpjs
+            else {
                 return $response;
             }
-        } else {
+        }
+        // jika antrian tidak ditemukan
+        else {
             $errorkodebooking = [
                 "metadata" => [
                     "message" => "Kode booking tidak ditemukan",

@@ -118,7 +118,7 @@ class AntrianController extends Controller
             $request['tanggal'] = Carbon::now()->format('Y-m-d');
         }
         $polis = Poliklinik::where('status', 1)->get();
-        $antrians = Antrian::where('pasienbaru', '!=', 0)->get();
+        $antrians = Antrian::get();
         $api = new VclaimBPJSController();
         $provinsis = $api->ref_provinsi()->response->list;
         return view('simrs.antrian_pendaftaran', [

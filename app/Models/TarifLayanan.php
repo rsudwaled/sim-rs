@@ -10,14 +10,22 @@ class TarifLayanan extends Model
     use HasFactory;
 
     protected $fillable = [
-       'kodetarif',
-       'nosk',
-       'namatarif',
-       'tarifkelompokid',
-       'tarifvclaimid',
-       'keterangan',
-       'status',
-       'userid',
+        'kodetarif',
+        'nosk',
+        'namatarif',
+        'tarifkelompokid',
+        'tarifvclaimid',
+        'keterangan',
+        'status',
+        'userid',
     ];
+
+    public function tarifdeails()
+    {
+        return $this->hasMany(TarifLayananDetail::class, 'kodetarif', 'kodetarif');
+    }
+    // {
+    //     return $this->hasMany(Comment::class, 'foreign_key', 'local_key');
+    // }
 
 }
