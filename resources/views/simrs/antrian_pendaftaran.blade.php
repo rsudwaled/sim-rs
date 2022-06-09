@@ -63,7 +63,7 @@
                         </x-adminlte-alert>
                     @endif
                     @php
-                        $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan',  'Poliklinik', 'Jam', 'Status', 'Action'];
+                        $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
                         $config['order'] = ['8', 'asc'];
                     @endphp
                     <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
@@ -95,8 +95,8 @@
                                         <br> {{ $item->nomorreferensi }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
-                                <td>{{ $item->jampraktek }}</td>
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                </td>
                                 <td>
                                     @if ($item->taskid == 0)
                                         <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
@@ -105,7 +105,7 @@
                                         <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
                                     @endif
                                     @if ($item->taskid == 2)
-                                        <span class="badge bg-primary">{{ $item->taskid }}. Pembayaran</span>
+                                        <span class="badge bg-primary">{{ $item->taskid }}. Proses Pendaftaran</span>
                                     @endif
                                     @if ($item->taskid == 3)
                                         <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
@@ -124,27 +124,35 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 1)
-                                        <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
-                                            icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        @if ($item->pasienbaru == 1)
-                                            <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar" theme="success"
-                                                icon="fas fa-hand-holding-medical" data-toggle="tooltip"
-                                                title="Daftar Online" data-id="{{ $item->id }}" />
+                                    @if ($item->taskid <= 2)
+                                        {{-- panggil pertama --}}
+                                        @if ($item->taskid == 1)
+                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
+                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
                                         @endif
-                                        @if ($item->pasienbaru == 2)
-                                            <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
-                                                theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
-                                                title="Daftar Offline" data-id="{{ $item->id }}" />
+                                        {{-- panggil ulang --}}
+                                        @if ($item->taskid == 2)
+                                            <x-adminlte-button class="btn-xs" label="Panggil Ulang" theme="primary"
+                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
+                                            @if ($item->pasienbaru == 1)
+                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
+                                                    title="Daftar Online" data-id="{{ $item->id }}" />
+                                            @endif
+                                            @if ($item->pasienbaru == 2)
+                                                <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
+                                                    title="Daftar Offline" data-id="{{ $item->id }}" />
+                                            @endif
                                         @endif
                                         <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                             data-toggle="tooltip" title="Batal Antrian"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->id) }}'" />
+                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                     @else
                                         <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
-                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis"
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
+                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
                                     @endif
 
                                 </td>
@@ -373,23 +381,44 @@
     </x-adminlte-modal>
     <x-adminlte-modal id="modalDaftarOnline" title="Pendaftaran Pasien Online" size="lg" theme="success"
         icon="fas fa-user-plus" v-centered>
-        <form name="formDaftar" id="formDaftar" action="{{ route('antrian.update_offline') }}" method="post">
+        <form name="formDaftarOn" id="formDaftarOn" action="{{ route('antrian.update_pendaftaran_online') }}"
+            method="post">
             @csrf
-            <input type="hidden" name="antrianid" id="antrianid" value="">
-            <dl class="row">
-                <dt class="col-sm-3">Kode Booking</dt>
-                <dd class="col-sm-8">: <span id="kodebooking"></span></dd>
-                <dt class="col-sm-3">Antrian</dt>
-                <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span id="nomorantrean"></span></dd>
-                <dt class="col-sm-3">Administrator</dt>
-                <dd class="col-sm-8">: {{ Auth::user()->name }}</dd>
-            </dl>
+            <input type="hidden" name="antrianidOn" id="antrianidOn" value="">
+            <div class="row">
+                <div class="col-md-4">
+                    <dl class="row">
+                        <dt class="col-sm-5">Kode Booking</dt>
+                        <dd class="col-sm-7">: <span id="kodebookingOn"></span></dd>
+                        <dt class="col-sm-5">Antrian</dt>
+                        <dd class="col-sm-7">: <span id="angkaantreanOn"></span> / <span id="nomorantreanOn"></span>
+                        </dd>
+                        <dt class="col-sm-5">Administrator</dt>
+                        <dd class="col-sm-7">: {{ Auth::user()->name }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-5">Tanggal Periksa</dt>
+                        <dd class="col-sm-7">: <span id="tanggalperiksaOn"></span></dd>
+                        <dt class="col-sm-5">Jenis Kunjungan</dt>
+                        <dd class="col-sm-7">: <span id="jeniskunjunganOn"></span></dd>
+                        <dt class="col-sm-5">Poliklinik</dt>
+                        <dd class="col-sm-7">: <span id="namapoliOn"></span> / <span id="kodepoliOn"></span></dd>
+                        <dt class="col-sm-5">Dokter</dt>
+                        <dd class="col-sm-7">: <span id="namadokterOn"></span> / <span id="kodedokterOn"></span></dd>
+                        <dt class="col-sm-5">Jam Praktek</dt>
+                        <dd class="col-sm-7">: <span id="jampraktekOn"></span></dd>
+
+                    </dl>
+                </div>
+            </div>
             <x-adminlte-card theme="primary" title="Informasi Kunjungan Berobat">
                 <div class="row">
                     <div class="col-md-6">
-                        <x-adminlte-input name="nik" id="nik" label="NIK" placeholder="NIK" enable-old-support>
+                        <x-adminlte-input name="nikOn" label="NIK" placeholder="NIK" enable-old-support>
                             <x-slot name="appendSlot">
-                                <x-adminlte-button name="cariNIK" id="cariNIK" theme="primary" label="Cari!" />
+                                <x-adminlte-button name="cariNIKOn" id="cariNIKOn" theme="primary" label="Cari!" />
                             </x-slot>
                             <x-slot name="prependSlot">
                                 <div class="input-group-text text-primary">
@@ -397,85 +426,57 @@
                                 </div>
                             </x-slot>
                             <x-slot name="bottomSlot">
-                                <span id="pasienTidakDitemukan" class="text-sm text-danger"></span>
-                                <span id="pasienDitemukan" class="text-sm text-success"></span>
+                                <span id="pasienTidakDitemukanOn" class="text-sm text-danger">Silahkan masukan nik dan klik
+                                    cari pasien</span>
+                                <span id="pasienDitemukanOn" class="text-sm text-success"></span>
                             </x-slot>
                         </x-adminlte-input>
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-input name="norm" label="Nomor RM" placeholder="Nomor RM" readonly enable-old-support />
+                        <x-adminlte-input name="normOn" label="Nomor RM" placeholder="Nomor RM" readonly
+                            enable-old-support />
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-input name="statuspasien" label="Status Pasien" placeholder="Status Pasien" readonly
+                        <x-adminlte-input name="statuspasienOn" label="Status Pasien" placeholder="Status Pasien" readonly
                             enable-old-support />
-                    </div>
-                    <div class="col-md-4">
-                        <x-adminlte-input name="nomorkk" label="Nomor KK" placeholder="Nomor KK" enable-old-support />
-                    </div>
-                    <div class="col-md-4">
-                        <x-adminlte-input name="nama" label="Nama Lengkap" placeholder="Nama Lengkap" enable-old-support />
-                    </div>
-                    <div class="col-md-4">
-                        <x-adminlte-input name="nohp" label="Nomor HP" placeholder="Nomor HP Aktif" enable-old-support />
-                    </div>
-                    <div class="col-md-6">
-                        <x-adminlte-input name="nomorkartu" label="Nomor Kartu BPJS" placeholder="Nomor Kartu BPJS"
-                            enable-old-support>
-                            <x-slot name="bottomSlot">
-                                <span class="text-sm text-danger">
-                                    Masukan jika kunjungan anda menggunakan BPJS/JKN
-                                </span>
-                            </x-slot>
-                        </x-adminlte-input>
-                    </div>
-                    <div class="col-md-6">
-                        <x-adminlte-input name="nomorreferensi" label="Nomor Rujukan" placeholder="Nomor Rujukan"
-                            enable-old-support>
-                            <x-slot name="bottomSlot">
-                                <span class="text-sm text-danger">
-                                    Masukan jika kunjungan anda menggunakan BPJS/JKN
-                                </span>
-                            </x-slot>
-                        </x-adminlte-input>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="hidden" name="kodepoli" id="kodepoli" value="">
-                        <x-adminlte-input name="namapoli" label="Poliklinik" placeholder="Nama Poliklinik" readonly
-                            enable-old-support />
-                    </div>
-                    <div class="col-md-8">
-                        <input type="hidden" name="kodedokter" id="kodedokter" value="">
-                        <x-adminlte-input name="namadokter" label="Dokter" placeholder="Nama Dokter" readonly
-                            enable-old-support />
-                    </div>
-                    <div class="col-md-4">
-                        <x-adminlte-select id="jeniskunjungan" name="jeniskunjungan" label="Jenis Kunjungan"
-                            enable-old-support>
-                            <option disabled selected>PILIH JENIS KUNJUNGAN</option>
-                            <option value="1">RUJUKAN FKTP</option>
-                            <option value="3">KONTROL</option>
-                            <option value="2">RUJUKAN INTERNAL</option>
-                            <option value="4">RUJUKAN ANTAR RS</option>
-                        </x-adminlte-select>
-                    </div>
-                    <div class="col-md-4">
-                        @php
-                            $config = ['format' => 'YYYY-MM-DD'];
-                        @endphp
-                        <x-adminlte-input-date name="tanggalperiksa" value="{{ Carbon\Carbon::now()->format('Y-m-d') }}"
-                            label="Tanggal Periksa" readonly :config="$config" />
-                    </div>
-                    <div class="col-md-4">
-                        <x-adminlte-input name="jampraktek" label="Jadwal Praktek" placeholder="Waktu Jadwal Praktek"
-                            readonly enable-old-support />
                     </div>
 
                 </div>
             </x-adminlte-card>
-            <x-adminlte-card id="formPasien" theme="primary" title="Informasi Pasien Berobat">
+            <x-adminlte-card id="formPasienOn" theme="primary" title="Informasi Pasien Berobat">
                 <div class="row">
                     <div class="col-md-4">
-                        <x-adminlte-select id="jeniskelamin" name="jeniskelamin" label="Jenis Kelamin" enable-old-support>
+                        <x-adminlte-input name="nomorkkOn" label="Nomor KK" placeholder="Nomor KK" enable-old-support />
+                    </div>
+                    <div class="col-md-4">
+                        <x-adminlte-input name="namaOn" label="Nama Lengkap" placeholder="Nama Lengkap"
+                            enable-old-support />
+                    </div>
+                    <div class="col-md-4">
+                        <x-adminlte-input name="nohpOn" label="Nomor HP" placeholder="Nomor HP Aktif" enable-old-support />
+                    </div>
+                    <div class="col-md-6">
+                        <x-adminlte-input name="nomorkartuOn" label="Nomor Kartu BPJS" placeholder="Nomor Kartu BPJS"
+                            enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Masukan jika kunjungan anda menggunakan BPJS/JKN
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input>
+                    </div>
+                    <div class="col-md-6">
+                        <x-adminlte-input name="nomorreferensiOn" label="Nomor Rujukan" placeholder="Nomor Rujukan"
+                            enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Masukan jika kunjungan anda menggunakan BPJS/JKN
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input>
+                    </div>
+                    <div class="col-md-4">
+                        <x-adminlte-select name="jeniskelaminOn" label="Jenis Kelamin" enable-old-support>
                             <option disabled selected>PILIH JENIS KELAMIN</option>
                             <option value="L">LAKI-LAKI</option>
                             <option value="P">PEREMPUAN</option>
@@ -485,25 +486,25 @@
                         @php
                             $config = ['format' => 'YYYY-MM-DD'];
                         @endphp
-                        <x-adminlte-input-date name="tanggallahir" value="" label="Tanggal Lahir"
+                        <x-adminlte-input-date name="tanggallahirOn" value="" label="Tanggal Lahir"
                             placeholder="Tanggal Lahir" :config="$config" enable-old-support />
                     </div>
 
                 </div>
                 <div class="row">
                     <div class="col-md-8">
-                        <x-adminlte-input name="alamat" label="Alamat" placeholder="Alamat" enable-old-support />
+                        <x-adminlte-input name="alamatOn" label="Alamat" placeholder="Alamat" enable-old-support />
                     </div>
                     <div class="col-md-2">
-                        <x-adminlte-input name="rt" label="Nomor RT" placeholder="RT" enable-old-support />
+                        <x-adminlte-input name="rtOn" label="Nomor RT" placeholder="RT" enable-old-support />
                     </div>
                     <div class="col-md-2">
-                        <x-adminlte-input name="rw" label="Nomor RW" placeholder="RW" enable-old-support />
+                        <x-adminlte-input name="rwOn" label="Nomor RW" placeholder="RW" enable-old-support />
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodeprop" id="kodeprop" label="Provonsi">
+                        <x-adminlte-select2 name="kodepropOn" label="Provonsi">
                             <option value="" disabled selected>PILIH PROVINSI</option>
                             @foreach ($provinsis as $item)
                                 <option value="{{ $item->kode }}">{{ $item->nama }}</option>
@@ -511,23 +512,23 @@
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodedati2" id="kodedati2" label="Kota / Kabupaten">
+                        <x-adminlte-select2 name="kodedati2On" label="Kota / Kabupaten">
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodekec" id="kodekec" label="Kecamatan">
+                        <x-adminlte-select2 name="kodekecOn" label="Kecamatan">
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-input name="namakel" id="namakel" label="Kelurahan / Desa"
-                            placeholder="Kelurahan / Desa" enable-old-support />
+                        <x-adminlte-input name="namakelOn" label="Kelurahan / Desa" placeholder="Kelurahan / Desa"
+                            enable-old-support />
                     </div>
                 </div>
             </x-adminlte-card>
             <x-slot name="footerSlot">
-                <x-adminlte-button label="Daftar" form="formDaftar" class="mr-auto" type="submit" theme="success"
+                <x-adminlte-button label="Daftar" form="formDaftarOn" class="mr-auto" type="submit" theme="success"
                     icon="fas fa-plus" />
                 <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
             </x-slot>
@@ -574,16 +575,23 @@
                 var antrianid = $(this).data('id');
                 $.LoadingOverlay("show");
                 $.get("{{ route('antrian.index') }}" + '/' + antrianid + '/edit', function(data) {
-                    $('#kodebooking').html(data.kodebooking);
-                    $('#angkaantrean').html(data.angkaantrean);
-                    $('#nomorantrean').html(data.nomorantrean);
-                    $('#user').html(data.user);
-                    $('#antrianid').val(antrianid);
-                    $('#namapoli').val(data.namapoli);
-                    $('#namadokter').val(data.namadokter);
-                    $('#kodepoli').val(data.kodepoli);
-                    $('#kodedokter').val(data.kodedokter);
-                    $('#jampraktek').val(data.jampraktek);
+                    $('#kodebookingOn').html(data.kodebooking);
+                    $('#angkaantreanOn').html(data.angkaantrean);
+                    $('#nomorantreanOn').html(data.nomorantrean);
+                    $('#userOn').html(data.user);
+                    $('#antrianidOn').val(antrianid);
+
+                    $('#tanggalperiksaOn').html(data.tanggalperiksa);
+                    $('#jeniskunjunganOn').html(data.jeniskunjungan);
+                    $('#kodepoliOn').html(data.kodepoli);
+                    $('#namapoliOn').html(data.namapoli);
+                    $('#kodedokterOn').html(data.kodedokter);
+                    $('#namadokterOn').html(data.namadokter);
+                    $('#jampraktekOn').html(data.jampraktek);
+
+
+                    $('#nikOn').val(data.nik);
+                    $('#normOn').val(data.norm);
                     // $('#kodepoli').val(data.kodepoli).trigger('change');
                     $('#modalDaftarOnline').modal('show');
                     $.LoadingOverlay("hide", true);
@@ -631,7 +639,7 @@
             });
         });
     </script> --}}
-    {{-- js pasien baru / lama --}}
+    {{-- js pasien baru / lama offline --}}
     <script>
         $(function() {
             $('#formPasien').hide();
@@ -671,7 +679,46 @@
             });
         });
     </script>
-    {{-- js provinsi --}}
+    {{-- js pasien baru / lama online --}}
+    <script>
+        $(function() {
+            $('#formPasienOn').hide();
+
+            $('#cariNIKOn').on('click', function() {
+                var nik = $('#nikOn').val();
+                if (nik == '') {
+                    alert('NIK tidak boleh kosong');
+                } else {
+                    $.LoadingOverlay("show");
+                    $.get("http://127.0.0.1:8000/antrian/cari_pasien/" + nik, function(data) {
+                        console.log(data.metadata.code);
+                        if (data.metadata.code == 200) {
+                            $('#pasienDitemukanOn').html(data.metadata.message +
+                                ", Silahkan lengkapi data pasien");
+                            $('#pasienTidakDitemukanOn').html('');
+                            $('#nomorkkOn').val(data.response.nomorkk);
+                            $('#nohpOn').val(data.response.nohp);
+                            $('#namaOn').val(data.response.nama);
+                            $('#normOn').val(data.response.norm);
+                            $('#nomorkartuOn').val(data.response.nomorkartu);
+                            $('#statuspasienOn').val('BARU');
+                            $('#formPasienOn').show();
+                        } else {
+                            $('#pasienTidakDitemukanOn').html(data.metadata.message);
+                            $('#pasienDitemukanOn').html('');
+                            $('#nomorkkOn').val('');
+                            $('#nohpOn').val('');
+                            $('#namaOn').val('');
+                            $('#nomorkartuOn').val('');
+                            $('#formPasienOn').show();
+                        }
+                        $.LoadingOverlay("hide", true);
+                    })
+                }
+            });
+        });
+    </script>
+    {{-- js provinsi offline --}}
     <script>
         $(function() {
             $('#kodeprop').on('change', function() {
@@ -709,6 +756,53 @@
                         $('#kodekec').empty();
                         $.each(data.response.list, function(item) {
                             $('#kodekec').append($('<option>', {
+                                value: data.response.list[item].kode,
+                                text: data.response.list[item].nama
+                            }));
+                        })
+                    }
+                })
+            });
+        });
+    </script>
+    {{-- js provinsi online --}}
+    <script>
+        $(function() {
+            $('#kodepropOn').on('change', function() {
+                $.LoadingOverlay("show");
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/vclaim/ref_kabupaten',
+                    method: 'POST',
+                    data: {
+                        provinsi: $(this).val()
+                    },
+                    success: function(data) {
+                        console.log(data);
+                        $.LoadingOverlay("hide", true);
+                        $('#kodedati2On').empty();
+                        $.each(data.response.list, function(item) {
+                            $('#kodedati2On').append($('<option>', {
+                                value: data.response.list[item].kode,
+                                text: data.response.list[item].nama
+                            }));
+                        })
+                    }
+                })
+            });
+            $('#kodedati2On').on('change', function() {
+                $.LoadingOverlay("show");
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/vclaim/ref_kecamatan',
+                    method: 'POST',
+                    data: {
+                        kabupaten: $(this).val()
+                    },
+                    success: function(data) {
+                        console.log(data);
+                        $.LoadingOverlay("hide", true);
+                        $('#kodekecOn').empty();
+                        $.each(data.response.list, function(item) {
+                            $('#kodekecOn').append($('<option>', {
                                 value: data.response.list[item].kode,
                                 text: data.response.list[item].nama
                             }));

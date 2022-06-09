@@ -15,9 +15,10 @@ return new class extends Migration
     {
         Schema::create('antrians', function (Blueprint $table) {
             $table->id();
-            $table->string('kodebooking')->unique();
+            $table->string('kodebooking')->index()->unique();
             $table->string('nomorkartu')->nullable();
             $table->string('nik', 16);
+            $table->string('nama')->nullable();
             $table->string('nohp');
             $table->string('kodepoli');
             $table->string('norm');

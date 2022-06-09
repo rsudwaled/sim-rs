@@ -128,6 +128,22 @@ class AntrianController extends Controller
             'provinsis' => $provinsis,
         ]);
     }
+    public function panggil_pendaftaran($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 2;
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => 2,
+            'status_api' => 1,
+            'keterangan' => "Panggilan ke loket pendaftaran",
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
+        return redirect()->back();
+    }
     public function update_offline(Request $request)
     {
         // validation
@@ -237,14 +253,74 @@ class AntrianController extends Controller
             return redirect()->back();
         }
     }
-    public function batal_antrian($antrianid)
+    public function update_pendaftaran_online(Request $request)
     {
-        $antrian = Antrian::find($antrianid);
-        $antrian->update([
-            "taskid" => 99,
-            "user" => Auth::user()->name,
-            "status_api" => 1,
+        // validation
+        $request->validate([
+            'antrianidOn' => 'required',
+            'statuspasienOn' => 'required',
+            'nikOn' => 'required',
+            'nomorkkOn' => 'required',
+            'namaOn' => 'required',
+            'nohpOn' => 'required',
         ]);
+        if ($request->statuspasien == "BARU") {
+            $request->validate([
+                'jeniskelamin' => 'required',
+                'tanggallahir' => 'required',
+                'alamat' => 'required',
+                'kodeprop' => 'required',
+            ]);
+        }
+        // init
+        $antrian = Antrian::firstWhere('id', $request->antrianidOn);
+        // update antrian bpjs
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 3;
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        if ($response->metadata->code == 200) {
+            // update pasien
+            $pasien = Pasien::firstWhere('nik', $request->nikOn);
+            $pasien->update([
+                "nomorkk" => $request->nomorkkOn,
+                "nama" => $request->namaOn,
+                "nohp" => $request->nohpOn,
+                "nomorkartu" => $request->nomorkartuOn,
+                "nomorreferensi" => $request->nomorreferensiOn,
+                "jeniskelamin" => $request->jeniskelaminOn,
+                "tanggallahir" => $request->tanggallahirOn,
+                "alamat" => $request->alamatOn,
+                "rt" => $request->rtOn,
+                "rw" => $request->rwOn,
+                "kodeprop" => $request->kodepropOn,
+                "kodedati2" => $request->kodedati2On,
+                "kodekec" => $request->kodekecOn,
+                "namakel" => $request->namakelOn,
+            ]);
+            // update antrian simrs
+            $antrian->update([
+                'taskid' => 3,
+                'status_api' => 1,
+                'keterangan' => "Silahkan melakukan pembayaran pendaftaran ke loket pembayaran",
+                'user' => Auth::user()->name,
+            ]);
+            Alert::success('Success', "Pendaftaran Berhasil. \nSilahkan melakukan pembayaran pendaftaran ke loket pembayaran \n" . $response->metadata->message);
+            return redirect()->back();
+        }
+        // jika gagal update antrian bpjs
+        else {
+            Alert::error('Error', "Pendaftaran Gagal.\n" . $response->metadata->message);
+            return redirect()->back();
+        }
+    }
+    public function batal_antrian($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['keterangan'] = "Dibatalkan oleh admin user " . Auth::user()->name;
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->batal_antrian($request);
         Alert::success('Success', 'Antrian berhasil dibatalkan');
         return redirect()->back();
     }

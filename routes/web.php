@@ -33,8 +33,10 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
     // pendafataran
     Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
+    Route::get('panggil_pendaftaran/{kodebooking}', [AntrianController::class, 'panggil_pendaftaran'])->name('panggil_pendaftaran');
     Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline');
-    Route::get('{antrianid}/batal_antrian', [AntrianController::class, 'batal_antrian'])->name('batal_antrian');
+    Route::post('update_pendaftaran_online', [AntrianController::class, 'update_pendaftaran_online'])->name('update_pendaftaran_online');
+    Route::get('batal_antrian/{kodebooking}', [AntrianController::class, 'batal_antrian'])->name('batal_antrian');
     // pembayaran
     Route::get('pembayaran', [AntrianController::class, 'pembayaran'])->name('pembayaran');
     Route::post('update_pembayaran', [AntrianController::class, 'update_pembayaran'])->name('update_pembayaran');
@@ -63,7 +65,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     // Route::get('offline', [AntrianController::class, 'offline'])->name('offline');
     // Route::get('offline/add/{poli}', [AntrianController::class, 'offline_add'])->name('offline_add');
     Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
-    Route::get('panggil/{kodebooking}', [AntrianController::class, 'panggil'])->name('panggil');
+    // pendaftaran
     Route::get('baru_online/{kodebooking}', [AntrianController::class, 'baru_online'])->name('baru_online');
     Route::post('simpan_baru_online/{kodebooking}', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
 
