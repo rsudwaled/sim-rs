@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class VclaimBPJSController extends Controller
 {
@@ -75,6 +78,218 @@ class VclaimBPJSController extends Controller
             $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
             $response->response = json_decode($decrypt);
         }
+        return $response;
+    }
+
+    public function monitoring_pelayanan_peserta(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nomorkartu" => "required",
+            "tanggalperiksa" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        if ($request->tanggalperiksa == null) {
+            $time = Carbon::now();
+        } else {
+            $time = Carbon::parse($request->tanggalperiksa);
+        }
+        $tanggal_akhir = $time->format('Y-m-d');
+        $tanggal_lama = $time->subDays(89)->format('Y-m-d');
+        $url = $this->baseUrl . "monitoring/HistoriPelayanan/NoKartu/" . $request->nomorkartu . "/tglMulai/" . $tanggal_lama . "/tglAkhir/" . $tanggal_akhir;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        // dd($response);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+
+    public function peserta_nomorkartu(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nomorkartu" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        if ($request->tanggalperiksa == null) {
+            $request['tanggalperiksa'] = Carbon::now()->format('Y-m-d');
+        }
+        $url = $this->baseUrl . "Peserta/nokartu/" . $request->nomorkartu . "/tglSEP/" . $request->tanggalperiksa;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+    public function peserta_nik(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nik" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        if ($request->tanggalperiksa == null) {
+            $request['tanggalperiksa'] = Carbon::now()->format('Y-m-d');
+        }
+        $url = $this->baseUrl . "Peserta/nik/" . $request->nik . "/tglSEP/" . $request->tanggalperiksa;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+
+    public function rujukan_jumlah_sep(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "jenisrujukan" => "required",
+            "nomorreferensi" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+
+        $url = $this->baseUrl . "Rujukan/JumlahSEP/" . $request->jenisrujukan . "/" . $request->nomorreferensi;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        } else if ($response->metaData->code == 201) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+
+    // syarat sep terakhir bisa diliat di monotoring pelayanan peserta / tb_sep
+    public function insert_rencana_kontrol(Request $request)
+    {
+        $monitoring = $this->monitoring_pelayanan_peserta($request);
+        if ($monitoring->metaData->code == 200) {
+            $sep_terakhir = collect($monitoring->response->histori)->first();
+            dd($sep_terakhir);
+        } else {
+            return $monitoring;
+        }
+    }
+
+    // syarat surat rencana kontrol
+    public function insert_sep(Request $request)
+    {
+        $url = $this->baseUrl . "SEP/2.0/insert";
+        $signature = $this->signature();
+        $client = new Client();
+        $response = $client->request('POST', $url, [
+            'headers' => $signature,
+            'body' => json_encode([
+                "request" => [
+                    "t_sep" => [
+                        "noKartu" => $request->noKartu,
+                        "tglSep" => $request->tglSep,
+                        "ppkPelayanan" => $request->ppkPelayanan,
+                        "jnsPelayanan" => $request->jnsPelayanan,
+                        "klsRawat" => [
+                            "klsRawatHak" => "2",
+                            "klsRawatNaik" => "1",
+                            "pembiayaan" => "1",
+                            "penanggungJawab" => "Pribadi"
+                        ],
+                        "noMR" => "MR9835",
+                        "rujukan" => [
+                            "asalRujukan" => "2",
+                            "tglRujukan" => "2021-07-23",
+                            "noRujukan" => "RJKMR9835001",
+                            "ppkRujukan" => "0301R011"
+                        ],
+                        "catatan" => "testinsert RI",
+                        "diagAwal" => "E10",
+                        "poli" => [
+                            "tujuan" => "",
+                            "eksekutif" => "0"
+                        ],
+                        "cob" => [
+                            "cob" => "0"
+                        ],
+                        "katarak" => [
+                            "katarak" => "0"
+                        ],
+                        "jaminan" => [
+                            "lakaLantas" => "0",
+                            "noLP" => "12345",
+                            "penjamin" => [
+                                "tglKejadian" => "",
+                                "keterangan" => "",
+                                "suplesi" => [
+                                    "suplesi" => "0",
+                                    "noSepSuplesi" => "",
+                                    "lokasiLaka" => [
+                                        "kdPropinsi" => "",
+                                        "kdKabupaten" => "",
+                                        "kdKecamatan" => ""
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "tujuanKunj" => "0",
+                        "flagProcedure" => "",
+                        "kdPenunjang" => "",
+                        "assesmentPel" => "",
+                        "skdp" => [
+                            "noSurat" => "",
+                            "kodeDPJP" => ""
+                        ],
+                        "dpjpLayan" => "",
+                        "noTelp" => "081111111101",
+                        "user" => "Coba Ws"
+                    ]
+                ]
+            ]),
+        ]);
+        $response = json_decode($response->getBody());
+        dd($response);
         return $response;
     }
 }

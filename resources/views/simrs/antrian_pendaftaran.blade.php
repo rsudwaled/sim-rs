@@ -63,7 +63,7 @@
                         </x-adminlte-alert>
                     @endif
                     @php
-                        $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Poliklinik', 'Jam', 'Status', 'Action'];
+                        $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan',  'Poliklinik', 'Jam', 'Status', 'Action'];
                         $config['order'] = ['8', 'asc'];
                     @endphp
                     <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
@@ -76,19 +76,23 @@
                                 </td>
                                 <td>{{ $item->tanggalperiksa }}</td>
                                 <td>
+                                    {{ $item->norm }} <br>
                                     {{ $item->nik }}
+
+                                </td>
+                                <td>
+                                    {{ $item->jenispasien }}
                                     @isset($item->pasien)
                                         <br>
                                         {{ $item->pasien->nama }}
                                     @endisset
-
                                 </td>
-                                <td>{{ $item->norm }}</td>
                                 <td>
-                                    {{ $item->jenispasien }}
                                     @isset($item->nomorkartu)
-                                        <br>
                                         {{ $item->nomorkartu }}
+                                    @endisset
+                                    @isset($item->nomorkartu)
+                                        <br> {{ $item->nomorreferensi }}
                                     @endisset
                                 </td>
                                 <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
@@ -152,9 +156,10 @@
                     title="Antrian Pendaftaran Belum Checkin ({{ $antrians->where('taskid', 0)->count() }} Orang)"
                     theme="secondary" icon="fas fa-info-circle" collapsible="collapsed">
                     @php
-                        $heads = ['No', 'Nomor', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status'];
+                        $heads = ['No', 'Nomor', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Kunjungan', 'Poliklinik', 'Jam Praktek', 'Status'];
                     @endphp
-                    <x-adminlte-datatable id="table2" :heads="$heads" striped bordered hoverable compressed>
+                    <x-adminlte-datatable id="table2" class="nowrap" :heads="$heads" striped bordered hoverable
+                        compressed>
                         @foreach ($antrians->where('taskid', 0) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -163,14 +168,25 @@
                                 </td>
                                 <td>{{ $item->tanggalperiksa }}</td>
                                 <td>
+                                    {{ $item->norm }} <br>
                                     {{ $item->nik }}
-                                    @isset($item->nomorkartu)
+
+                                </td>
+                                <td>
+                                    {{ $item->jenispasien }}
+                                    @isset($item->pasien)
                                         <br>
-                                        {{ $item->nomorkartu }}
+                                        {{ $item->pasien->nama }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->norm }}</td>
-                                <td>{{ $item->jenispasien }}</td>
+                                <td>
+                                    @isset($item->nomorkartu)
+                                        {{ $item->nomorkartu }}
+                                    @endisset
+                                    @isset($item->nomorkartu)
+                                        <br> {{ $item->nomorreferensi }}
+                                    @endisset
+                                </td>
                                 <td>{{ $item->jeniskunjungan }}</td>
                                 <td>{{ $item->namapoli }}</td>
                                 <td>{{ $item->jampraktek }}</td>

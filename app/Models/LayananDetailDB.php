@@ -16,6 +16,8 @@ class LayananDetailDB extends Model
         'kode_layanan_header',
         'kode_tarif_detail',
         'total_tarif',
+        'tagihan_pribadi',
+        'tagihan_penjamin',
         'jumlah_layanan',
         'total_layanan',
         'grantotal_layanan',

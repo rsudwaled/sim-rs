@@ -48,7 +48,19 @@ Route::prefix('wsrs')->group(function () {
 });
 
 Route::prefix('vclaim')->group(function () {
+    // ref
     Route::get('ref_provinsi', [VclaimBPJSController::class, 'ref_provinsi']);
     Route::post('ref_kabupaten', [VclaimBPJSController::class, 'ref_kabupaten']);
     Route::post('ref_kecamatan', [VclaimBPJSController::class, 'ref_kecamatan']);
+    // monitoring
+    Route::get('monitoring_pelayanan_peserta', [VclaimBPJSController::class, 'monitoring_pelayanan_peserta']);
+    // peserta cek
+    Route::get('peserta_nomorkartu', [VclaimBPJSController::class, 'peserta_nomorkartu']);
+    Route::get('peserta_nik', [VclaimBPJSController::class, 'peserta_nik']);
+    // rujukan
+    Route::get('rujukan_jumlah_sep', [VclaimBPJSController::class, 'rujukan_jumlah_sep']);
+    // sep
+    Route::post('insert_sep', [VclaimBPJSController::class, 'insert_sep']);
+    // surat kontrol
+    Route::post('insert_rencana_kontrol', [VclaimBPJSController::class, 'insert_rencana_kontrol']);
 });

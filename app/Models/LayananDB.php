@@ -17,6 +17,8 @@ class LayananDB extends Model
         'kode_unit',
         'kode_tipe_transaksi',
         'pic',
+        'tagihan_pribadi',
+        'tagihan_penjamin',
         'keterangan',
         'status_layanan',
         'total_layanan',
