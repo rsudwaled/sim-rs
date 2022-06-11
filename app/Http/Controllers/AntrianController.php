@@ -9,6 +9,7 @@ use App\Models\Dokter;
 use App\Models\JadwalPoli;
 use App\Models\Pasien;
 use App\Models\Poliklinik;
+use App\Models\Provinsi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -119,8 +120,7 @@ class AntrianController extends Controller
         }
         $polis = Poliklinik::where('status', 1)->get();
         $antrians = Antrian::with(['pasien'])->get();
-        $api = new VclaimBPJSController();
-        $provinsis = $api->ref_provinsi()->response->list;
+        $provinsis = Provinsi::get();
         return view('simrs.antrian_pendaftaran', [
             'antrians' => $antrians,
             'request' => $request,
@@ -261,17 +261,14 @@ class AntrianController extends Controller
             'statuspasienOn' => 'required',
             'nikOn' => 'required',
             'nomorkkOn' => 'required',
+            'nomorkkOn' => 'required',
             'namaOn' => 'required',
             'nohpOn' => 'required',
+            'jeniskelaminOn' => 'required',
+            'tanggallahirOn' => 'required',
+            'alamatOn' => 'required',
+            'kodepropOn' => 'required',
         ]);
-        if ($request->statuspasien == "BARU") {
-            $request->validate([
-                'jeniskelamin' => 'required',
-                'tanggallahir' => 'required',
-                'alamat' => 'required',
-                'kodeprop' => 'required',
-            ]);
-        }
         // init
         $antrian = Antrian::firstWhere('id', $request->antrianidOn);
         // update antrian bpjs
@@ -301,7 +298,7 @@ class AntrianController extends Controller
             // update antrian simrs
             $antrian->update([
                 'taskid' => 3,
-                'status_api' => 1,
+                'status_api' => 0,
                 'keterangan' => "Silahkan melakukan pembayaran pendaftaran ke loket pembayaran",
                 'user' => Auth::user()->name,
             ]);
@@ -321,7 +318,7 @@ class AntrianController extends Controller
         $request['keterangan'] = "Dibatalkan oleh admin user " . Auth::user()->name;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->batal_antrian($request);
-        Alert::success('Success', 'Antrian berhasil dibatalkan');
+        Alert::success('Success', "Antrian berhasil dibatalkan. " . $response->metadata->message);
         return redirect()->back();
     }
     public function pembayaran(Request $request)
@@ -362,6 +359,111 @@ class AntrianController extends Controller
             'polis' => $polis,
             'dokters' => $dokters,
         ]);
+    }
+    public function panggil_poli($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 4;
+        $request['keterangan'] = "Panggilan ke poliklinik yang anda pilih";
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => $request->taskid,
+            'status_api' => 1,
+            'keterangan' => $request->keterangan,
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
+        return redirect()->back();
+    }
+    public function edit($id)
+    {
+        $antrian = Antrian::find($id);
+        return response()->json($antrian);
+    }
+    public function lanjut_farmasi($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 5;
+        $request['keterangan'] = "Silahkan tunggu di farmasi";
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => $request->taskid,
+            'status_api' => 1,
+            'keterangan' => $request->keterangan,
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Success', "Antrian Berhasil Dilanjutkan ke Farmasi.\n" . $response->metadata->message);
+        return redirect()->back();
+    }
+    public function selesai($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 5;
+        $request['keterangan'] = "Antrian selesai, semoga cepat sembuh";
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => $request->taskid,
+            'status_api' => 2,
+            'keterangan' => $request->keterangan,
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Success', "Antrian Selesai. Semoga cepat sembuh.\n" . $response->metadata->message);
+        return redirect()->back();
+    }
+    public function farmasi(Request $request)
+    {
+        if ($request->tanggal == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        }
+        $antrians = Antrian::where('taskid', '>=', 3)->get();
+        $polis = Poliklinik::where('status', 1)->get();
+        $dokters = Dokter::get();
+        return view('simrs.antrian_farmasi', [
+            'antrians' => $antrians,
+            'request' => $request,
+            'polis' => $polis,
+            'dokters' => $dokters,
+        ]);
+    }
+    public function racik_farmasi($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 6;
+        $request['keterangan'] = "Proses peracikan obat";
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => $request->taskid,
+            'status_api' => 1,
+            'keterangan' => $request->keterangan,
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Proses', 'Proses Peracikan Obat ' . $response->metadata->message);
+        return redirect()->back();
+    }
+    public function selesai_farmasi($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        $request['kodebooking'] = $antrian->kodebooking;
+        $request['taskid'] = 7;
+        $request['keterangan'] = "Selesai peracikan obat";
+        $vclaim = new AntrianBPJSController();
+        $response = $vclaim->update_antrian($request);
+        $antrian->update([
+            'taskid' => $request->taskid,
+            'status_api' => 1,
+            'keterangan' => $request->keterangan,
+            'user' => Auth::user()->name,
+        ]);
+        Alert::success('Success', 'Selesai Peracikan Obat ' . $response->metadata->message);
+        return redirect()->back();
     }
     public function show($kodebooking, Request $request)
     {
@@ -421,11 +523,7 @@ class AntrianController extends Controller
         ];
         return $response;
     }
-    public function edit($id)
-    {
-        $antrian = Antrian::find($id);
-        return response()->json($antrian);
-    }
+
     public function checkin()
     {
         return view('simrs.antrian_checkin');

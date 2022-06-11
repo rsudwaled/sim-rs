@@ -1,16 +1,16 @@
 @extends('adminlte::page')
 
-@section('title', 'Antrian Poliklinik')
+@section('title', 'Antrian Farmasi')
 
 @section('content_header')
-    <h1>Antrian Poliklinik</h1>
+    <h1>Antrian Farmasi</h1>
 @stop
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <x-adminlte-card title="Filter Data Antrian" theme="secondary" collapsible>
-                <form action="{{ route('antrian.poli') }}" method="get">
+                <form action="{{ route('antrian.farmasi') }}" method="get">
                     <div class="row">
                         <div class="col-md-3">
                             <x-adminlte-input name="user" label="User" readonly value="{{ Auth::user()->name }}" />
@@ -29,7 +29,7 @@
                             </x-adminlte-input-date>
                         </div>
                         <div class="col-md-3">
-                            <x-adminlte-select2 name="poli" id="poli" label="Poliklinik">
+                            <x-adminlte-select2 name="poli" id="poli" label="Farmasi">
                                 <option value="00000">00000 - SEMUA POLIKLINIK</option>
                                 @foreach ($polis as $item)
                                     <option value="{{ $item->kodesubspesialis }}">{{ $item->kodesubspesialis }} -
@@ -54,7 +54,7 @@
                 </form>
             </x-adminlte-card>
             @if (isset($request->poli) && isset($request->dokter) && isset($request->tanggal))
-                <x-adminlte-card title="Antrian Pelayanan Poliklinik ({{ $antrians->where('taskid', 3)->count() }} Orang)"
+                <x-adminlte-card title="Antrian Pelayanan Farmasi ({{ $antrians->where('taskid', 3)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
                     @if ($errors->any())
                         <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
@@ -107,26 +107,16 @@
                                 <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 3)
-                                        @if ($item->status_api == 0)
-                                            <span class="badge bg-warning">{{ $item->taskid }}. Belum Pembayaran</span>
-                                        @else
-                                            <span class="badge bg-warning">{{ $item->taskid }}. Tunggu Poli</span>
-                                        @endif
-                                    @endif
-                                    @if ($item->taskid == 4)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>
-                                    @endif
                                     @if ($item->taskid == 5)
                                         @if ($item->status_api == 1)
-                                            <span class="badge bg-success">{{ $item->taskid }}. Tunggu Farmasi</span>
+                                            <span class="badge bg-warning">{{ $item->taskid }}. Tunggu Farmasi</span>
                                         @endif
                                         @if ($item->status_api == 2)
                                             <span class="badge bg-success">{{ $item->taskid }}. Selesai</span>
                                         @endif
                                     @endif
                                     @if ($item->taskid == 6)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Racik Obat</span>
+                                        <span class="badge bg-warning">{{ $item->taskid }}. Proses Racik</span>
                                     @endif
                                     @if ($item->taskid == 7)
                                         <span class="badge bg-success">{{ $item->taskid }}. Selesai</span>
@@ -136,31 +126,22 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 3)
+                                    @if ($item->taskid == 5)
                                         {{-- panggil pertama --}}
-                                        @if ($item->status_api == 1)
-                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="success"
-                                                icon="fas fa-volume-down" data-toggle="tooltip"
-                                                title="Panggil Antrian {{ $item->nomorantrean }}"
-                                                onclick="window.location='{{ route('antrian.panggil_poli', $item->kodebooking) }}'" />
-                                        @endif
-
-                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
+                                        <x-adminlte-button class="btn-xs" label="Racik Obat" theme="success"
+                                            icon="fas fa-prescription-bottle-alt" data-toggle="tooltip"
+                                            title="Racik Obat Antrian {{ $item->nomorantrean }}"
+                                            onclick="window.location='{{ route('antrian.racik_farmasi', $item->kodebooking) }}'" />
                                     @endif
-                                    {{-- panggil ulang --}}
-                                    @if ($item->taskid == 4)
-                                        <x-adminlte-button class="btn-xs" label="Panggil Ulang" theme="primary"
-                                            icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                            onclick="window.location='{{ route('antrian.panggil_poli', $item->kodebooking) }}'" />
-                                        <x-adminlte-button class="btn-xs btnLayani" label="Layani" theme="success"
-                                            icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Layani"
-                                            data-id="{{ $item->id }}" />
-                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
+                                    @if ($item->taskid == 6)
+                                        <x-adminlte-button class="btn-xs" label="Lihat Resep" theme="success"
+                                            icon="fas fa-prescription-bottle-alt" data-toggle="tooltip"
+                                            title="Racik Obat Antrian {{ $item->nomorantrean }}"
+                                            onclick="window.location='{{ route('antrian.selesai_farmasi', $item->kodebooking) }}'" />
                                     @endif
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                        data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
+                                        onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
 
                                 </td>
                             </tr>
@@ -208,7 +189,7 @@
                                             <dd class="col-sm-8">: <span id="nomorreferensi"></span></dd>
                                             <dt class="col-sm-4">Jenis Pasien</dt>
                                             <dd class="col-sm-8">: <span id="jenispasien"></span></dd>
-                                            <dt class="col-sm-4">Poliklinik</dt>
+                                            <dt class="col-sm-4">Farmasi</dt>
                                             <dd class="col-sm-8">: <span id="namapoli"></span></dd>
                                             <dt class="col-sm-4">Dokter</dt>
                                             <dd class="col-sm-8">: <span id="namadokter"></span></dd>

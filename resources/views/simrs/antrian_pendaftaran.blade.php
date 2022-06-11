@@ -64,7 +64,7 @@
                     @endif
                     @php
                         $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
-                        $config['order'] = ['8', 'asc'];
+                        $config['order'] = ['7', 'asc'];
                     @endphp
                     <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
                         bordered hoverable compressed>
@@ -78,10 +78,15 @@
                                 <td>
                                     {{ $item->norm }} <br>
                                     {{ $item->nik }}
-
                                 </td>
                                 <td>
                                     {{ $item->jenispasien }}
+                                    @if ($item->pasienbaru == 1)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Baru</span>
+                                    @endif
+                                    @if ($item->pasienbaru == 0)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Lama</span>
+                                    @endif
                                     @isset($item->pasien)
                                         <br>
                                         {{ $item->pasien->nama }}
@@ -98,6 +103,7 @@
                                 <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
                                 </td>
                                 <td>
+                                    {{-- {{ $item->taskid }} --}}
                                     @if ($item->taskid == 0)
                                         <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
                                     @endif
@@ -108,26 +114,25 @@
                                         <span class="badge bg-primary">{{ $item->taskid }}. Proses Pendaftaran</span>
                                     @endif
                                     @if ($item->taskid == 3)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        @if ($item->status_api == 0)
+                                            <span class="badge bg-warning">2. Belum Pembayaran</span>
+                                        @else
+                                            <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        @endif
                                     @endif
-                                    @if ($item->taskid == 4)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>
+                                    @if ($item->taskid >= 4 && $item->taskid <= 7)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Pelayanan Poli</span>
                                     @endif
                                     @if ($item->taskid == 99)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
                                     @endif
-                                    @if ($item->pasienbaru == 1)
-                                        <br> <span class="badge bg-primary">{{ $item->pasienbaru }}. Online</span>
-                                    @endif
-                                    @if ($item->pasienbaru == 2)
-                                        <br> <span class="badge bg-danger">{{ $item->pasienbaru }}. Offline</span>
-                                    @endif
+
                                 </td>
                                 <td>
                                     @if ($item->taskid <= 2)
                                         {{-- panggil pertama --}}
                                         @if ($item->taskid == 1)
-                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
+                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="success"
                                                 icon="fas fa-volume-down" data-toggle="tooltip" title=""
                                                 onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
                                         @endif
@@ -137,6 +142,11 @@
                                                 icon="fas fa-volume-down" data-toggle="tooltip" title=""
                                                 onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
                                             @if ($item->pasienbaru == 1)
+                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
+                                                    title="Daftar Online" data-id="{{ $item->id }}" />
+                                            @endif
+                                            @if ($item->pasienbaru == 0)
                                                 <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
                                                     theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
                                                     title="Daftar Online" data-id="{{ $item->id }}" />
@@ -205,6 +215,7 @@
                                     @if ($item->taskid == 1)
                                         <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
                                     @endif
+
                                     @if ($item->taskid == 99)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
                                     @endif
@@ -549,7 +560,7 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-
+            // klim daftar pasien offline
             $('.btnDaftarOffline').click(function() {
                 var antrianid = $(this).data('id');
                 $.LoadingOverlay("show");
@@ -570,7 +581,7 @@
                     $.LoadingOverlay("hide", true);
                 })
             });
-
+            // klim daftar pasien online
             $('.btnDaftarOnline').click(function() {
                 var antrianid = $(this).data('id');
                 $.LoadingOverlay("show");
@@ -579,8 +590,6 @@
                     $('#angkaantreanOn').html(data.angkaantrean);
                     $('#nomorantreanOn').html(data.nomorantrean);
                     $('#userOn').html(data.user);
-                    $('#antrianidOn').val(antrianid);
-
                     $('#tanggalperiksaOn').html(data.tanggalperiksa);
                     $('#jeniskunjunganOn').html(data.jeniskunjungan);
                     $('#kodepoliOn').html(data.kodepoli);
@@ -589,10 +598,14 @@
                     $('#namadokterOn').html(data.namadokter);
                     $('#jampraktekOn').html(data.jampraktek);
 
-
+                    $('#antrianidOn').val(antrianid);
                     $('#nikOn').val(data.nik);
                     $('#normOn').val(data.norm);
-                    // $('#kodepoli').val(data.kodepoli).trigger('change');
+                    if (data.pasienbaru == 1) {
+                        $('#statuspasienOn').val('BARU');
+                    } else {
+                        $('#statuspasienOn').val('LAMA');
+                    }
                     $('#modalDaftarOnline').modal('show');
                     $.LoadingOverlay("hide", true);
                 })
@@ -639,7 +652,7 @@
             });
         });
     </script> --}}
-    {{-- js pasien baru / lama offline --}}
+    {{-- js cari pasien baru / lama offline --}}
     <script>
         $(function() {
             $('#formPasien').hide();
@@ -679,7 +692,7 @@
             });
         });
     </script>
-    {{-- js pasien baru / lama online --}}
+    {{-- js cari pasien baru / lama online --}}
     <script>
         $(function() {
             $('#formPasienOn').hide();
@@ -696,12 +709,23 @@
                             $('#pasienDitemukanOn').html(data.metadata.message +
                                 ", Silahkan lengkapi data pasien");
                             $('#pasienTidakDitemukanOn').html('');
+
                             $('#nomorkkOn').val(data.response.nomorkk);
-                            $('#nohpOn').val(data.response.nohp);
                             $('#namaOn').val(data.response.nama);
+                            $('#nohpOn').val(data.response.nohp);
                             $('#normOn').val(data.response.norm);
                             $('#nomorkartuOn').val(data.response.nomorkartu);
-                            $('#statuspasienOn').val('BARU');
+                            $('#jeniskelaminOn').val(data.response.jeniskelamin).change();
+                            $('#tanggallahirOn').val(data.response.tanggallahir);
+                            $('#alamatOn').val(data.response.alamat);
+                            $('#rtOn').val(data.response.rt);
+                            $('#rwOn').val(data.response.rw);
+                            $('#kodepropOn').val(data.response.kodeprop).change();
+                            $('#kodedati2On').val(data.response.kodedati2).change();
+                            $('#kodekecOn').val(data.response.kodekec).change();
+                            $('#namakelOn').val(data.response.namakel);
+                            // $('#kodepoli').val(data.kodepoli).trigger('change');
+
                             $('#formPasienOn').show();
                         } else {
                             $('#pasienTidakDitemukanOn').html(data.metadata.message);

@@ -62,8 +62,8 @@
                         </x-adminlte-alert>
                     @endif
                     @php
-                        $heads = ['No', 'Kode', 'Tanggal', 'NIK / Kartu', 'No RM', 'Jenis', 'Poliklinik', 'Jam', 'Status', 'Action'];
-                        $config['order'] = ['8', 'asc'];
+                        $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
+                        $config['order'] = ['7', 'asc'];
                     @endphp
                     <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
                         bordered hoverable compressed>
@@ -75,54 +75,80 @@
                                 </td>
                                 <td>{{ $item->tanggalperiksa }}</td>
                                 <td>
+                                    {{ $item->norm }} <br>
                                     {{ $item->nik }}
+                                </td>
+                                <td>
+                                    {{ $item->jenispasien }}
+                                    @if ($item->pasienbaru == 1)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Baru</span>
+                                    @endif
+                                    @if ($item->pasienbaru == 0)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Lama</span>
+                                    @endif
                                     @isset($item->pasien)
                                         <br>
                                         {{ $item->pasien->nama }}
                                     @endisset
-
                                 </td>
-                                <td>{{ $item->norm }}</td>
                                 <td>
-                                    {{ $item->jenispasien }}
                                     @isset($item->nomorkartu)
-                                        <br>
                                         {{ $item->nomorkartu }}
                                     @endisset
+                                    @isset($item->nomorkartu)
+                                        <br> {{ $item->nomorreferensi }}
+                                    @endisset
                                 </td>
-                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} </td>
-                                <td>{{ $item->jampraktek }}</td>
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                </td>
                                 <td>
                                     @if ($item->taskid == 2)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Pembayaran</span>
                                     @endif
                                     @if ($item->taskid == 3)
-                                        <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        @if ($item->status_api == 0)
+                                            <span class="badge bg-warning">2. Belum Pembayaran</span>
+                                        @else
+                                            <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        @endif
                                     @endif
                                     @if ($item->taskid == 4)
                                         <span class="badge bg-success">{{ $item->taskid }}. Periksa Poli</span>
+                                    @endif
+                                    @if ($item->taskid == 5)
+                                        @if ($item->status_api == 1)
+                                            <span class="badge bg-success">{{ $item->taskid }}. Tunggu Farmasi</span>
+                                        @endif
+                                        @if ($item->status_api == 2)
+                                            <span class="badge bg-success">{{ $item->taskid }}. Selesai</span>
+                                        @endif
+                                    @endif
+                                    @if ($item->taskid == 6)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Racik Obat</span>
+                                    @endif
+                                    @if ($item->taskid == 7)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Selesai</span>
                                     @endif
                                     @if ($item->taskid == 99)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 2)
-                                        <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
+                                    @if ($item->taskid == 3)
+                                        {{-- <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
                                             icon="fas fa-volume-down" data-toggle="tooltop" title="Panggil"
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
-                                        <x-adminlte-button class="btn-xs btnBayar withLoad" label="Bayar" theme="primary"
+                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" /> --}}
+                                        <x-adminlte-button class="btn-xs btnBayar withLoad" label="Bayar" theme="success"
                                             icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Bayar"
                                             data-id="{{ $item->id }}" />
                                         <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                             data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->id) }}'" />
+                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                     @else
-                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
+                                        {{-- <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
                                             icon="fas fa-print" data-toggle="tooltop" title=""
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" />
+                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" /> --}}
                                     @endif
-
                                 </td>
                             </tr>
                         @endforeach
