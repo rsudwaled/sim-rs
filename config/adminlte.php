@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'SIMRS Waled',
+    'title' => 'SIM RSUD Waled',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -247,7 +247,7 @@ return [
             'url'         => 'home',
             'icon'        => 'fas fa-home',
         ],
-        //MENU APLIKASI ANTRIAN
+        // MENU APLIKASI ANTRIAN
         [
             'text'    => 'Aplikasi Antrian',
             'icon'    => 'fas fa-sign-in-alt',
@@ -320,6 +320,7 @@ return [
                 ],
             ],
         ],
+        // PELAYANAN MEDIS
         [
             'text' => 'Pelayanan Medis',
             'icon'    => 'fas fa-stethoscope',
@@ -363,17 +364,20 @@ return [
 
             ],
         ],
+        // REKAM MEDIS
         [
-            'text' => 'Aplikasi Antrian Offline',
-            'icon'    => 'fas fa-address-book',
-            'url'  => 'antrian/offline',
+            'text' => 'Rekam Medis',
+            'icon'    => 'fas fa-file-medical',
             // 'can' => 'admin',
-        ],
-        [
-            'text' => 'Aplikasi Checkin Antrian',
-            'icon'    => 'fas fa-calendar-check',
-            'url'  => 'antrian/checkin',
-            // 'can' => 'admin',
+            'submenu' => [
+                [
+                    'text' => 'Kunjungan',
+                    'icon'    => 'fas fa-hospital-user',
+                    'url'  => 'kunjungan',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+            ],
         ],
         ['header' => 'account_settings'],
         [
@@ -543,8 +547,13 @@ return [
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => false,
-                    'location' => '//cdn.jsdelivr.net/npm/sweetalert2@8',
+                    'asset' => true,
+                    'location' => 'vendor/sweetalert2/sweetalert2.min.js',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css',
                 ],
             ],
         ],
@@ -570,6 +579,26 @@ return [
                     'type' => 'js',
                     'asset' => true,
                     'location' => 'vendor/pace-progress/pace.min.js'
+                ],
+            ],
+        ],
+        'DateRangePicker' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' =>  'vendor/moment/moment.min.js',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/daterangepicker/daterangepicker.js',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/daterangepicker/daterangepicker.css',
                 ],
             ],
         ],

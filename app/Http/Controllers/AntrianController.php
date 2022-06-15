@@ -13,6 +13,7 @@ use App\Models\Provinsi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -318,7 +319,7 @@ class AntrianController extends Controller
         $request['keterangan'] = "Dibatalkan oleh admin user " . Auth::user()->name;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->batal_antrian($request);
-        Alert::success('Success', "Antrian berhasil dibatalkan. " . $response->metadata->message);
+        Alert::success('Success', "Antrian berhasil dibatalkan. ");
         return redirect()->back();
     }
     public function pembayaran(Request $request)
@@ -530,19 +531,31 @@ class AntrianController extends Controller
     }
     public function checkin_update(Request $request)
     {
-        $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
-        if ($antrian->norm != "PASIEN BARU") {
-            $request['taskid'] = 3;
-        } else {
-            $request['taskid'] = 1;
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metadata' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return $response;
         }
-        $request['taskid'] = 1;
-        $request['waktu'] = Carbon::now();
-        $api = new AntrianBPJSController();
-        $response = $api->checkin_antrian($request);
-        try {
+
+
+        $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
+        if (isset($antrian)) {
+            if ($antrian->pasienbaru == 1) {
+                $pasienbaru = "BARU";
+            } else {
+                $pasienbaru = "BARU";
+            }
             $connector = new WindowsPrintConnector('Printer Receipt');
             $printer = new Printer($connector);
+            $printer->setFont(1);
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
             $printer->text("RSUD Waled\n");
@@ -550,25 +563,42 @@ class AntrianController extends Controller
             $printer->text("Melayani Dengan Sepenuh Hati\n");
             $printer->text("------------------------------------------------\n");
             $printer->text("Karcis Antrian Rawat Jalan\n");
-            $printer->text("Nomor Antrian / Jenis Pasien :\n");
+            $printer->text("Nomor / Angka /Jenis Pasien :\n");
             $printer->setTextSize(2, 2);
-            $printer->text($antrian->nomorantrean . "/" . $antrian->jenispasien . "\n");
+            $printer->text($antrian->nomorantrean . "/" . $antrian->angkaantrean . "/" . $antrian->jenispasien . " " . $pasienbaru . "\n");
             $printer->setTextSize(1, 1);
             $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("No.RM : " . $antrian->norm . "\n");
-            $printer->text("Nama : MARWAN DHIAUR RAHMAN\n");
+            $printer->text("No RM : " . $antrian->norm . "\n");
+            $printer->text("NIK : " . $antrian->nik . "\n");
+            if ($antrian->nomorkartu != "") {
+                $printer->text("No Peserta : " . $antrian->nomorkartu . "\n");
+            }
+            if ($antrian->nomorreferensi != "") {
+                $printer->text("No Rujukan : " . $antrian->nomorreferensi . "\n");
+            }
+            $printer->text("Nama : " . $antrian->nama . "\n\n");
             $printer->text("Poliklinik : " . $antrian->namapoli . "\n");
+            $printer->text("Kunjungan : " . $antrian->jeniskunjungan . "\n");
             $printer->text("Dokter : " . $antrian->namadokter . "\n");
-            $printer->text("Tanggal : " . Carbon::parse($antrian->tanggalperiksa)->format('d M Y') . "\n\n");
-            $printer->text("Silahkan menunggu di poliklinik tersebut\n");
-            $printer->text("Checkin : " . $request->waktu . "\n");
+            $printer->text("Tanggal : " . Carbon::parse($antrian->tanggalperiksa)->format('d M Y') . "\n");
+            $printer->text("Print : " . Carbon::now() . "\n\n");
+            $printer->text($antrian->keterangan . "\n");
             $printer->cut();
             $printer->close();
-        } catch (Exception $e) {
+            $api = new AntrianBPJSController();
+            $response = $api->checkin_antrian($request);
             return $response;
         }
-        return $response;
+        // jika antrian tidak ditemukan
+        else {
+            return $response = [
+                'metadata' => [
+                    'code' => 400,
+                    'message' => "Antrian tidak ditemukan",
+                ],
+            ];
+        }
     }
     public function baru_online($kodebooking)
     {

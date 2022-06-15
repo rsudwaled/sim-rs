@@ -36,6 +36,7 @@ class Antrian extends Model
         "keterangan",
         "status_api",
         "user",
+        "nama",
     ];
 
     public function pasien()

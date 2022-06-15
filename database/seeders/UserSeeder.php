@@ -18,9 +18,8 @@ class UserSeeder extends Seeder
         $user = User::create([
             "name" => "Admin",
             "email" => "admin@gmail.com",
-            // "username" => "adminrs",
+            "username" => "adminrs",
             'password' => bcrypt('qweqwe'),
-            // 'email_verified_at' => Carbon::now()
         ]);
     }
 }

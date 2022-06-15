@@ -3,6 +3,7 @@
 use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
+use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\TarifKelompokLayananController;
 use App\Http\Controllers\TarifLayananController;
@@ -82,6 +83,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
 });
 
+Route::resource('kunjungan', KunjunganController::class);
 Route::resource('poli', PoliklinikController::class);
 Route::resource('jadwaldokter', JadwalDokterController::class);
 Route::resource('dokter', DokterController::class);

@@ -56,7 +56,7 @@
     </x-adminlte-modal>
     {{-- Example button to open modal --}}
 @stop
-
+@section('plugins.Sweetalert2', true);
 @section('adminlte_js')
     <script src="{{ asset('vendor/loading-overlay/loadingoverlay.min.js') }}"></script>
     <script src="{{ asset('vendor/onscan.js/onscan.min.js') }}"></script>
@@ -93,6 +93,7 @@
         });
     </script>
     {{-- btn chekin --}}
+    {{-- <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
         $(function() {
             $('#btn_checkin').click(function() {
@@ -106,10 +107,22 @@
                 };
                 $('#kodebooking').val(kodebooking);
                 $.get(url, formData, function(data) {
-                    if (data.success == 'true') {
+                    if (data.metadata.code == 200) {
                         $('#status').html(data.metadata.message);
-                    } else
+                        swal.fire(
+                            'Sukses...',
+                            data.metadata.message,
+                            'success'
+                        );
+                    } else {
                         $('#status').html(data.metadata.message);
+                        swal.fire(
+                            'Opss Error...',
+                            data.metadata.message,
+                            'error'
+                        );
+                    }
+
                     $.LoadingOverlay("hide");
                     setTimeout(function() {
                         $.LoadingOverlay("show", {

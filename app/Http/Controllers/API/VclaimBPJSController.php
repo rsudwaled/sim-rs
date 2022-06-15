@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
@@ -80,7 +81,7 @@ class VclaimBPJSController extends Controller
         }
         return $response;
     }
-
+    // api monitoring bpjs
     public function monitoring_pelayanan_peserta(Request $request)
     {
         // checking request
@@ -115,7 +116,7 @@ class VclaimBPJSController extends Controller
         }
         return $response;
     }
-
+    // api peserta bpjs
     public function peserta_nomorkartu(Request $request)
     {
         // checking request
@@ -172,7 +173,7 @@ class VclaimBPJSController extends Controller
         }
         return $response;
     }
-
+    // api rujukan
     public function rujukan_jumlah_sep(Request $request)
     {
         // checking request
@@ -203,17 +204,58 @@ class VclaimBPJSController extends Controller
         }
         return $response;
     }
+    public function rujukan_nomor(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nomorreferensi" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
 
+        $url = $this->baseUrl . "Rujukan/" . $request->nomorreferensi;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+    // api sep
     // syarat sep terakhir bisa diliat di monotoring pelayanan peserta / tb_sep
     public function insert_rencana_kontrol(Request $request)
     {
-        $monitoring = $this->monitoring_pelayanan_peserta($request);
-        if ($monitoring->metaData->code == 200) {
-            $sep_terakhir = collect($monitoring->response->histori)->first();
-            dd($sep_terakhir);
-        } else {
-            return $monitoring;
-        }
+        // if ($monitoring->metaData->code == 200) {
+        //     $sep_terakhir = collect($monitoring->response->histori)->first();
+        // }
+        // if (empty($sep_terakhir)) {
+        //     $url = $this->baseUrl . "RencanaKontrol/insert";
+        //     $signature = $this->signature();
+        //     $client = new Client();
+        //     $response = $client->request('POST', $url, [
+        //         'headers' => $signature,
+        //         'body' => json_encode([
+        //             "request" => [
+        //                 "noSEP" => "101816020622P000016",
+        //                 "kodeDokter" => "12345",
+        //                 "poliKontrol" => "INT",
+        //                 "tglRencanaKontrol" => "2021-03-20",
+        //                 "user" => "Admin RSUD Waled",
+        //             ]
+        //         ]),
+        //     ]);
+        //     $response = json_decode($response->getBody());
+        //     dd($response);
+        // }
     }
 
     // syarat surat rencana kontrol
@@ -232,23 +274,23 @@ class VclaimBPJSController extends Controller
                         "ppkPelayanan" => $request->ppkPelayanan,
                         "jnsPelayanan" => $request->jnsPelayanan,
                         "klsRawat" => [
-                            "klsRawatHak" => "2",
-                            "klsRawatNaik" => "1",
-                            "pembiayaan" => "1",
-                            "penanggungJawab" => "Pribadi"
+                            "klsRawatHak" => $request->klsRawatHak,
+                            "klsRawatNaik" => $request->klsRawatNaik,
+                            "pembiayaan" => $request->pembiayaan,
+                            "penanggungJawab" => $request->penanggungJawab,
                         ],
-                        "noMR" => "MR9835",
+                        "noMR" => $request->noMR,
                         "rujukan" => [
-                            "asalRujukan" => "2",
-                            "tglRujukan" => "2021-07-23",
-                            "noRujukan" => "RJKMR9835001",
-                            "ppkRujukan" => "0301R011"
+                            "asalRujukan" =>  $request->asalRujukan,
+                            "tglRujukan" =>  $request->tglRujukan,
+                            "noRujukan" =>  $request->noRujukan,
+                            "ppkRujukan" =>  $request->ppkRujukan,
                         ],
-                        "catatan" => "testinsert RI",
-                        "diagAwal" => "E10",
+                        "catatan" => $request->catatan,
+                        "diagAwal" => $request->diagAwal,
                         "poli" => [
-                            "tujuan" => "",
-                            "eksekutif" => "0"
+                            "tujuan" => $request->tujuan,
+                            "eksekutif" => $request->eksekutif,
                         ],
                         "cob" => [
                             "cob" => "0"
@@ -258,7 +300,7 @@ class VclaimBPJSController extends Controller
                         ],
                         "jaminan" => [
                             "lakaLantas" => "0",
-                            "noLP" => "12345",
+                            "noLP" => "",
                             "penjamin" => [
                                 "tglKejadian" => "",
                                 "keterangan" => "",
@@ -289,7 +331,6 @@ class VclaimBPJSController extends Controller
             ]),
         ]);
         $response = json_decode($response->getBody());
-        dd($response);
         return $response;
     }
 }

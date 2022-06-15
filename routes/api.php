@@ -59,6 +59,8 @@ Route::prefix('vclaim')->group(function () {
     Route::get('peserta_nik', [VclaimBPJSController::class, 'peserta_nik']);
     // rujukan
     Route::get('rujukan_jumlah_sep', [VclaimBPJSController::class, 'rujukan_jumlah_sep']);
+    Route::get('rujukan_nomor', [VclaimBPJSController::class, 'rujukan_nomor']);
+    // 0301U0331019P003283
     // sep
     Route::post('insert_sep', [VclaimBPJSController::class, 'insert_sep']);
     // surat kontrol
