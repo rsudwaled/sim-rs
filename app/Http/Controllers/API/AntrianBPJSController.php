@@ -393,7 +393,6 @@ class AntrianBPJSController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-        // init data
         // cek jika jenis pasien jkn
         if (isset($request->nomorreferensi)) {
             $vclaim = new VclaimBPJSController();

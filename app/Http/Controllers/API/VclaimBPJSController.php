@@ -230,6 +230,32 @@ class VclaimBPJSController extends Controller
         }
         return $response;
     }
+    public function rujukan_peserta(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nomorkartu" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+
+        $url = $this->baseUrl . "Rujukan/List/Peserta/" . $request->nomorkartu;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
     // api sep
     // syarat sep terakhir bisa diliat di monotoring pelayanan peserta / tb_sep
     public function insert_rencana_kontrol(Request $request)

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AntrianBPJSController;
 use App\Http\Controllers\API\VclaimBPJSController;
+use App\Http\Controllers\API\WhatsappController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -60,9 +61,16 @@ Route::prefix('vclaim')->group(function () {
     // rujukan
     Route::get('rujukan_jumlah_sep', [VclaimBPJSController::class, 'rujukan_jumlah_sep']);
     Route::get('rujukan_nomor', [VclaimBPJSController::class, 'rujukan_nomor']);
+    Route::get('rujukan_peserta', [VclaimBPJSController::class, 'rujukan_peserta']);
     // 0301U0331019P003283
     // sep
     Route::post('insert_sep', [VclaimBPJSController::class, 'insert_sep']);
     // surat kontrol
     Route::post('insert_rencana_kontrol', [VclaimBPJSController::class, 'insert_rencana_kontrol']);
+});
+
+Route::prefix('wa')->group(function () {
+    Route::get('index', [WhatsappController::class, 'index']);
+    Route::post('send_message', [WhatsappController::class, 'send_message']);
+
 });

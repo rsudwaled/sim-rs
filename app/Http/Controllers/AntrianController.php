@@ -544,14 +544,13 @@ class AntrianController extends Controller
             ];
             return $response;
         }
-
-
+        // cari antrian
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
         if (isset($antrian)) {
             if ($antrian->pasienbaru == 1) {
                 $pasienbaru = "BARU";
             } else {
-                $pasienbaru = "BARU";
+                $pasienbaru = "LAMA";
             }
             $connector = new WindowsPrintConnector('Printer Receipt');
             $printer = new Printer($connector);
@@ -583,7 +582,7 @@ class AntrianController extends Controller
             $printer->text("Dokter : " . $antrian->namadokter . "\n");
             $printer->text("Tanggal : " . Carbon::parse($antrian->tanggalperiksa)->format('d M Y') . "\n");
             $printer->text("Print : " . Carbon::now() . "\n\n");
-            $printer->text($antrian->keterangan . "\n");
+            $printer->text("Terima kasih atas kepercayaan anda. \n");
             $printer->cut();
             $printer->close();
             $api = new AntrianBPJSController();
