@@ -396,6 +396,18 @@ class AntrianBPJSController extends Controller
         // cek jika jenis pasien jkn
         if (isset($request->nomorreferensi)) {
             $vclaim = new VclaimBPJSController();
+            $monitoring = $vclaim->monitoring_pelayanan_peserta($request);
+            // cek sep kedua atau lebih
+            // if ($monitoring->metaData->code == 200) {
+            //     $sep_sebelumnya =  collect($monitoring->response->histori)->first();
+            //     $request['noSEP'] = $sep_sebelumnya->noSep;
+            //     $suratkontrol = $vclaim->insert_rencana_kontrol($request);
+            //     dd($suratkontrol);
+            // }
+            // cek sep pertama
+            // else {
+            // }
+
             $peserta = $vclaim->peserta_nik($request);
             if ($peserta->metaData->code == 200) {
                 $peserta_aktif = $peserta->response->peserta->statusPeserta->kode;
@@ -425,13 +437,6 @@ class AntrianBPJSController extends Controller
             } else {
                 return $peserta;
             }
-            // cek sep pertama atw bukan
-            $monitoring = $vclaim->monitoring_pelayanan_peserta($request);
-            if ($monitoring->metaData->code == 200) {
-                $monitoring_response = $monitoring->response;
-                dd($monitoring_response);
-            }
-            // $suratkontrol = $vclaim->insert_rencana_kontrol($request);
         }
         // cek jika jenis pasien non jkn
         else {
@@ -590,11 +595,11 @@ class AntrianBPJSController extends Controller
     public function batal_antrian(Request $request)
     {
         $response = $this->batal_antrian_bpjs($request);
+        Antrian::where('kodebooking', $request->kodebooking)->update([
+            "taskid" => 99,
+            "keterangan" => $request->keterangan,
+        ]);
         if ($response->metadata->code == 200) {
-            Antrian::where('kodebooking', $request->kodebooking)->update([
-                "taskid" => 99,
-                "keterangan" => $request->keterangan,
-            ]);
             $response = [
                 "metadata" => [
                     "message" => "Ok",
@@ -669,61 +674,54 @@ class AntrianBPJSController extends Controller
                 $totalpenjamin =  $tarifkarcis->TOTAL_TARIF_NEW + $tarifadm->TOTAL_TARIF_NEW;
                 $tagihanpribadi = 0;
                 $totalpribadi =  0;
+
+
+
+                $vclaim = new VclaimBPJSController();
                 // jika jkn pake sep
                 $request['noKartu'] = $antrian->nomorkartu;
                 $request['tglSep'] = $antrian->tanggalperiksa;
-                $request['ppkPelayanan'] = "1018R001";
-                $request['jnsPelayanan'] = "2";
-
-                $vclaim = new VclaimBPJSController();
-                $request['nik'] = $antrian->nik;
-                // peserta sep
                 $request['noMR'] = $antrian->norm;
-                // $peserta = $vclaim->peserta_nik($request);
-                // if ($peserta->metaData->code == 200) {
-                //     $peserta = $peserta->response->peserta;
-
-                // }
-                // rujukan
+                $request['nik'] = $antrian->nik;
                 $request['nomorreferensi'] = $antrian->nomorreferensi;
-                $request['nomorreferensi'] = "110912030622P000119";
+                // rujukan
                 $data = $vclaim->rujukan_nomor($request);
                 if ($data->metaData->code == 200) {
                     $rujukan = $data->response->rujukan;
                     $peserta = $rujukan->peserta;
                     $diganosa = $rujukan->diagnosa;
                     $tujuan = $rujukan->poliRujukan;
+                    // tujuan rujukan
+                    $request['ppkPelayanan'] = "1018R001";
+                    $request['jnsPelayanan'] = "2";
                     // peserta
                     $request['klsRawatHak'] = $peserta->hakKelas->kode;
                     $request['klsRawatNaik'] = "";
-                    $request['pembiayaan'] = "1";
-                    $request['penanggungJawab'] = "Pribadi";
-                    // rujukan
+                    // dd($peserta);
+                    // $request['pembiayaan'] = $peserta->jenisPeserta->kode;
+                    // $request['penanggungJawab'] =  $peserta->jenisPeserta->keterangan;
+                    // asal rujukan
                     $request['asalRujukan'] = $data->response->asalFaskes;
                     $request['tglRujukan'] = $rujukan->tglKunjungan;
-                    $request['noRujukan'] =  $rujukan->tglKunjungan;
+                    $request['noRujukan'] =   $antrian->nomorreferensi;
                     $request['ppkRujukan'] = $rujukan->provPerujuk->kode;
-                    // diagnosa
+                    // // diagnosa
                     $request['catatan'] =  $diganosa->nama;
                     $request['diagAwal'] =  $diganosa->kode;
                     // poli tujuan
                     $request['tujuan'] =  $tujuan->kode;
                     $request['eksekutif'] =  0;
-                    // dpjp
+                    // // dpjp
                     $request['dpjpLayan'] =  $antrian->kodedokter;
                 }
-                // rujukan aktif
-                // jadwal, dokter, kuota
                 // jika pertama
                 // tujuan kunjungan =  normal
-                // kode penunjang = ""
                 // kode penunjang = ""
                 // assesment pelayanan = ""
                 // surat kontrol jika pasien kunjungan kedua atau lebih
                 $vclaim = new VclaimBPJSController();
                 $sep = $vclaim->insert_sep($request);
-                // databse sep ts_sep
-                dd($data);
+                dd($sep);
             }
             // jika pasien non jkn
             else {

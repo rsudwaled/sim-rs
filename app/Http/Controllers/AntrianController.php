@@ -319,7 +319,7 @@ class AntrianController extends Controller
         $request['keterangan'] = "Dibatalkan oleh admin user " . Auth::user()->name;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->batal_antrian($request);
-        Alert::success('Success', "Antrian berhasil dibatalkan. ");
+        Alert::success('Success', "Antrian berhasil dibatalkan. " . $response->metadata->message);
         return redirect()->back();
     }
     public function pembayaran(Request $request)

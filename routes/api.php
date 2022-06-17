@@ -65,6 +65,8 @@ Route::prefix('vclaim')->group(function () {
     // 0301U0331019P003283
     // sep
     Route::post('insert_sep', [VclaimBPJSController::class, 'insert_sep']);
+    Route::delete('delete_sep', [VclaimBPJSController::class, 'delete_sep']);
+    Route::get('cari_sep', [VclaimBPJSController::class, 'cari_sep']);
     // surat kontrol
     Route::post('insert_rencana_kontrol', [VclaimBPJSController::class, 'insert_rencana_kontrol']);
 });

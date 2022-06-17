@@ -4,9 +4,12 @@ use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\KunjunganController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PoliklinikController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TarifKelompokLayananController;
 use App\Http\Controllers\TarifLayananController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,6 +84,13 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::post('simpan_baru_online/{kodebooking}', [AntrianController::class, 'simpan_baru_online'])->name('simpan_baru_online');
 
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+    Route::resource('user', UserController::class);
+    Route::resource('role', RoleController::class);
+    Route::resource('permission', PermissionController::class);
+
 });
 
 Route::resource('kunjungan', KunjunganController::class);

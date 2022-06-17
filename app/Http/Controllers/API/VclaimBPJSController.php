@@ -260,28 +260,25 @@ class VclaimBPJSController extends Controller
     // syarat sep terakhir bisa diliat di monotoring pelayanan peserta / tb_sep
     public function insert_rencana_kontrol(Request $request)
     {
-        // if ($monitoring->metaData->code == 200) {
-        //     $sep_terakhir = collect($monitoring->response->histori)->first();
-        // }
-        // if (empty($sep_terakhir)) {
-        //     $url = $this->baseUrl . "RencanaKontrol/insert";
-        //     $signature = $this->signature();
-        //     $client = new Client();
-        //     $response = $client->request('POST', $url, [
-        //         'headers' => $signature,
-        //         'body' => json_encode([
-        //             "request" => [
-        //                 "noSEP" => "101816020622P000016",
-        //                 "kodeDokter" => "12345",
-        //                 "poliKontrol" => "INT",
-        //                 "tglRencanaKontrol" => "2021-03-20",
-        //                 "user" => "Admin RSUD Waled",
-        //             ]
-        //         ]),
-        //     ]);
-        //     $response = json_decode($response->getBody());
-        //     dd($response);
-        // }
+
+        $url = $this->baseUrl . "RencanaKontrol/insert";
+        $signature = $this->signature();
+        $client = new Client();
+        dd($request->all());
+        $response = $client->request('POST', $url, [
+            'headers' => $signature,
+            'body' => json_encode([
+                "request" => [
+                    "noSEP" => $request->noSEP,
+                    "kodeDokter" => $request->kodedokter,
+                    "poliKontrol" => $request->kodepoli,
+                    "tglRencanaKontrol" => $request->tanggalperiksa,
+                    "user" => "Antrian RSUDWaled",
+                ]
+            ]),
+        ]);
+        $response = json_decode($response->getBody());
+        dd('insert rencana kontrol', $response);
     }
 
     // syarat surat rencana kontrol
@@ -290,6 +287,7 @@ class VclaimBPJSController extends Controller
         $url = $this->baseUrl . "SEP/2.0/insert";
         $signature = $this->signature();
         $client = new Client();
+        // dd($request->pembiayaan);
         $response = $client->request('POST', $url, [
             'headers' => $signature,
             'body' => json_encode([
@@ -349,14 +347,77 @@ class VclaimBPJSController extends Controller
                             "noSurat" => "",
                             "kodeDPJP" => ""
                         ],
-                        "dpjpLayan" => "",
-                        "noTelp" => "081111111101",
-                        "user" => "Coba Ws"
+                        "dpjpLayan" => $request->dpjpLayan,
+                        "noTelp" => "089529909036",
+                        "user" => "Admin RSUD Waled"
                     ]
                 ]
             ]),
         ]);
         $response = json_decode($response->getBody());
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+    public function delete_sep(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "noSep" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        // delete sep
+        $url = $this->baseUrl . "SEP/2.0/delete";
+        $signature = $this->signature();
+        $client = new Client();
+        $response = $client->request('DELETE', $url, [
+            'headers' => $signature,
+            'body' => json_encode([
+                "request" => [
+                    "t_sep" => [
+                        "noSep" => $request->noSep,
+                        "user" => "RSUD Waled",
+                    ]
+                ]
+            ]),
+        ]);
+        $response = json_decode($response->getBody());
+        return $response;
+    }
+    public function cari_sep(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "noSep" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+
+        $url = $this->baseUrl . "SEP/" . $request->noSep;
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
         return $response;
     }
 }

@@ -379,6 +379,28 @@ return [
                 ],
             ],
         ],
+        // USER ACCESS CONTROLL
+        [
+            'text'    => 'User Access Control',
+            'icon'    => 'fas fa-users-cog',
+            // 'can' => 'admin',
+            'submenu' => [
+                [
+                    'text' => 'User',
+                    'icon'    => 'fas fa-users',
+                    'url'  => 'admin/user',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+                [
+                    'text' => 'Role & Permission',
+                    'icon'    => 'fas fa-user-shield',
+                    'url'  => 'admin/role',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+            ],
+        ],
         ['header' => 'account_settings'],
         [
             'text' => 'profile',
