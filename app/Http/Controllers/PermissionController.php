@@ -9,16 +9,6 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class PermissionController extends Controller
 {
-    public function index()
-    {
-        //
-    }
-
-    public function create()
-    {
-        //
-    }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -28,24 +18,20 @@ class PermissionController extends Controller
         Alert::success('Success', 'Data Telah Disimpan');
         return redirect()->route('admin.role.index');
     }
-
-    public function show($id)
+    public function edit($name)
     {
-        //
+        $permission = Permission::firstWhere('name', $name);
+        return view('simrs.permission_edit', compact(['permission']));
     }
-
-    public function edit($id)
-    {
-        //
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
     public function destroy($id)
     {
-        //
+        $permission = Permission::find($id);
+        if ($permission->roles()->exists()) {
+            Alert::error('Gagal Menghapus', 'Permission masih memiliki permission');
+        } else {
+            $permission->delete();
+            Alert::success('Success', 'Permission Telah Dihapus');
+        }
+        return redirect()->route('admin.role.index');
     }
 }
