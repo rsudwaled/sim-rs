@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AntrianController;
+use App\Http\Controllers\API\VclaimBPJSController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\KunjunganController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TarifKelompokLayananController;
 use App\Http\Controllers\TarifLayananController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VclaimController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -85,12 +87,16 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
 
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
 });
-
+// admin user role permission
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
     Route::resource('user', UserController::class);
     Route::resource('role', RoleController::class);
     Route::resource('permission', PermissionController::class);
-
+});
+// vcalim
+Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('monitoring_pelayanan_peserta', [VclaimController::class, 'monitoring_pelayanan_peserta'])->name('monitoring_pelayanan_peserta');
+    Route::delete('delete_sep/{noSep}', [VclaimController::class, 'delete_sep'])->name('delete_sep');
 });
 
 Route::resource('kunjungan', KunjunganController::class);

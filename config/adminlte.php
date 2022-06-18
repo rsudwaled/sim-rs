@@ -320,6 +320,22 @@ return [
                 ],
             ],
         ],
+        // MENU VCLAIM
+        [
+            'text'    => 'VClaim BPJS',
+            'icon'    => 'fas fa-sign-in-alt',
+            // 'can' => 'admin',
+            'submenu' => [
+
+                [
+                    'text' => 'Monitoring Pelayanan Peserta',
+                    'icon'    => 'fas fa-id-card',
+                    'url'  => 'vclaim/monitoring_pelayanan_peserta',
+                    'shift'   => 'ml-2',
+                    // 'can' => 'admin',
+                ],
+            ],
+        ],
         // PELAYANAN MEDIS
         [
             'text' => 'Pelayanan Medis',
