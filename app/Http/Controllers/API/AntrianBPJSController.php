@@ -12,6 +12,7 @@ use App\Models\LayananDetailDB;
 use App\Models\Pasien;
 use App\Models\PasienDB;
 use App\Models\Poliklinik;
+// use App\Models\SEP;
 use App\Models\TarifLayananDB;
 use App\Models\TarifLayananDetailDB;
 use App\Models\TracerDB;
@@ -24,6 +25,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\Printer;
 
 class AntrianBPJSController extends Controller
 {
@@ -599,17 +602,7 @@ class AntrianBPJSController extends Controller
             "taskid" => 99,
             "keterangan" => $request->keterangan,
         ]);
-        if ($response->metadata->code == 200) {
-            $response = [
-                "metadata" => [
-                    "message" => "Ok",
-                    "code" => 200,
-                ],
-            ];
-            return $response;
-        } else {
-            return $response;
-        }
+        return $response;
     }
     public function checkin_antrian(Request $request)
     {
@@ -674,9 +667,6 @@ class AntrianBPJSController extends Controller
                 $totalpenjamin =  $tarifkarcis->TOTAL_TARIF_NEW + $tarifadm->TOTAL_TARIF_NEW;
                 $tagihanpribadi = 0;
                 $totalpribadi =  0;
-
-
-
                 $vclaim = new VclaimBPJSController();
                 // jika jkn pake sep
                 $request['noKartu'] = $antrian->nomorkartu;
@@ -719,27 +709,48 @@ class AntrianBPJSController extends Controller
                 // kode penunjang = ""
                 // assesment pelayanan = ""
                 // surat kontrol jika pasien kunjungan kedua atau lebih
+                // $sep = SEP::get();
+                // dd($sep);
                 $vclaim = new VclaimBPJSController();
                 $sep = $vclaim->insert_sep($request);
-                // berhasil buat sep
                 if ($sep->metaData->code == 200) {
-                    $berhasil = [
-                        "metadata" => [
-                            "message" => "Ok",
-                            "code" => 200,
-                        ],
-                    ];
-                    return $berhasil;
+                    $connector = new WindowsPrintConnector('Printer Receipt');
+                    $printer = new Printer($connector);
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->setEmphasis(true);
+                    $printer->text("KARTU SEP BPJS\n");
+                    $printer->text("BADAN RUSUD WALED\n");
+                    $printer->setEmphasis(false);
+                    $printer->text("---------------------------------------------\n");
+                    $printer->setJustification(Printer::JUSTIFY_LEFT);
+                    $printer->text("No SEP : -\n");
+                    $printer->text("Tgl SEP : -\n");
+                    $printer->text("No Kartu : -\n");
+                    $printer->text("Nama Peserta : -\n");
+                    $printer->text("Tgl Lahir : -\n");
+                    $printer->text("Telepon : -\n");
+                    $printer->text("Peserta : -\n");
+                    $printer->text("COB : -\n");
+                    $printer->text("Jenis Rawat : -\n");
+                    $printer->text("Kelas Rawat : -\n");
+                    $printer->text("Poli / Spesialis : -\n");
+                    $printer->text("Faskes Perujuk : -\n");
+                    $printer->text("Diagnosa Awal : -\n");
+                    $printer->text("Catatan : -\n\n");
+                    $printer->text("Cetakan : " . Carbon::now() . "\n");
+                    $printer->cut();
+                    $printer->close();
+                    // $sep = SEP::get();
+                    // dd($sep);
                 }
                 // gagal buat sep
                 else {
-                    $berhasil = [
+                    return [
                         "metadata" => [
                             "message" => $sep->metaData->message,
                             "code" => 201,
                         ],
                     ];
-                    return $berhasil;
                 }
             }
             // jika pasien non jkn
@@ -813,7 +824,6 @@ class AntrianBPJSController extends Controller
                 'id_status_tracer' => 1,
                 'cek_tracer' => "N",
             ]);
-
             // update antrian
             Antrian::where('kodebooking', $request->kodebooking)->update([
                 "taskid" => $request->taskid,
@@ -824,14 +834,12 @@ class AntrianBPJSController extends Controller
             $response = $this->update_antrian($request);
             // jika antrian berhasil diupdate di bpjs
             if ($response->metadata->code == 200) {
-
-                $berhasil = [
+                return [
                     "metadata" => [
                         "message" => "Ok",
                         "code" => 200,
                     ],
                 ];
-                return $berhasil;
             }
             // jika antrian gagal diupdate di bpjs
             else {

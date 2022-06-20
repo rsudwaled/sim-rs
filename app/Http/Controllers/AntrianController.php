@@ -121,8 +121,8 @@ class AntrianController extends Controller
         }
         $polis = Poliklinik::where('status', 1)->get();
         $antrians = Antrian::with(['pasien'])
-        ->where('tanggalperiksa', $request->tanggal)
-        ->get();
+            ->where('tanggalperiksa', $request->tanggal)
+            ->get();
         $provinsis = Provinsi::get();
         return view('simrs.antrian_pendaftaran', [
             'antrians' => $antrians,
@@ -599,7 +599,7 @@ class AntrianController extends Controller
                 $printer = new Printer($connector);
                 $printer->setFont(1);
                 $printer->text("Kode Booking : " . $antrian->kodebooking . "\n");
-                $printer->text("Error : " . $response->metadata->message. "\n");
+                $printer->text("Error : " . $response->metadata->message . "\n");
                 $printer->cut();
                 $printer->close();
             }
