@@ -721,7 +721,26 @@ class AntrianBPJSController extends Controller
                 // surat kontrol jika pasien kunjungan kedua atau lebih
                 $vclaim = new VclaimBPJSController();
                 $sep = $vclaim->insert_sep($request);
-                dd($sep);
+                // berhasil buat sep
+                if ($sep->metaData->code == 200) {
+                    $berhasil = [
+                        "metadata" => [
+                            "message" => "Ok",
+                            "code" => 200,
+                        ],
+                    ];
+                    return $berhasil;
+                }
+                // gagal buat sep
+                else {
+                    $berhasil = [
+                        "metadata" => [
+                            "message" => $sep->metaData->message,
+                            "code" => 201,
+                        ],
+                    ];
+                    return $berhasil;
+                }
             }
             // jika pasien non jkn
             else {

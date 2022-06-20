@@ -253,7 +253,6 @@ return [
             'icon'    => 'fas fa-sign-in-alt',
             // 'can' => 'admin',
             'submenu' => [
-
                 [
                     'text' => 'Antrian Pendaftaran & Poli',
                     'icon'    => 'fas fa-desktop',
@@ -289,7 +288,6 @@ return [
                     'shift'   => 'ml-2',
                     // 'can' => 'admin',
                 ],
-
                 [
                     'text' => 'Display Antrian Pendaftaran',
                     'icon'    => 'fas fa-user-plus',
@@ -298,24 +296,10 @@ return [
                     // 'can' => 'admin',
                 ],
                 [
-                    'text' => 'Display Antrian Poliklinik',
-                    'icon'    => 'fas fa-clinic-medical',
-                    'url'  => 'display/poli',
+                    'text' => 'Jadwal Dokter Poliklinik',
+                    'icon'    => 'fas fa-calendar-alt',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
-                [
-                    'text' => 'Display Antrian Farmasi',
-                    'icon'    => 'fas fa-pills',
-                    'url'  => 'display/farmasi',
-                    'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
-                [
-                    'text' => 'Loket Antrian',
-                    'icon'    => 'fas fa-cash-register',
-                    // 'url'  => 'antrian/pendaftaran',
-                    'shift'   => 'ml-2',
+                    'url'  => 'jadwaldokter',
                     // 'can' => 'admin',
                 ],
             ],

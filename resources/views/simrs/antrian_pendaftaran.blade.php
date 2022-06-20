@@ -211,6 +211,7 @@
                                 <td>
                                     @if ($item->taskid == 0)
                                         <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
+
                                     @endif
                                     @if ($item->taskid == 1)
                                         <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
@@ -219,6 +220,9 @@
                                     @if ($item->taskid == 99)
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
                                     @endif
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                    data-toggle="tooltip" title="Batal Antrian"
+                                    onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                 </td>
                             </tr>
                         @endforeach
