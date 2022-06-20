@@ -56,6 +56,15 @@ class UserSeeder extends Seeder
         $user->assignRole('Pendaftaran');
 
         $user = User::create([
+            "name" => "Admin Antrian BPJS",
+            "email" => "antrianbpjs@gmail.com",
+            "username" => "antrianbpjs",
+            'password' => bcrypt('antrianbpjs'),
+            'email_verified_at' => Carbon::now()
+        ]);
+        $user->assignRole('Pendaftaran');
+
+        $user = User::create([
             "name" => "Admin Kasir",
             "email" => "adminkasir@gmail.com",
             "username" => "adminkasir",

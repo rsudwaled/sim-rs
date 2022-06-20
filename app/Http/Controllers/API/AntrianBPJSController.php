@@ -18,6 +18,7 @@ use App\Models\TarifLayananDetailDB;
 use App\Models\TracerDB;
 use App\Models\TransaksiDB;
 use App\Models\UnitDB;
+use App\Models\User;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Sanctum\PersonalAccessToken;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
 
@@ -307,7 +309,7 @@ class AntrianBPJSController extends Controller
     // function WS RS
     public function token(Request $request)
     {
-        if (Auth::attempt(['email' => $request->header('x-username'), 'password' => $request->header('x-password')])) {
+        if (Auth::attempt(['username' => $request->header('x-username'), 'password' => $request->header('x-password')])) {
             $user = Auth::user();
             $success['token'] =  $user->createToken('MyApp')->plainTextToken;
             $response = [
@@ -324,14 +326,69 @@ class AntrianBPJSController extends Controller
             $response = [
                 "metadata" => [
                     "code" => 201,
-                    "message" => "Unauthorized"
+                    "message" => "Unauthorized (Username dan Password Salah)"
                 ]
             ];
             return $response;
         }
     }
+    public function auth_token(Request $request)
+    {
+        if ($request->hasHeader('x-token')) {
+            if ($request->hasHeader('x-username')) {
+                // $user = User::where('username', $request->header('x-username'))->first();
+                $credentials = $request->header('x-token');
+                $token = PersonalAccessToken::findToken($credentials);
+                if (!$token) {
+                    return $response = [
+                        "metadata" => [
+                            "code" => 201,
+                            "message" => "Unauthorized (Token Salah)"
+                        ]
+                    ];
+                } else {
+                    $user = $token->tokenable;
+                    if ($user->username != $request->header('x-username')) {
+                        return $response = [
+                            "metadata" => [
+                                "code" => 201,
+                                "message" => "Unauthorized (Username tidak sesuai dengan token)"
+                            ]
+                        ];
+                    } else {
+                        return $response = [
+                            "metadata" => [
+                                "code" => 200,
+                                "message" => "OK"
+                            ]
+                        ];
+                    }
+                }
+            } else {
+                return $response = [
+                    "metadata" => [
+                        "code" => 201,
+                        "message" => "Silahkan isi header dengan x-username"
+                    ]
+                ];
+            }
+        } else {
+            return $response = [
+                "metadata" => [
+                    "code" => 201,
+                    "message" => "Silahkan isi header dengan x-token"
+                ]
+            ];
+        }
+    }
     public function status_antrian(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $jadwals = $this->ref_jadwal_dokter($request);
         if (isset($jadwals->response)) {
             $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
@@ -380,6 +437,12 @@ class AntrianBPJSController extends Controller
     }
     public function ambil_antrian(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         // checking request
         $validator = Validator::make(request()->all(), [
             "nik" => "required",
@@ -398,6 +461,7 @@ class AntrianBPJSController extends Controller
         }
         // cek jika jenis pasien jkn
         if (isset($request->nomorreferensi)) {
+            $request['jenispasien'] = 'JKN';
             $vclaim = new VclaimBPJSController();
             $monitoring = $vclaim->monitoring_pelayanan_peserta($request);
             // cek sep kedua atau lebih
@@ -569,6 +633,12 @@ class AntrianBPJSController extends Controller
     }
     public function sisa_antrian(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
         $sisaantrean = Antrian::where('taskid', "<=", 1)
             ->where('tanggalperiksa', $antrian->tanggalperiksa)
@@ -597,6 +667,12 @@ class AntrianBPJSController extends Controller
     }
     public function batal_antrian(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $response = $this->batal_antrian_bpjs($request);
         Antrian::where('kodebooking', $request->kodebooking)->update([
             "taskid" => 99,
@@ -606,6 +682,12 @@ class AntrianBPJSController extends Controller
     }
     public function checkin_antrian(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $now = Carbon::now();
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
         $unit = UnitDB::firstWhere('KDPOLI', $antrian->kodepoli);
@@ -858,6 +940,12 @@ class AntrianBPJSController extends Controller
     }
     public function info_pasien_baru(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         // checking request
         $validator = Validator::make(request()->all(), [
             "nik" => "required",
@@ -922,6 +1010,12 @@ class AntrianBPJSController extends Controller
     }
     public function jadwal_operasi_rs(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $jadwalops = JadwalOperasi::whereBetween('tanggaloperasi', [$request->tanggalawal, $request->tanggalakhir])->get();
         $jadwals = [];
         foreach ($jadwalops as  $jadwalop) {
@@ -949,6 +1043,12 @@ class AntrianBPJSController extends Controller
     }
     public function jadwal_operasi_pasien(Request $request)
     {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
         $jadwalops = JadwalOperasi::where('nopeserta', $request->nopeserta)->get();
         $jadwals = [];
         foreach ($jadwalops as  $jadwalop) {
