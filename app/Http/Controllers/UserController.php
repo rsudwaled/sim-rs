@@ -33,7 +33,6 @@ class UserController extends Controller
         $request->validate([
             'username' => 'required|alpha_dash|unique:users,username,' . $request->id,
             'name' => 'required',
-            'role' => 'required',
         ]);
         if (!empty($request['password'])) {
             $request['password'] = Hash::make($request['password']);

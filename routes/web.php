@@ -38,25 +38,25 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
     // pendafataran
-    Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran');
-    Route::get('panggil_pendaftaran/{kodebooking}', [AntrianController::class, 'panggil_pendaftaran'])->name('panggil_pendaftaran');
-    Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline');
-    Route::post('update_pendaftaran_online', [AntrianController::class, 'update_pendaftaran_online'])->name('update_pendaftaran_online');
-    Route::get('batal_antrian/{kodebooking}', [AntrianController::class, 'batal_antrian'])->name('batal_antrian');
+    Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran')->middleware('permission:pendaftaran');
+    Route::get('panggil_pendaftaran/{kodebooking}', [AntrianController::class, 'panggil_pendaftaran'])->name('panggil_pendaftaran')->middleware('permission:pendaftaran');
+    Route::post('update_offline', [AntrianController::class, 'update_offline'])->name('update_offline')->middleware('permission:pendaftaran');
+    Route::post('update_pendaftaran_online', [AntrianController::class, 'update_pendaftaran_online'])->name('update_pendaftaran_online')->middleware('permission:pendaftaran');
+    Route::get('batal_antrian/{kodebooking}', [AntrianController::class, 'batal_antrian'])->name('batal_antrian')->middleware('permission:pendaftaran');
     // pembayaran
-    Route::get('pembayaran', [AntrianController::class, 'pembayaran'])->name('pembayaran');
-    Route::post('update_pembayaran', [AntrianController::class, 'update_pembayaran'])->name('update_pembayaran');
+    Route::get('pembayaran', [AntrianController::class, 'pembayaran'])->name('pembayaran')->middleware('permission:kasir');
+    Route::post('update_pembayaran', [AntrianController::class, 'update_pembayaran'])->name('update_pembayaran')->middleware('permission:kasir');
     // poliklinik
-    Route::get('poli', [AntrianController::class, 'poli'])->name('poli');
-    Route::get('panggil_poli/{kodebooking}', [AntrianController::class, 'panggil_poli'])->name('panggil_poli');
-    Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit');
-    Route::get('lanjut_farmasi/{kodebooking}', [AntrianController::class, 'lanjut_farmasi'])->name('lanjut_farmasi');
-    Route::get('selesai/{kodebooking}', [AntrianController::class, 'selesai'])->name('selesai');
+    Route::get('poli', [AntrianController::class, 'poli'])->name('poli')->middleware('permission:poliklinik');
+    Route::get('panggil_poli/{kodebooking}', [AntrianController::class, 'panggil_poli'])->name('panggil_poli')->middleware('permission:poliklinik');
+    Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit')->middleware('permission:poliklinik');
+    Route::get('lanjut_farmasi/{kodebooking}', [AntrianController::class, 'lanjut_farmasi'])->name('lanjut_farmasi')->middleware('permission:poliklinik');
+    Route::get('selesai/{kodebooking}', [AntrianController::class, 'selesai'])->name('selesai')->middleware('permission:poliklinik');
     // farmasi
-    Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi');
-    Route::get('panggil_farmasi/{kodebooking}', [AntrianController::class, 'panggil_farmasi'])->name('panggil_farmasi');
-    Route::get('racik_farmasi/{kodebooking}', [AntrianController::class, 'racik_farmasi'])->name('racik_farmasi');
-    Route::get('selesai_farmasi/{kodebooking}', [AntrianController::class, 'selesai_farmasi'])->name('selesai_farmasi');
+    Route::get('farmasi', [AntrianController::class, 'farmasi'])->name('farmasi')->middleware('permission:farmasi');
+    Route::get('panggil_farmasi/{kodebooking}', [AntrianController::class, 'panggil_farmasi'])->name('panggil_farmasi')->middleware('permission:farmasi');
+    Route::get('racik_farmasi/{kodebooking}', [AntrianController::class, 'racik_farmasi'])->name('racik_farmasi')->middleware('permission:farmasi');
+    Route::get('selesai_farmasi/{kodebooking}', [AntrianController::class, 'selesai_farmasi'])->name('selesai_farmasi')->middleware('permission:farmasi');
 
 
 
@@ -88,7 +88,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('baru_offline/{kodebooking}', [AntrianController::class, 'baru_offline'])->name('baru_offline');
 });
 // admin user role permission
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'permission:admin'])->group(function () {
     Route::resource('user', UserController::class);
     Route::resource('role', RoleController::class);
     Route::resource('permission', PermissionController::class);

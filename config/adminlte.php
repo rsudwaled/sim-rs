@@ -251,50 +251,50 @@ return [
         [
             'text'    => 'Aplikasi Antrian',
             'icon'    => 'fas fa-sign-in-alt',
-            // 'can' => 'admin',
+            'can' => ['admin','pendaftaran','kasir','poliklinik','farmasi'],
             'submenu' => [
                 [
-                    'text' => 'Antrian Pendaftaran & Poli',
+                    'text' => 'Console Antrian',
                     'icon'    => 'fas fa-desktop',
                     'url'  => 'antrian/console',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pendaftaran',
                 ],
                 [
                     'text' => 'Pemanggil Antrian Pendaftaran',
                     'icon'    => 'fas fa-user-plus',
                     'url'  => 'antrian/pendaftaran',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pendaftaran',
                 ],
                 [
                     'text' => 'Pemanggil Antrian Pembayaran',
                     'icon'    => 'fas fa-cash-register',
                     'url'  => 'antrian/pembayaran',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'kasir',
                 ],
                 [
                     'text' => 'Pemanggil Antrian Poliklinik',
                     'icon'    => 'fas fa-clinic-medical',
                     'url'  => 'antrian/poli',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'poliklinik',
                 ],
                 [
                     'text' => 'Pemanggil Antrian Farmasi',
                     'icon'    => 'fas fa-pills',
                     'url'  => 'antrian/farmasi',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'farmasi',
                 ],
-                [
-                    'text' => 'Display Antrian Pendaftaran',
-                    'icon'    => 'fas fa-user-plus',
-                    'url'  => 'antrian/display_pendaftaran',
-                    'shift'   => 'ml-2',
-                    // 'can' => 'admin',
-                ],
+                // [
+                //     'text' => 'Display Antrian Pendaftaran',
+                //     'icon'    => 'fas fa-user-plus',
+                //     'url'  => 'antrian/display_pendaftaran',
+                //     'shift'   => 'ml-2',
+                //     'can' => 'admin',
+                // ],
                 [
                     'text' => 'Jadwal Dokter Poliklinik',
                     'icon'    => 'fas fa-calendar-alt',
@@ -308,7 +308,7 @@ return [
         [
             'text'    => 'VClaim BPJS',
             'icon'    => 'fas fa-sign-in-alt',
-            // 'can' => 'admin',
+            'can' => 'bpjs',
             'submenu' => [
 
                 [
@@ -316,7 +316,7 @@ return [
                     'icon'    => 'fas fa-id-card',
                     'url'  => 'vclaim/monitoring_pelayanan_peserta',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'bpjs',
                 ],
             ],
         ],
@@ -324,42 +324,42 @@ return [
         [
             'text' => 'Pelayanan Medis',
             'icon'    => 'fas fa-stethoscope',
-            // 'can' => 'admin',
+            'can' => 'pelayanan-medis',
             'submenu' => [
                 [
                     'text' => 'Dokter',
                     'icon'    => 'fas fa-user-md',
                     'url'  => 'dokter',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pelayanan-medis',
                 ],
                 [
                     'text' => 'Poliklinik',
                     'icon'    => 'fas fa-clinic-medical',
                     'url'  => 'poli',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pelayanan-medis',
                 ],
                 [
                     'text' => 'Jadwal Dokter Poliklinik',
                     'icon'    => 'fas fa-calendar-alt',
                     'shift'   => 'ml-2',
                     'url'  => 'jadwaldokter',
-                    // 'can' => 'admin',
+                    'can' => 'pelayanan-medis',
                 ],
                 [
                     'text' => 'Tarif Layanan',
                     'icon'    => 'fas fa-hand-holding-medical',
                     'url'  => 'tarif_layanan',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pelayanan-medis',
                 ],
                 [
                     'text' => 'Tarif Kelompok Layanan',
                     'icon'    => 'fas fa-hand-holding-medical',
                     'url'  => 'tarif_kelompok_layanan',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'pelayanan-medis',
                 ],
 
             ],
@@ -368,14 +368,14 @@ return [
         [
             'text' => 'Rekam Medis',
             'icon'    => 'fas fa-file-medical',
-            // 'can' => 'admin',
+            'can' => 'rekam-medis',
             'submenu' => [
                 [
                     'text' => 'Kunjungan',
                     'icon'    => 'fas fa-hospital-user',
                     'url'  => 'kunjungan',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'rekam-medis',
                 ],
             ],
         ],
@@ -383,33 +383,33 @@ return [
         [
             'text'    => 'User Access Control',
             'icon'    => 'fas fa-users-cog',
-            // 'can' => 'admin',
+            'can' => 'admin',
             'submenu' => [
                 [
                     'text' => 'User',
                     'icon'    => 'fas fa-users',
                     'url'  => 'admin/user',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'admin',
                 ],
                 [
                     'text' => 'Role & Permission',
                     'icon'    => 'fas fa-user-shield',
                     'url'  => 'admin/role',
                     'shift'   => 'ml-2',
-                    // 'can' => 'admin',
+                    'can' => 'admin',
                 ],
             ],
         ],
         ['header' => 'account_settings'],
         [
             'text' => 'profile',
-            'url'  => 'admin/settings',
+            'url'  => 'profile',
             'icon' => 'fas fa-fw fa-user',
         ],
         [
             'text' => 'change_password',
-            'url'  => 'admin/settings',
+            'url'  => 'password/reset',
             'icon' => 'fas fa-fw fa-lock',
         ],
     ],
