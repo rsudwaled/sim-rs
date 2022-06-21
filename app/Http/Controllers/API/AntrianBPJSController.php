@@ -334,49 +334,59 @@ class AntrianBPJSController extends Controller
     }
     public function auth_token(Request $request)
     {
-        if ($request->hasHeader('x-token')) {
-            if ($request->hasHeader('x-username')) {
-                // $user = User::where('username', $request->header('x-username'))->first();
-                $credentials = $request->header('x-token');
-                $token = PersonalAccessToken::findToken($credentials);
-                if (!$token) {
-                    return $response = [
-                        "metadata" => [
-                            "code" => 201,
-                            "message" => "Unauthorized (Token Salah)"
-                        ]
-                    ];
-                } else {
-                    $user = $token->tokenable;
-                    if ($user->username != $request->header('x-username')) {
+        $aktif = Auth::user();
+        if (empty($aktif)) {
+            if ($request->hasHeader('x-token')) {
+                if ($request->hasHeader('x-username')) {
+                    // $user = User::where('username', $request->header('x-username'))->first();
+                    $credentials = $request->header('x-token');
+                    $token = PersonalAccessToken::findToken($credentials);
+                    if (!$token) {
                         return $response = [
                             "metadata" => [
                                 "code" => 201,
-                                "message" => "Unauthorized (Username tidak sesuai dengan token)"
+                                "message" => "Unauthorized (Token Salah)"
                             ]
                         ];
                     } else {
-                        return $response = [
-                            "metadata" => [
-                                "code" => 200,
-                                "message" => "OK"
-                            ]
-                        ];
+                        $user = $token->tokenable;
+                        if ($user->username != $request->header('x-username')) {
+                            return $response = [
+                                "metadata" => [
+                                    "code" => 201,
+                                    "message" => "Unauthorized (Username tidak sesuai dengan token)"
+                                ]
+                            ];
+                        } else {
+                            return $response = [
+                                "metadata" => [
+                                    "code" => 200,
+                                    "message" => "OK"
+                                ]
+                            ];
+                        }
                     }
+                } else {
+                    return $response = [
+                        "metadata" => [
+                            "code" => 201,
+                            "message" => "Silahkan isi header dengan x-username"
+                        ]
+                    ];
                 }
             } else {
                 return $response = [
                     "metadata" => [
                         "code" => 201,
-                        "message" => "Silahkan isi header dengan x-username"
+                        "message" => "Silahkan isi header dengan x-token"
                     ]
                 ];
             }
         } else {
             return $response = [
                 "metadata" => [
-                    "code" => 201,
-                    "message" => "Silahkan isi header dengan x-token"
+                    "code" => 200,
+                    "message" => "OK"
                 ]
             ];
         }
@@ -690,56 +700,6 @@ class AntrianBPJSController extends Controller
         // end auth token
         $now = Carbon::now();
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
-        if (isset($antrian)) {
-            if ($antrian->pasienbaru == 1) {
-                $pasienbaru = "BARU";
-            } else {
-                $pasienbaru = "LAMA";
-            }
-            $connector = new WindowsPrintConnector('Printer Receipt');
-            $printer = new Printer($connector);
-            $printer->setFont(1);
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->setEmphasis(true);
-            $printer->text("RSUD Waled\n");
-            $printer->setEmphasis(false);
-            $printer->text("Melayani Dengan Sepenuh Hati\n");
-            $printer->text("------------------------------------------------\n");
-            $printer->text("Karcis Antrian Rawat Jalan\n");
-            $printer->text("Nomor / Angka /Jenis Pasien :\n");
-            $printer->setTextSize(2, 2);
-            $printer->text($antrian->nomorantrean . "/" . $antrian->angkaantrean . "/" . $antrian->jenispasien . " " . $pasienbaru . "\n");
-            $printer->setTextSize(1, 1);
-            $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
-            $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("No RM : " . $antrian->norm . "\n");
-            $printer->text("NIK : " . $antrian->nik . "\n");
-            if ($antrian->nomorkartu != "") {
-                $printer->text("No Peserta : " . $antrian->nomorkartu . "\n");
-            }
-            if ($antrian->nomorreferensi != "") {
-                $printer->text("No Rujukan : " . $antrian->nomorreferensi . "\n");
-            }
-            $printer->text("Nama : " . $antrian->nama . "\n\n");
-            $printer->text("Poliklinik : " . $antrian->namapoli . "\n");
-            $printer->text("Kunjungan : " . $antrian->jeniskunjungan . "\n");
-            $printer->text("Dokter : " . $antrian->namadokter . "\n");
-            $printer->text("Tanggal : " . Carbon::parse($antrian->tanggalperiksa)->format('d M Y') . "\n");
-            $printer->text("Print : " . Carbon::now() . "\n\n");
-            $printer->text("Terima kasih atas kepercayaan anda. \n");
-            $printer->cut();
-            $printer->close();
-            // jika berhasil update antrian
-        }
-        // jika antrian tidak ditemukan
-        else {
-            return $response = [
-                'metadata' => [
-                    'code' => 400,
-                    'message' => "Antrian tidak ditemukan",
-                ],
-            ];
-        }
         $unit = UnitDB::firstWhere('KDPOLI', $antrian->kodepoli);
         // jika antrian ditemukan
         if (isset($antrian)) {

@@ -12,7 +12,7 @@
             <x-adminlte-card title="Poliklinik Aktif RSUD Waled" theme="info" icon="fas fa-info-circle" collapsible
                 maximizable>
                 @php
-                    $heads = ['Kode Poli', 'Nama Poli', 'Subspesialis', 'Kode Subspesialis', 'Nama Subpesialis'];
+                    $heads = ['Kode Poli', 'Nama Poli', 'Subspesialis', 'Kode Subspesialis', 'Nama Subpesialis', 'Status'];
                 @endphp
                 <x-adminlte-datatable id="table1" :heads="$heads" striped bordered hoverable compressed>
                     @foreach ($polis->where('status', 1) as $item)
@@ -28,6 +28,19 @@
                             </td>
                             <td>{{ $item->kodesubspesialis }}</td>
                             <td>{{ $item->namasubspesialis }}</td>
+                            <td>
+                                @if ($item->status == 1)
+                                    <a href="{{ route('poli.show', $item->id) }}">
+                                        <x-adminlte-button class="btn-xs" type="button" label="aktif" theme="success"
+                                            title="Klik untuk non-aktifkan" />
+                                    </a>
+                                @else
+                                    <a href="{{ route('poli.show', $item->id) }}">
+                                        <x-adminlte-button class="btn-xs" type="button" label="nonaktif" theme="danger"
+                                            data-toggle="tooltop" title="Klik untuk aktifkan" />
+                                    </a>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </x-adminlte-datatable>
@@ -53,13 +66,13 @@
                             <td>
                                 @if ($item->status == 1)
                                     <a href="{{ route('poli.show', $item->id) }}">
-                                        <x-adminlte-button class="btn-xs" type="button" label="aktif"
-                                            theme="success" />
+                                        <x-adminlte-button class="btn-xs" type="button" label="aktif" theme="success"
+                                            title="Klik untuk non-aktifkan" />
                                     </a>
                                 @else
                                     <a href="{{ route('poli.show', $item->id) }}">
-                                        <x-adminlte-button class="btn-xs" type="button" label="nonaktif"
-                                            theme="danger" />
+                                        <x-adminlte-button class="btn-xs" type="button" label="nonaktif" theme="danger"
+                                            data-toggle="tooltop" title="Klik untuk aktifkan" />
                                     </a>
                                 @endif
                             </td>
