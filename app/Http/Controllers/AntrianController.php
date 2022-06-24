@@ -21,99 +21,7 @@ use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 class AntrianController extends Controller
 {
-    public function tambah()
-    {
-        $poli = Poliklinik::get();
-        return view('simrs.antrian_tambah', [
-            'poli' => $poli,
-        ]);
-    }
-    public function console()
-    {
-        $poliklinik = Poliklinik::with(['antrians', 'jadwals'])->where('status', 1)->get();
-        return view('simrs.antrian_console', [
-            'poliklinik' => $poliklinik,
-        ]);
-    }
-    public function console_jadwaldokter($poli, $tanggal)
-    {
-        $poli = Poliklinik::with(['antrians', 'jadwals'])->firstWhere('kodesubspesialis', $poli);
-        $jadwals = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)
-            ->where('kodesubspesialis', $poli->kodesubspesialis);
-        return response()->json($jadwals);
-    }
-    public function tambah_offline($poli, $dokter, $jadwal)
-    {
-        $tanggal = Carbon::now()->format('Y-m-d');
-        $antrian_poli = Antrian::where('tanggalperiksa', $tanggal)
-            ->where('kodepoli', $poli)
-            ->count();
-        $antrian_tgl = Antrian::where('tanggalperiksa', $tanggal)
-            ->count();
-        $antrian_dokter = Antrian::where('tanggalperiksa', $tanggal)
-            ->where('kodepoli', $poli)
-            ->where('kodedokter', $dokter)
-            ->count();
-        $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
-        $angkaantrean = $antrian_tgl + 1;
-        $kodebooking = strtoupper(uniqid(6));
-
-        $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
-        $jadwal = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)->where('kodedokter', $dokter)->first();
-        $dokter = Dokter::where('kodedokter', $dokter)->first();
-
-        if ($antrian_dokter >= $jadwal->kapasitaspasien) {
-            Alert::error('Error', 'Antrian poliklinik jadwal dokter tersebut telah penuh');
-            return redirect()->route('antrian.console');
-        }
-        $antrian = Antrian::create([
-            "kodebooking" => $kodebooking,
-            "nik" => 'Offline',
-            "nohp" => 'Offline',
-            "kodepoli" => $poli->kodesubspesialis,
-            "norm" => 'Offline',
-            "pasienbaru" => 2,
-            "tanggalperiksa" => Carbon::now()->format('Y-m-d'),
-            "kodedokter" => $dokter->kodedokter,
-            "jampraktek" => $jadwal->jadwal,
-            "jeniskunjungan" => 'Offline',
-            "jenispasien" => 'Offline',
-            "namapoli" =>  $poli->namasubspesialis,
-            "namadokter" => $dokter->namadokter,
-            "nomorantrean" =>  $nomorantrean,
-            "angkaantrean" =>  $angkaantrean,
-            "estimasidilayani" => 0,
-            "taskid" => 1,
-            "user" => 'System',
-            "keterangan" => 'Offline',
-        ]);
-
-        // try {
-        // $connector = new WindowsPrintConnector('Printer Receipt');
-        // $printer = new Printer($connector);
-        // $printer->setJustification(Printer::JUSTIFY_CENTER);
-        // $printer->setEmphasis(true);
-        // $printer->text("RSUD Waled\n");
-        // $printer->setEmphasis(false);
-        // $printer->text("Melayani Dengan Sepenuh Hati\n");
-        // $printer->text("------------------------------------------------\n");
-        // $printer->text("Karcis Antrian Pendaftaran Offline\n");
-        // $printer->text("Antrian Pendaftaran / Antrian Poliklinik :\n");
-        // $printer->setTextSize(2, 2);
-        // $printer->text($antrian->angkaantrean . " / " .  $antrian->nomorantrean . "\n");
-        // $printer->setTextSize(1, 1);
-        // $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
-        // $printer->setJustification(Printer::JUSTIFY_LEFT);
-        // $printer->text("Silahkan menunggu di Loket Pendaftaran\n");
-        // $printer->cut();
-        // $printer->close();
-        // } catch (Exception $e) {
-        //     Alert::error('Error', 'Error Message : ' . $e->getMessage());
-        //     return redirect()->route('antrian.console');
-        // }
-        Alert::success('Success', 'Antrian Berhasil Ditambahkan');
-        return redirect()->route('antrian.console');
-    }
+    // pendaftaran
     public function pendaftaran(Request $request)
     {
         if ($request->tanggal == null) {
@@ -146,6 +54,25 @@ class AntrianController extends Controller
         ]);
         Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
         return redirect()->back();
+    }
+    public function cari_pasien($nik)
+    {
+        $pasien = Pasien::where('nik', $nik)->first();
+        if ($pasien == null) {
+            $code = 201;
+            $message = "Pasien Tidak Ditemukan. Silahkan daftarkan pasien.";
+        } else {
+            $message = "Pasien Ditemukan";
+            $code = 200;
+        }
+        $response = [
+            "response" => $pasien,
+            "metadata" => [
+                "message" => $message,
+                "code" => $code,
+            ]
+        ];
+        return $response;
     }
     public function update_offline(Request $request)
     {
@@ -324,6 +251,7 @@ class AntrianController extends Controller
         Alert::success('Success', "Antrian berhasil dibatalkan. " . $response->metadata->message);
         return redirect()->back();
     }
+    // kasir
     public function pembayaran(Request $request)
     {
         if ($request->tanggal == null) {
@@ -348,6 +276,7 @@ class AntrianController extends Controller
         Alert::success('Success', 'Pembayaran berhasil diupdate');
         return redirect()->back();
     }
+    // poliklinik
     public function poli(Request $request)
     {
         if ($request->tanggal == null) {
@@ -419,6 +348,7 @@ class AntrianController extends Controller
         Alert::success('Success', "Antrian Selesai. Semoga cepat sembuh.\n" . $response->metadata->message);
         return redirect()->back();
     }
+    // farmasi
     public function farmasi(Request $request)
     {
         if ($request->tanggal == null) {
@@ -468,6 +398,7 @@ class AntrianController extends Controller
         Alert::success('Success', 'Selesai Peracikan Obat ' . $response->metadata->message);
         return redirect()->back();
     }
+    // farmasi
     public function show($kodebooking, Request $request)
     {
         dd($request->all());
@@ -507,26 +438,25 @@ class AntrianController extends Controller
             return redirect()->route('antrian.tambah');
         }
     }
-    public function cari_pasien($nik)
+    // admin pendaftaran
+    public function laporan(Request $request)
     {
-        $pasien = Pasien::where('nik', $nik)->first();
-        if ($pasien == null) {
-            $code = 201;
-            $message = "Pasien Tidak Ditemukan. Silahkan daftarkan pasien.";
+        if ($request->tanggal == null) {
+            $tanggal_awal = Carbon::now()->startOfMonth()->format('Y-m-d');
+            $tanggal_akhir = Carbon::now()->endOfMonth()->format('Y-m-d');
         } else {
-            $message = "Pasien Ditemukan";
-            $code = 200;
+            $tanggal = explode(' - ', $request->tanggal);
+            $tanggal_awal = Carbon::parse($tanggal[0])->format('Y-m-d');
+            $tanggal_akhir = Carbon::parse($tanggal[1])->format('Y-m-d');
         }
-        $response = [
-            "response" => $pasien,
-            "metadata" => [
-                "message" => $message,
-                "code" => $code,
-            ]
-        ];
-        return $response;
+        $antrians = Antrian::with(['pasien'])
+            ->whereBetween('tanggalperiksa', [$tanggal_awal, $tanggal_akhir])
+            ->get();
+        return view('simrs.antrian_laporan', [
+            'antrians' => $antrians,
+            'request' => $request,
+        ]);
     }
-
     public function checkin()
     {
         return view('simrs.antrian_checkin');
@@ -670,6 +600,99 @@ class AntrianController extends Controller
             'poli' => $poli,
             'antrian' => $antrian,
         ]);
+    }
+    public function tambah()
+    {
+        $poli = Poliklinik::get();
+        return view('simrs.antrian_tambah', [
+            'poli' => $poli,
+        ]);
+    }
+    public function console()
+    {
+        $poliklinik = Poliklinik::with(['antrians', 'jadwals'])->where('status', 1)->get();
+        return view('simrs.antrian_console', [
+            'poliklinik' => $poliklinik,
+        ]);
+    }
+    public function console_jadwaldokter($poli, $tanggal)
+    {
+        $poli = Poliklinik::with(['antrians', 'jadwals'])->firstWhere('kodesubspesialis', $poli);
+        $jadwals = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)
+            ->where('kodesubspesialis', $poli->kodesubspesialis);
+        return response()->json($jadwals);
+    }
+    public function tambah_offline($poli, $dokter, $jadwal)
+    {
+        $tanggal = Carbon::now()->format('Y-m-d');
+        $antrian_poli = Antrian::where('tanggalperiksa', $tanggal)
+            ->where('kodepoli', $poli)
+            ->count();
+        $antrian_tgl = Antrian::where('tanggalperiksa', $tanggal)
+            ->count();
+        $antrian_dokter = Antrian::where('tanggalperiksa', $tanggal)
+            ->where('kodepoli', $poli)
+            ->where('kodedokter', $dokter)
+            ->count();
+        $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
+        $angkaantrean = $antrian_tgl + 1;
+        $kodebooking = strtoupper(uniqid(6));
+
+        $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
+        $jadwal = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)->where('kodedokter', $dokter)->first();
+        $dokter = Dokter::where('kodedokter', $dokter)->first();
+
+        if ($antrian_dokter >= $jadwal->kapasitaspasien) {
+            Alert::error('Error', 'Antrian poliklinik jadwal dokter tersebut telah penuh');
+            return redirect()->route('antrian.console');
+        }
+        $antrian = Antrian::create([
+            "kodebooking" => $kodebooking,
+            "nik" => 'Offline',
+            "nohp" => 'Offline',
+            "kodepoli" => $poli->kodesubspesialis,
+            "norm" => 'Offline',
+            "pasienbaru" => 2,
+            "tanggalperiksa" => Carbon::now()->format('Y-m-d'),
+            "kodedokter" => $dokter->kodedokter,
+            "jampraktek" => $jadwal->jadwal,
+            "jeniskunjungan" => 'Offline',
+            "jenispasien" => 'Offline',
+            "namapoli" =>  $poli->namasubspesialis,
+            "namadokter" => $dokter->namadokter,
+            "nomorantrean" =>  $nomorantrean,
+            "angkaantrean" =>  $angkaantrean,
+            "estimasidilayani" => 0,
+            "taskid" => 1,
+            "user" => 'System',
+            "keterangan" => 'Offline',
+        ]);
+
+        // try {
+        // $connector = new WindowsPrintConnector('Printer Receipt');
+        // $printer = new Printer($connector);
+        // $printer->setJustification(Printer::JUSTIFY_CENTER);
+        // $printer->setEmphasis(true);
+        // $printer->text("RSUD Waled\n");
+        // $printer->setEmphasis(false);
+        // $printer->text("Melayani Dengan Sepenuh Hati\n");
+        // $printer->text("------------------------------------------------\n");
+        // $printer->text("Karcis Antrian Pendaftaran Offline\n");
+        // $printer->text("Antrian Pendaftaran / Antrian Poliklinik :\n");
+        // $printer->setTextSize(2, 2);
+        // $printer->text($antrian->angkaantrean . " / " .  $antrian->nomorantrean . "\n");
+        // $printer->setTextSize(1, 1);
+        // $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
+        // $printer->setJustification(Printer::JUSTIFY_LEFT);
+        // $printer->text("Silahkan menunggu di Loket Pendaftaran\n");
+        // $printer->cut();
+        // $printer->close();
+        // } catch (Exception $e) {
+        //     Alert::error('Error', 'Error Message : ' . $e->getMessage());
+        //     return redirect()->route('antrian.console');
+        // }
+        Alert::success('Success', 'Antrian Berhasil Ditambahkan');
+        return redirect()->route('antrian.console');
     }
     public function ref_poli()
     {

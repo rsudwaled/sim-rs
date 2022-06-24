@@ -302,6 +302,13 @@ return [
                     'url'  => 'jadwaldokter',
                     // 'can' => 'admin',
                 ],
+                [
+                    'text' => 'Laporan Antrian',
+                    'icon'    => 'fas fa-chart-line',
+                    'shift'   => 'ml-2',
+                    'url'  => 'antrian/laporan',
+                    // 'can' => 'admin',
+                ],
             ],
         ],
         // MENU VCLAIM
