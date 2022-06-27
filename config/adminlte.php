@@ -317,11 +317,17 @@ return [
             'icon'    => 'fas fa-sign-in-alt',
             'can' => 'bpjs',
             'submenu' => [
-
                 [
                     'text' => 'Monitoring Pelayanan Peserta',
                     'icon'    => 'fas fa-id-card',
                     'url'  => 'vclaim/monitoring_pelayanan_peserta',
+                    'shift'   => 'ml-2',
+                    'can' => 'bpjs',
+                ],
+                [
+                    'text' => 'Jumlah SEP Rujukan',
+                    'icon'    => 'fas fa-id-card',
+                    'url'  => 'vclaim/jumlah_sep_rujukan',
                     'shift'   => 'ml-2',
                     'can' => 'bpjs',
                 ],

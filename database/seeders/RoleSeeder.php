@@ -22,6 +22,7 @@ class RoleSeeder extends Seeder
             'Pendaftaran',
             'Poliklinik',
             'Kasir',
+            'BPJS',
             'Farmasi',
             'Rekam Medis',
             'Pelayanan Medis',
