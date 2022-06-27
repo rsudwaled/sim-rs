@@ -464,12 +464,19 @@ class AntrianController extends Controller
     public function checkin_update(Request $request)
     {
         // $connector = new WindowsPrintConnector('Printer Receipt');
-        $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
+        // $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
+        $connector = new WindowsPrintConnector("smb://Printer:qweqwe@MARWAN-PC/Printer Receipt");
         $printer = new Printer($connector);
         $printer->setFont(1);
         $printer->text("Test Printer \n");
         $printer->cut();
         $printer->close();
+        return $response = [
+            'metadata' => [
+                'code' => 400,
+                'message' => "Antrian tidak ditemukan",
+            ],
+        ];
         // checking request
         // $validator = Validator::make(request()->all(), [
         //     "kodebooking" => "required",
