@@ -260,28 +260,117 @@ class VclaimBPJSController extends Controller
     // syarat sep terakhir bisa diliat di monotoring pelayanan peserta / tb_sep
     public function insert_rencana_kontrol(Request $request)
     {
-
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "kodepoli" => "required",
+            "tanggalperiksa" => "required",
+            "kodedokter" => "required",
+            "nomorkartu" => "required|numeric",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+        }
+        // cek monitoring peserta untuk get sep terakhir
+        try {
+            $response = $this->monitoring_pelayanan_peserta($request);
+            $sep = collect($response->response->histori);
+            $sep_terakhir = $sep->where('noRujukan', $request->nomorreferensi)->first()->noSep;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return $response;
+        }
+        // insert surat kontrol
         $url = $this->baseUrl . "RencanaKontrol/insert";
         $signature = $this->signature();
         $client = new Client();
-        dd($request->all());
         $response = $client->request('POST', $url, [
             'headers' => $signature,
             'body' => json_encode([
                 "request" => [
-                    "noSEP" => $request->noSEP,
+                    "noSEP" => $sep_terakhir,
                     "kodeDokter" => $request->kodedokter,
                     "poliKontrol" => $request->kodepoli,
                     "tglRencanaKontrol" => $request->tanggalperiksa,
-                    "user" => "Antrian RSUDWaled",
+                    "user" => "Antrian RSUD Waled",
                 ]
             ]),
         ]);
         $response = json_decode($response->getBody());
-        dd('insert rencana kontrol', $response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+    public function data_surat_kontrol(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "tanggalsuratkontrol" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        $time = Carbon::parse($request->tanggalsuratkontrol);
+        $tanggal_akhir = $time->format('Y-m-d');
+        $tanggal_awal = $time->subDays(29)->format('Y-m-d');
+
+        $url = $this->baseUrl . "RencanaKontrol/ListRencanaKontrol/tglAwal/" . $tanggal_awal . "/tglAkhir/" . $tanggal_akhir . "/filter/2";
+        // dd($url);
+        $signature = $this->signature();
+        $response = Http::withHeaders($signature)->get($url);
+        $response = json_decode($response);
+        if ($response->metaData->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
+        return $response;
+    }
+    public function delete_surat_kontrol(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "noSurat" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metaData' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return json_decode(json_encode($response));
+        }
+        // delete sep
+        $url = $this->baseUrl . "RencanaKontrol/Delete";
+        $signature = $this->signature();
+        $client = new Client();
+        $response = $client->request('DELETE', $url, [
+            'headers' => $signature,
+            'body' => json_encode([
+                "request" => [
+                    "t_suratkontrol" => [
+                        "noSuratKontrol" => $request->noSurat,
+                        "user" => "RSUD Waled",
+                    ]
+                ]
+            ]),
+        ]);
+        $response = json_decode($response->getBody());
+        return $response;
     }
 
-    // syarat surat rencana kontrol
     public function insert_sep(Request $request)
     {
         $url = $this->baseUrl . "SEP/2.0/insert";

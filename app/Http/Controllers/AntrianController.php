@@ -204,6 +204,14 @@ class AntrianController extends Controller
         // update antrian bpjs
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 3;
+        if ($antrian->jenispasien == "JKN") {
+            $request['status_api'] = 1;
+            $request['keterangan'] = "Silahkan melakukan menunggu di poliklinik untuk dilayani";
+        } else {
+            $request['status_api'] = 0;
+            $request['keterangan'] = "Silahkan melakukan pembayaran pendaftaran ke loket pembayaran";
+        }
+
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         if ($response->metadata->code == 200) {
@@ -228,8 +236,8 @@ class AntrianController extends Controller
             // update antrian simrs
             $antrian->update([
                 'taskid' => 3,
-                'status_api' => 0,
-                'keterangan' => "Silahkan melakukan pembayaran pendaftaran ke loket pembayaran",
+                'status_api' => $request->status_api,
+                'keterangan' => $request->keterangan,
                 'user' => Auth::user()->name,
             ]);
             Alert::success('Success', "Pendaftaran Berhasil. \nSilahkan melakukan pembayaran pendaftaran ke loket pembayaran \n" . $response->metadata->message);
@@ -463,20 +471,6 @@ class AntrianController extends Controller
     }
     public function checkin_update(Request $request)
     {
-        // $connector = new WindowsPrintConnector('Printer Receipt');
-        // $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
-        // // $connector = new WindowsPrintConnector("smb://Printer:qweqwe@MARWAN-PC/Printer Receipt");
-        // $printer = new Printer($connector);
-        // $printer->setFont(1);
-        // $printer->text("Test Printer \n");
-        // $printer->cut();
-        // $printer->close();
-        // return $response = [
-        //     'metadata' => [
-        //         'code' => 400,
-        //         'message' => "Antrian tidak ditemukan",
-        //     ],
-        // ];
         // checking request
         $validator = Validator::make(request()->all(), [
             "kodebooking" => "required",
@@ -495,59 +489,16 @@ class AntrianController extends Controller
         if (isset($antrian)) {
             $api = new AntrianBPJSController();
             $response = json_decode(json_encode($api->checkin_antrian($request)));
-            // jika berhasil update antrian
-            if ($response->metadata->code == 200) {
-                if ($antrian->pasienbaru == 1) {
-                    $pasienbaru = "BARU";
-                } else {
-                    $pasienbaru = "LAMA";
-                }
-                // $connector = new WindowsPrintConnector('Printer Receipt');
-                $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
-                $printer = new Printer($connector);
-                $printer->setFont(1);
-                $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->setEmphasis(true);
-                $printer->text("RSUD Waled\n");
-                $printer->setEmphasis(false);
-                $printer->text("Melayani Dengan Sepenuh Hati\n");
-                $printer->text("------------------------------------------------\n");
-                $printer->text("Karcis Antrian Rawat Jalan\n");
-                $printer->text("Nomor / Angka /Jenis Pasien :\n");
-                $printer->setTextSize(2, 2);
-                $printer->text($antrian->nomorantrean . "/" . $antrian->angkaantrean . "/" . $antrian->jenispasien . " " . $pasienbaru . "\n");
-                $printer->setTextSize(1, 1);
-                $printer->text("Kode Booking : " . $antrian->kodebooking . "\n\n");
-                $printer->setJustification(Printer::JUSTIFY_LEFT);
-                $printer->text("No RM : " . $antrian->norm . "\n");
-                $printer->text("NIK : " . $antrian->nik . "\n");
-                if ($antrian->nomorkartu != "") {
-                    $printer->text("No Peserta : " . $antrian->nomorkartu . "\n");
-                }
-                if ($antrian->nomorreferensi != "") {
-                    $printer->text("No Rujukan : " . $antrian->nomorreferensi . "\n");
-                }
-                $printer->text("Nama : " . $antrian->nama . "\n\n");
-                $printer->text("Poliklinik : " . $antrian->namapoli . "\n");
-                $printer->text("Kunjungan : " . $antrian->jeniskunjungan . "\n");
-                $printer->text("Dokter : " . $antrian->namadokter . "\n");
-                $printer->text("Tanggal : " . Carbon::parse($antrian->tanggalperiksa)->format('d M Y') . "\n");
-                $printer->text("Print : " . Carbon::now() . "\n\n");
-                $printer->text("Terima kasih atas kepercayaan anda. \n");
-                $printer->cut();
-                $printer->close();
-            }
-            // jika berhasil update antrian
-            else {
-                // $connector = new WindowsPrintConnector('Printer Receipt');
-                $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
-                $printer = new Printer($connector);
-                $printer->setFont(1);
-                $printer->text("Kode Booking : " . $antrian->kodebooking . "\n");
-                $printer->text("Error : " . $response->metadata->message . "\n");
-                $printer->cut();
-                $printer->close();
-            }
+            // else {
+            //     // $connector = new WindowsPrintConnector('Printer Receipt');
+            //     $connector = new WindowsPrintConnector("smb://MARWAN-PC/Printer Receipt");
+            //     $printer = new Printer($connector);
+            //     $printer->setFont(1);
+            //     $printer->text("Kode Booking : " . $antrian->kodebooking . "\n");
+            //     $printer->text("Error : " . $response->metadata->message . "\n");
+            //     $printer->cut();
+            //     $printer->close();
+            // }
             return $response;
         }
         // jika antrian tidak ditemukan

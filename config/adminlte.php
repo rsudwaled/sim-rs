@@ -251,7 +251,7 @@ return [
         [
             'text'    => 'Aplikasi Antrian',
             'icon'    => 'fas fa-sign-in-alt',
-            'can' => ['admin','pendaftaran','kasir','poliklinik','farmasi'],
+            'can' => ['admin', 'pendaftaran', 'kasir', 'poliklinik', 'farmasi'],
             'submenu' => [
                 [
                     'text' => 'Console Antrian',
@@ -328,6 +328,13 @@ return [
                     'text' => 'Jumlah SEP Rujukan',
                     'icon'    => 'fas fa-id-card',
                     'url'  => 'vclaim/jumlah_sep_rujukan',
+                    'shift'   => 'ml-2',
+                    'can' => 'bpjs',
+                ],
+                [
+                    'text' => 'Data Surat Kontrol',
+                    'icon'    => 'fas fa-id-card',
+                    'url'  => 'vclaim/data_surat_kontrol',
                     'shift'   => 'ml-2',
                     'can' => 'bpjs',
                 ],
