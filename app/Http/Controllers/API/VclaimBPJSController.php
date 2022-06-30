@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\SuratKontrol;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -268,7 +269,7 @@ class VclaimBPJSController extends Controller
             "nomorkartu" => "required|numeric",
         ]);
         if ($validator->fails()) {
-            $response = [
+            return $response = [
                 'metaData' => [
                     'code' => 400,
                     'message' => $validator->errors()->first(),
@@ -279,7 +280,9 @@ class VclaimBPJSController extends Controller
         try {
             $response = $this->monitoring_pelayanan_peserta($request);
             $sep = collect($response->response->histori);
-            $sep_terakhir = $sep->where('noRujukan', $request->nomorreferensi)->first()->noSep;
+            $sep_last = $sep->where('noRujukan', $request->nomorreferensi)->first();
+            $sep = $sep_last;
+            $nomorSepTerakhir =  $sep->noSep;
         } catch (\Throwable $th) {
             //throw $th;
             return $response;
@@ -292,7 +295,7 @@ class VclaimBPJSController extends Controller
             'headers' => $signature,
             'body' => json_encode([
                 "request" => [
-                    "noSEP" => $sep_terakhir,
+                    "noSEP" => $nomorSepTerakhir,
                     "kodeDokter" => $request->kodedokter,
                     "poliKontrol" => $request->kodepoli,
                     "tglRencanaKontrol" => $request->tanggalperiksa,
@@ -304,7 +307,34 @@ class VclaimBPJSController extends Controller
         if ($response->metaData->code == 200) {
             $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
             $response->response = json_decode($decrypt);
+            // insert database surat kontrol
+            $surat_kontrol = $response->response;
+            $db = SuratKontrol::create([
+                "noSuratKontrol" => $surat_kontrol->noSuratKontrol,
+                "noRujukan" => $request->nomorreferensi,
+                "jnsPelayanan" => $sep->jnsPelayanan,
+                // "jnsKontrol" => $surat_kontrol->noSuratKontrol,
+                // "namaJnsKontrol" => $surat_kontrol->noSuratKontrol,
+                "tglRencanaKontrol" => $surat_kontrol->tglRencanaKontrol,
+                "tglTerbitKontrol" => Carbon::now()->format("Y-m-d"),
+                "noSepAsalKontrol" => $sep->noSep,
+                // "poliAsal" => $surat_kontrol->noSuratKontrol,
+                "namaPoliAsal" => $sep->poli,
+                "poliTujuan" => $request->kodepoli,
+                // "namaPoliTujuan" => $surat_kontrol->noSuratKontrol,
+                "tglSEP" => $sep->tglSep,
+                "kodeDokter" => $request->kodedokter,
+                "namaDokter" => $surat_kontrol->namaDokter,
+                "noKartu" => $surat_kontrol->noKartu,
+                "nama" => $surat_kontrol->nama,
+                "kelamin" => $surat_kontrol->kelamin,
+                "tglLahir" => $surat_kontrol->tglLahir,
+                "namaDiagnosa" => $surat_kontrol->namaDiagnosa,
+                "terbitSEP" => "Sudah",
+                "user" => "System Ambil Antrian",
+            ]);
         }
+
         return $response;
     }
     public function data_surat_kontrol(Request $request)
@@ -373,6 +403,24 @@ class VclaimBPJSController extends Controller
 
     public function insert_sep(Request $request)
     {
+        // dd($request->all());
+        if ($request->nomorsuratkontrol) {
+            $request['tujuanKunj'] = "2";
+            $request['flagProcedure'] = "";
+            $request['kdPenunjang'] = "";
+            $request['assesmentPel'] = "2";
+            $request['noSurat'] = $request->nomorsuratkontrol;
+            $request['kodeDPJP'] = $request->kodedokter;
+            $request['dpjpLayan'] = $request->kodedokter;
+        } else {
+            $request['tujuanKunj'] = "0";
+            $request['flagProcedure'] = "";
+            $request['kdPenunjang'] = "";
+            $request['assesmentPel'] = "";
+            $request['noSurat'] = "";
+            $request['kodeDPJP'] = "";
+            $request['dpjpLayan'] = "";
+        }
         $url = $this->baseUrl . "SEP/2.0/insert";
         $signature = $this->signature();
         $client = new Client();
@@ -428,16 +476,16 @@ class VclaimBPJSController extends Controller
                                 ]
                             ]
                         ],
-                        "tujuanKunj" => "0",
-                        "flagProcedure" => "",
-                        "kdPenunjang" => "",
-                        "assesmentPel" => "",
+                        "tujuanKunj" => $request->tujuanKunj,
+                        "flagProcedure" => $request->flagProcedure,
+                        "kdPenunjang" => $request->kdPenunjang,
+                        "assesmentPel" => $request->assesmentPel,
                         "skdp" => [
-                            "noSurat" => "",
-                            "kodeDPJP" => ""
+                            "noSurat" => $request->noSurat,
+                            "kodeDPJP" => $request->kodeDPJP,
                         ],
                         "dpjpLayan" => $request->dpjpLayan,
-                        "noTelp" => "089529909036",
+                        "noTelp" => $request->nohp,
                         "user" => "Admin RSUD Waled"
                     ]
                 ]

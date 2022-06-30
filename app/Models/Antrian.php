@@ -21,6 +21,8 @@ class Antrian extends Model
         "jampraktek",
         "jeniskunjungan",
         "nomorreferensi",
+        "nomorsuratkontrol",
+        "nomorsep",
         "jenispasien",
         "namapoli",
         "pasienbaru",
