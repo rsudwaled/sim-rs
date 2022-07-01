@@ -51,7 +51,7 @@
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
                 <x-adminlte-card
-                    title="Antrian Pendaftaran Sudah Checkin ({{ $antrians->where('taskid', 1)->count() }} Orang)"
+                    title="Antrian Pendaftaran Belum Dilayani ({{ $antrians->where('taskid', 1)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
                     @if ($errors->any())
                         <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>

@@ -240,7 +240,7 @@ class AntrianController extends Controller
                 'keterangan' => $request->keterangan,
                 'user' => Auth::user()->name,
             ]);
-            Alert::success('Success', "Pendaftaran Berhasil. \nSilahkan melakukan pembayaran pendaftaran ke loket pembayaran \n" . $response->metadata->message);
+            Alert::success('Success', "Pendaftaran Berhasil. " . $request->keterangan . " " . $response->metadata->message);
             return redirect()->back();
         }
         // jika gagal update antrian bpjs

@@ -32,9 +32,9 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // antrian routes
+Route::get('antrian/console', [AntrianController::class, 'console'])->name('console');
 Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->group(function () {
     // console
-    Route::get('console', [AntrianController::class, 'console'])->name('console');
     Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
     Route::get('laporan', [AntrianController::class, 'laporan'])->name('laporan');
@@ -100,7 +100,6 @@ Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified', 'permi
     Route::delete('delete_sep/{noSep}', [VclaimController::class, 'delete_sep'])->name('delete_sep');
     Route::get('data_surat_kontrol', [VclaimController::class, 'data_surat_kontrol'])->name('data_surat_kontrol');
     Route::delete('delete_surat_kontrol/{noSurat}', [VclaimController::class, 'delete_surat_kontrol'])->name('delete_surat_kontrol');
-
 });
 
 Route::resource('kunjungan', KunjunganController::class);
