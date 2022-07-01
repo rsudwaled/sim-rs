@@ -33,6 +33,8 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // antrian routes
 Route::get('antrian/console', [AntrianController::class, 'console'])->name('console');
+Route::get('antrian/checkin', [AntrianController::class, 'checkin'])->name('checkin');
+Route::get('antrian/checkin_update', [AntrianController::class, 'checkin_update'])->name('checkin_update');
 Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->group(function () {
     // console
     Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
@@ -59,8 +61,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('racik_farmasi/{kodebooking}', [AntrianController::class, 'racik_farmasi'])->name('racik_farmasi')->middleware('permission:farmasi');
     Route::get('selesai_farmasi/{kodebooking}', [AntrianController::class, 'selesai_farmasi'])->name('selesai_farmasi')->middleware('permission:farmasi');
 
-
-
     Route::get('{kodebookig}/show', [AntrianController::class, 'show'])->name('show');
 
     Route::get('display_pendaftaran', [AntrianController::class, 'display_pendaftaran'])->name('display_pendaftaran');
@@ -77,9 +77,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     });
 
     Route::post('store', [AntrianController::class, 'store'])->name('store');
-    Route::get('checkin', [AntrianController::class, 'checkin'])->name('checkin');
-    Route::get('checkin_update', [AntrianController::class, 'checkin_update'])->name('checkin_update');
-
     // Route::get('offline', [AntrianController::class, 'offline'])->name('offline');
     // Route::get('offline/add/{poli}', [AntrianController::class, 'offline_add'])->name('offline_add');
     // pendaftaran
