@@ -744,9 +744,7 @@ class AntrianBPJSController extends Controller
         // $printer->text("RSUD Waled \n");
         // $printer->cut();
         // $printer->close();
-
         // dd('selesai');
-
 
         // auth token
         $auth = $this->auth_token($request);
