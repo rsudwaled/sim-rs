@@ -739,13 +739,13 @@ class AntrianBPJSController extends Controller
         // $connector = new WindowsPrintConnector('Printer Receipt');
         // $connector = new WindowsPrintConnector("smb://ANTRIAN/Printer Receipt");
         $connector = new WindowsPrintConnector("smb://PRINTER:qweqwe@ANTRIAN/Printer Receipt");
-        $printer = new Printer($connector);
-        $printer->setFont(1);
-        $printer->text("RSUD Waled \n");
-        $printer->cut();
-        $printer->close();
+        // $printer = new Printer($connector);
+        // $printer->setFont(1);
+        // $printer->text("RSUD Waled \n");
+        // $printer->cut();
+        // $printer->close();
 
-        dd('selesai');
+        // dd('selesai');
 
 
         // auth token
@@ -830,7 +830,6 @@ class AntrianBPJSController extends Controller
                 $request['nomorsuratkontrol'] = $antrian->nomorsuratkontrol;
                 $sep = $vclaim->insert_sep($request);
                 if ($sep->metaData->code == 200) {
-                    $connector = new WindowsPrintConnector("smb://ANTRIAN/Printer Receipt");
                     $printer = new Printer($connector);
                     $sep = $sep->response;
                     $printer->setFont(1);
@@ -898,9 +897,6 @@ class AntrianBPJSController extends Controller
             } else {
                 $pasienbaru = "LAMA";
             }
-            // $connector = new WindowsPrintConnector('Printer Receipt');
-            // $connector = new WindowsPrintConnector("smb://ANTRIAN/Printer Receipt");
-            $connector = new WindowsPrintConnector("smb://Guest@ANTRIAN/Printer Receipt");
             $printer = new Printer($connector);
             $printer->setFont(1);
             $printer->setJustification(Printer::JUSTIFY_CENTER);
