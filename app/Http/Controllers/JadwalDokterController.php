@@ -81,41 +81,6 @@ class JadwalDokterController extends Controller
             Alert::success('Success', 'Jadwal Telah Diperbarui');
             return redirect()->route('jadwaldokter.index');
         }
-        if ($request->method == 'DELETE') {
-            $jadwal = JadwalDokter::find($request->idjadwal);
-            $jadwal->delete();
-            Alert::success('Success', 'Jadwal Telah Dihapus');
-            return redirect()->route('jadwaldokter.index');
-        }
-        if ($request->method == 'STORE') {
-            $poli = Poliklinik::firstWhere('kodesubspesialis', $request->kodesubspesialis1);
-            $dokter = Dokter::firstWhere('kodedokter', $request->kodedokter1);
-            $hari = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
-            if ($request->libur1 == "true") {
-                $libur = 1;
-            } else {
-                $libur = 0;
-            }
-            JadwalDokter::updateOrCreate(
-                [
-                    'kodesubspesialis' => $poli->kodesubspesialis,
-                    'kodedokter' => $dokter->kodedokter,
-                    'hari' => $request->hari,
-                ],
-                [
-                    'kodepoli' => $poli->kodepoli,
-                    'namapoli' => $poli->namapoli,
-                    'namasubspesialis' => $poli->namasubspesialis,
-                    'namadokter' => $dokter->namadokter,
-                    'namahari' => $hari[$request->hari],
-                    'jadwal' => $request->jadwal,
-                    'libur' => $libur,
-                    'kapasitaspasien' => $request->kapasitaspasien,
-                ]
-            );
-            Alert::success('Success', 'Jadwal Telah Disimpan');
-            return redirect()->route('jadwaldokter.index');
-        }
     }
     public function edit($id)
     {

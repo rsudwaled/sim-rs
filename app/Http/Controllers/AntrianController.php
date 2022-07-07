@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AntrianBPJSController;
 use App\Http\Controllers\API\VclaimBPJSController;
 use App\Models\Antrian;
 use App\Models\Dokter;
+use App\Models\JadwalDokter;
 use App\Models\JadwalPoli;
 use App\Models\Pasien;
 use App\Models\Poliklinik;
@@ -698,4 +699,5 @@ class AntrianController extends Controller
             'jadwals' => $jadwals,
         ]);
     }
+
 }
