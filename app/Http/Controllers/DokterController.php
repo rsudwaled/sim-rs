@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\API\AntrianBPJSController;
 use App\Models\Dokter;
 use Illuminate\Http\Request;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class DokterController extends Controller
 {
@@ -17,7 +19,20 @@ class DokterController extends Controller
 
     public function create()
     {
-        //
+        $api = new AntrianBPJSController();
+        $poli = $api->ref_dokter()->response;
+        foreach ($poli as $value) {
+            Dokter::updateOrCreate(
+                [
+                    'kodedokter' => $value->kodedokter,
+                ],
+                [
+                    'namadokter' => $value->namadokter,
+                ]
+            );
+        }
+        Alert::success('Success', 'Refresh Data Dokter Berhasil');
+        return redirect()->route('dokter.index');
     }
 
     public function store(Request $request)

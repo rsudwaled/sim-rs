@@ -1,0 +1,42 @@
+jadwal = [
+    // hari sebelum diupdate atau jadwal awal
+    {
+        "hari": "1",
+        "buka": "08:00",
+        "tutup": "10:00"
+    },
+    //  jadwal diupdate atau jadwal perubahan
+    {
+        "hari": "2",
+        "buka": "15:00",
+        "tutup": "17:00"
+    }
+]
+
+jadwal = [
+    // hari senin
+    {
+        "hari": "8",
+        "buka": "08:00",
+        "tutup": "10:00"
+    },
+    // hari selasa
+    {
+        "hari": "2",
+        "buka": "15:00",
+        "tutup": "17:00"
+    },
+    // hari rabu
+    {
+        "hari": "8",
+        "buka": "15:00",
+        "tutup": "17:00"
+    },
+    // hari kamis
+    {
+        "hari": "4",
+        "buka": "15:00",
+        "tutup": "17:00"
+    }
+
+]

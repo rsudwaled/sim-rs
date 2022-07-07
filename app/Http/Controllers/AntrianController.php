@@ -668,28 +668,6 @@ class AntrianController extends Controller
             'polis' => $polis,
         ]);
     }
-    public function ref_dokter()
-    {
-        $dokters = Dokter::get();
-        return view('simrs.antrian_ref_dokter', compact('dokters'));
-    }
-    public static function get_dokter_bpjs()
-    {
-        $api = new AntrianBPJSController();
-        $poli = $api->ref_dokter()->response;
-        foreach ($poli as $value) {
-            Dokter::updateOrCreate(
-                [
-                    'kodedokter' => $value->kodedokter,
-                ],
-                [
-                    'namadokter' => $value->namadokter,
-                ]
-            );
-        }
-        Alert::success('Success', 'Refresh Data Dokter Berhasil');
-        return redirect()->route('dokter.index');
-    }
     public function ref_jadwaldokter()
     {
         $poli = Poliklinik::get();
@@ -699,5 +677,4 @@ class AntrianController extends Controller
             'jadwals' => $jadwals,
         ]);
     }
-
 }

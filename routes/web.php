@@ -103,7 +103,7 @@ Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified', 'permi
 });
 
 Route::resource('poli', PoliklinikController::class)->only(['index', 'create', 'edit']);
-Route::resource('dokter', DokterController::class);
+Route::resource('dokter', DokterController::class)->only(['index', 'create']);
 Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit']);
 Route::resource('kunjungan', KunjunganController::class);
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);
