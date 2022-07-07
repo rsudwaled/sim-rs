@@ -6,7 +6,6 @@ use App\Http\Controllers\API\AntrianBPJSController;
 use App\Http\Controllers\API\VclaimBPJSController;
 use App\Models\Antrian;
 use App\Models\Dokter;
-use App\Models\JadwalPoli;
 use App\Models\Pasien;
 use App\Models\Poliklinik;
 use App\Models\Provinsi;
@@ -140,10 +139,12 @@ class AntrianController extends Controller
             $jenispasien = 'JKN';
             $request['keterangan'] = "Silahkan menunggu diruang tunggu poliklinik";
             $request['taskid'] = 3;
+            $request['status_api'] = 1;
         } else {
             $jenispasien = 'NON JKN';
             $request['keterangan'] = "Silahkan untuk membayar biaya pendaftaran diloket pembayaran";
-            $request['taskid'] = 2;
+            $request['taskid'] = 3;
+            $request['status_api'] = 0;
         }
         $request['kodebooking'] = $antrian->kodebooking;
         $request['nomorantrean'] = $antrian->nomorantrean;
@@ -209,7 +210,7 @@ class AntrianController extends Controller
                 "taskid" => $request->taskid,
                 "keterangan" => $request->keterangan,
                 "user" => Auth::user()->name,
-                "status_api" => 1,
+                "status_api" => $request->status_api,
             ]);
             Alert::success('Success', 'Success Message : ' . $request->keterangan);
             return redirect()->back();

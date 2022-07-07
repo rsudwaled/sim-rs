@@ -696,30 +696,39 @@ class AntrianBPJSController extends Controller
         }
         // end auth token
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
-        $sisaantrean = Antrian::where('taskid', "<=", 1)
-            ->where('tanggalperiksa', $antrian->tanggalperiksa)
-            ->count();
-        $antreanpanggil =  Antrian::where('taskid', 2)
-            ->where('tanggalperiksa', $antrian->tanggalperiksa)
-            ->first();
-        $antrian['waktutunggu'] = "Error";
-        $antrian['keterangan'] = "Info antrian anda";
-        $response = [
-            "response" => [
-                "nomorantrean" => $antrian->nomorantrean,
-                "namapoli" => $antrian->namapoli,
-                "namadokter" => $antrian->namadokter,
-                "sisaantrean" => $sisaantrean,
-                "antreanpanggil" => $antreanpanggil->angkaantrean . "-" . $antreanpanggil->nomorantrean,
-                "waktutunggu" => $antrian->waktutunggu,
-                "keterangan" => $antrian->keterangan,
-            ],
-            "metadata" => [
-                "message" => "Ok",
-                "code" => 200
-            ]
-        ];
-        return $response;
+        if ($antrian) {
+            $sisaantrean = Antrian::where('taskid', "<=", 3)
+                ->where('tanggalperiksa', $antrian->tanggalperiksa)
+                ->count();
+            $antreanpanggil =  Antrian::where('taskid', "<=", 3)
+                ->where('tanggalperiksa', $antrian->tanggalperiksa)
+                ->first();
+            $antrian['waktutunggu'] = "5";
+            $antrian['keterangan'] = "Info antrian anda";
+            $response = [
+                "response" => [
+                    "nomorantrean" => $antrian->nomorantrean,
+                    "namapoli" => $antrian->namapoli,
+                    "namadokter" => $antrian->namadokter,
+                    "sisaantrean" => $sisaantrean,
+                    "antreanpanggil" => $antreanpanggil->nomorantrean,
+                    "waktutunggu" => $antrian->waktutunggu * $sisaantrean,
+                    "keterangan" => $antrian->keterangan,
+                ],
+                "metadata" => [
+                    "message" => "Ok",
+                    "code" => 200
+                ]
+            ];
+            return $response;
+        } else {
+            return $response = [
+                "metadata" => [
+                    "message" => "Antrian tidak ditemukan",
+                    "code" => 201,
+                ],
+            ];
+        }
     }
     public function batal_antrian(Request $request)
     {

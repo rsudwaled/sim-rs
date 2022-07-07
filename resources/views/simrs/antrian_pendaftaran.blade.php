@@ -50,8 +50,9 @@
                 </form>
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
+                {{-- antrian sedang dipanggil --}}
                 <x-adminlte-card
-                    title="Antrian Pendaftaran Belum Dilayani ({{ $antrians->where('taskid', 1)->count() }} Orang)"
+                    title="Antrian Pendaftaran Sedang Dilayani ({{ $antrians->where('taskid', 2)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
                     @if ($errors->any())
                         <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
@@ -66,9 +67,9 @@
                         $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
                         $config['order'] = ['7', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
-                        bordered hoverable compressed>
-                        @foreach ($antrians->where('taskid', '!=', 0) as $item)
+                    <x-adminlte-datatable id="table3" class="nowrap" :heads="$heads" :config="$config" striped bordered
+                        hoverable compressed>
+                        @foreach ($antrians->where('taskid', '==', 2) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
                                 <td>{{ $item->kodebooking }}<br>
@@ -170,6 +171,122 @@
                         @endforeach
                     </x-adminlte-datatable>
                 </x-adminlte-card>
+                {{-- antrian belum dipanggil --}}
+                <x-adminlte-card
+                    title="Antrian Pendaftaran Belum Dilayani ({{ $antrians->where('taskid', 1)->count() }} Orang)"
+                    theme="primary" icon="fas fa-info-circle" collapsible>
+                    @php
+                        $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
+                        $config['order'] = ['7', 'asc'];
+                    @endphp
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped bordered
+                        hoverable compressed>
+                        @foreach ($antrians->where('taskid', '!=', 0) as $item)
+                            <tr>
+                                <td>{{ $item->angkaantrean }}</td>
+                                <td>{{ $item->kodebooking }}<br>
+                                    {{ $item->nomorantrean }}
+                                </td>
+                                <td>{{ $item->tanggalperiksa }}</td>
+                                <td>
+                                    {{ $item->norm }} <br>
+                                    {{ $item->nik }}
+                                </td>
+                                <td>
+                                    {{ $item->jenispasien }}
+                                    @if ($item->pasienbaru == 1)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Baru</span>
+                                    @endif
+                                    @if ($item->pasienbaru == 0)
+                                        <span class="badge bg-secondary">{{ $item->pasienbaru }}. Lama</span>
+                                    @endif
+                                    @isset($item->pasien)
+                                        <br>
+                                        {{ $item->pasien->nama }}
+                                    @endisset
+                                </td>
+                                <td>
+                                    @isset($item->nomorkartu)
+                                        {{ $item->nomorkartu }}
+                                    @endisset
+                                    @isset($item->nomorkartu)
+                                        <br> {{ $item->nomorreferensi }}
+                                    @endisset
+                                </td>
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                </td>
+                                <td>
+                                    {{-- {{ $item->taskid }} --}}
+                                    @if ($item->taskid == 0)
+                                        <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
+                                    @endif
+                                    @if ($item->taskid == 1)
+                                        <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
+                                    @endif
+                                    @if ($item->taskid == 2)
+                                        <span class="badge bg-primary">{{ $item->taskid }}. Proses Pendaftaran</span>
+                                    @endif
+                                    @if ($item->taskid == 3)
+                                        @if ($item->status_api == 0)
+                                            <span class="badge bg-warning">2. Belum Pembayaran</span>
+                                        @else
+                                            <span class="badge bg-success">{{ $item->taskid }}. Tunggu Poli</span>
+                                        @endif
+                                    @endif
+                                    @if ($item->taskid >= 4 && $item->taskid <= 7)
+                                        <span class="badge bg-success">{{ $item->taskid }}. Pelayanan Poli</span>
+                                    @endif
+                                    @if ($item->taskid == 99)
+                                        <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
+                                    @endif
+
+                                </td>
+                                <td>
+                                    @if ($item->taskid <= 2)
+                                        {{-- panggil pertama --}}
+                                        @if ($item->taskid == 1)
+                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="success"
+                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
+                                        @endif
+                                        {{-- panggil ulang --}}
+                                        @if ($item->taskid == 2)
+                                            <x-adminlte-button class="btn-xs" label="Panggil Ulang" theme="primary"
+                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
+                                            @if ($item->pasienbaru == 1)
+                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical"
+                                                    data-toggle="tooltip" title="Daftar Online"
+                                                    data-id="{{ $item->id }}" />
+                                            @endif
+                                            @if ($item->pasienbaru == 0)
+                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical"
+                                                    data-toggle="tooltip" title="Daftar Online"
+                                                    data-id="{{ $item->id }}" />
+                                            @endif
+                                            @if ($item->pasienbaru == 2)
+                                                <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
+                                                    theme="success" icon="fas fa-hand-holding-medical"
+                                                    data-toggle="tooltip" title="Daftar Offline"
+                                                    data-id="{{ $item->id }}" />
+                                            @endif
+                                        @endif
+                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                            data-toggle="tooltip" title="Batal Antrian"
+                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
+                                    @else
+                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
+                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
+                                    @endif
+
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-adminlte-datatable>
+                </x-adminlte-card>
+                {{-- antrian belum checkin --}}
                 <x-adminlte-card
                     title="Antrian Pendaftaran Belum Checkin ({{ $antrians->where('taskid', 0)->count() }} Orang)"
                     theme="secondary" icon="fas fa-info-circle" collapsible="collapsed">
@@ -211,7 +328,6 @@
                                 <td>
                                     @if ($item->taskid == 0)
                                         <span class="badge bg-secondary">{{ $item->taskid }}. Belum Checkin</span>
-
                                     @endif
                                     @if ($item->taskid == 1)
                                         <span class="badge bg-warning">{{ $item->taskid }}. Checkin</span>
@@ -221,8 +337,8 @@
                                         <span class="badge bg-danger">{{ $item->taskid }}. Batal</span>
                                     @endif
                                     <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                    data-toggle="tooltip" title="Batal Antrian"
-                                    onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
+                                        data-toggle="tooltip" title="Batal Antrian"
+                                        onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                 </td>
                             </tr>
                         @endforeach
@@ -247,7 +363,8 @@
             <x-adminlte-card theme="primary" title="Informasi Kunjungan Berobat">
                 <div class="row">
                     <div class="col-md-6">
-                        <x-adminlte-input name="nik" id="nik" label="NIK" placeholder="NIK" enable-old-support>
+                        <x-adminlte-input name="nik" id="nik" label="NIK" placeholder="NIK"
+                            enable-old-support>
                             <x-slot name="appendSlot">
                                 <x-adminlte-button name="cariNIK" id="cariNIK" theme="primary" label="Cari!" />
                             </x-slot>
@@ -263,7 +380,8 @@
                         </x-adminlte-input>
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-input name="norm" label="Nomor RM" placeholder="Nomor RM" readonly enable-old-support />
+                        <x-adminlte-input name="norm" label="Nomor RM" placeholder="Nomor RM" readonly
+                            enable-old-support />
                     </div>
                     <div class="col-md-3">
                         <x-adminlte-input name="statuspasien" label="Status Pasien" placeholder="Status Pasien" readonly
@@ -273,10 +391,12 @@
                         <x-adminlte-input name="nomorkk" label="Nomor KK" placeholder="Nomor KK" enable-old-support />
                     </div>
                     <div class="col-md-4">
-                        <x-adminlte-input name="nama" label="Nama Lengkap" placeholder="Nama Lengkap" enable-old-support />
+                        <x-adminlte-input name="nama" label="Nama Lengkap" placeholder="Nama Lengkap"
+                            enable-old-support />
                     </div>
                     <div class="col-md-4">
-                        <x-adminlte-input name="nohp" label="Nomor HP" placeholder="Nomor HP Aktif" enable-old-support />
+                        <x-adminlte-input name="nohp" label="Nomor HP" placeholder="Nomor HP Aktif"
+                            enable-old-support />
                     </div>
                     <div class="col-md-6">
                         <x-adminlte-input name="nomorkartu" label="Nomor Kartu BPJS" placeholder="Nomor Kartu BPJS"
@@ -322,8 +442,9 @@
                         @php
                             $config = ['format' => 'YYYY-MM-DD'];
                         @endphp
-                        <x-adminlte-input-date name="tanggalperiksa" value="{{ Carbon\Carbon::now()->format('Y-m-d') }}"
-                            label="Tanggal Periksa" readonly :config="$config" />
+                        <x-adminlte-input-date name="tanggalperiksa"
+                            value="{{ Carbon\Carbon::now()->format('Y-m-d') }}" label="Tanggal Periksa" readonly
+                            :config="$config" />
                     </div>
                     <div class="col-md-4">
                         <x-adminlte-input name="jampraktek" label="Jadwal Praktek" placeholder="Waktu Jadwal Praktek"
@@ -332,10 +453,12 @@
 
                 </div>
             </x-adminlte-card>
+            {{-- form pasien offline --}}
             <x-adminlte-card id="formPasien" theme="primary" title="Informasi Pasien Berobat">
                 <div class="row">
                     <div class="col-md-4">
-                        <x-adminlte-select id="jeniskelamin" name="jeniskelamin" label="Jenis Kelamin" enable-old-support>
+                        <x-adminlte-select id="jeniskelamin" name="jeniskelamin" label="Jenis Kelamin"
+                            enable-old-support>
                             <option disabled selected>PILIH JENIS KELAMIN</option>
                             <option value="L">LAKI-LAKI</option>
                             <option value="P">PEREMPUAN</option>
@@ -363,7 +486,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodeprop" id="kodeprop" label="Provonsi">
+                        <x-adminlte-select2 name="kodeprop" id="kodeprop" label="Provonsi" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                             @foreach ($provinsis as $item)
                                 <option value="{{ $item->kode }}">{{ $item->nama }}</option>
@@ -371,12 +494,12 @@
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodedati2" id="kodedati2" label="Kota / Kabupaten">
+                        <x-adminlte-select2 name="kodedati2" id="kodedati2" label="Kota / Kabupaten" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodekec" id="kodekec" label="Kecamatan">
+                        <x-adminlte-select2 name="kodekec" id="kodekec" label="Kecamatan" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
@@ -441,7 +564,8 @@
                                 </div>
                             </x-slot>
                             <x-slot name="bottomSlot">
-                                <span id="pasienTidakDitemukanOn" class="text-sm text-danger">Silahkan masukan nik dan klik
+                                <span id="pasienTidakDitemukanOn" class="text-sm text-danger">Silahkan masukan nik dan
+                                    klik
                                     cari pasien</span>
                                 <span id="pasienDitemukanOn" class="text-sm text-success"></span>
                             </x-slot>
@@ -452,8 +576,8 @@
                             enable-old-support />
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-input name="statuspasienOn" label="Status Pasien" placeholder="Status Pasien" readonly
-                            enable-old-support />
+                        <x-adminlte-input name="statuspasienOn" label="Status Pasien" placeholder="Status Pasien"
+                            readonly enable-old-support />
                     </div>
 
                 </div>
@@ -468,7 +592,8 @@
                             enable-old-support />
                     </div>
                     <div class="col-md-4">
-                        <x-adminlte-input name="nohpOn" label="Nomor HP" placeholder="Nomor HP Aktif" enable-old-support />
+                        <x-adminlte-input name="nohpOn" label="Nomor HP" placeholder="Nomor HP Aktif"
+                            enable-old-support />
                     </div>
                     <div class="col-md-6">
                         <x-adminlte-input name="nomorkartuOn" label="Nomor Kartu BPJS" placeholder="Nomor Kartu BPJS"
@@ -519,7 +644,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodepropOn" label="Provonsi">
+                        <x-adminlte-select2 name="kodepropOn" label="Provonsi" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                             @foreach ($provinsis as $item)
                                 <option value="{{ $item->kode }}">{{ $item->nama }}</option>
@@ -527,12 +652,12 @@
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodedati2On" label="Kota / Kabupaten">
+                        <x-adminlte-select2 name="kodedati2On" label="Kota / Kabupaten" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
-                        <x-adminlte-select2 name="kodekecOn" label="Kecamatan">
+                        <x-adminlte-select2 name="kodekecOn" label="Kecamatan" enable-old-support>
                             <option value="" disabled selected>PILIH PROVINSI</option>
                         </x-adminlte-select2>
                     </div>
@@ -660,14 +785,13 @@
     <script>
         $(function() {
             $('#formPasien').hide();
-
             $('#cariNIK').on('click', function() {
                 var nik = $('#nik').val();
                 if (nik == '') {
                     alert('NIK tidak boleh kosong');
                 } else {
                     $.LoadingOverlay("show");
-                    $.get("http://127.0.0.1:8000/antrian/cari_pasien/" + nik, function(data) {
+                    $.get("{{ route('antrian.index') }}" + "/cari_pasien/" + nik, function(data) {
                         console.log(data.metadata.code);
                         if (data.metadata.code == 200) {
                             $('#pasienDitemukan').html(data.metadata.message);
@@ -684,10 +808,6 @@
                             $('#pasienTidakDitemukan').html(data.metadata.message);
                             $('#pasienDitemukan').html('');
                             $('#statuspasien').val('BARU');
-                            $('#nomorkk').val('');
-                            $('#nohp').val('');
-                            $('#nama').val('');
-                            $('#nomorkartu').val('');
                             $('#formPasien').show();
                         }
                         $.LoadingOverlay("hide", true);
