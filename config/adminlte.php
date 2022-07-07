@@ -347,16 +347,16 @@ return [
             'can' => 'pelayanan-medis',
             'submenu' => [
                 [
-                    'text' => 'Dokter',
-                    'icon'    => 'fas fa-user-md',
-                    'url'  => 'dokter',
+                    'text' => 'Poliklinik',
+                    'icon'    => 'fas fa-clinic-medical',
+                    'url'  => 'poli',
                     'shift'   => 'ml-2',
                     'can' => 'pelayanan-medis',
                 ],
                 [
-                    'text' => 'Poliklinik',
-                    'icon'    => 'fas fa-clinic-medical',
-                    'url'  => 'poli',
+                    'text' => 'Dokter',
+                    'icon'    => 'fas fa-user-md',
+                    'url'  => 'dokter',
                     'shift'   => 'ml-2',
                     'can' => 'pelayanan-medis',
                 ],

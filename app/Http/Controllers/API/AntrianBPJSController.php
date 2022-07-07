@@ -520,6 +520,8 @@ class AntrianBPJSController extends Controller
                 $request['jenisrujukan'] = $rujukan->response->asalFaskes;
                 $response = $vclaim->rujukan_jumlah_sep($request);
                 $jumlah_sep_rujukan = $response->response->jumlahSEP;
+                dd($jumlah_sep_rujukan);
+
                 // jika jenis kunjungan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
                 if ($request->jeniskunjungan == 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
                     // buat surat control

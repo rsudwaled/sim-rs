@@ -667,31 +667,6 @@ class AntrianController extends Controller
             'polis' => $polis,
         ]);
     }
-    public static function get_poli_bpjs()
-    {
-        $api = new AntrianBPJSController();
-        $poli = $api->ref_poli()->response;
-        foreach ($poli as $value) {
-            if ($value->kdpoli == $value->kdsubspesialis) {
-                $subpesialis = 0;
-            } else {
-                $subpesialis = 1;
-            }
-            Poliklinik::updateOrCreate(
-                [
-                    'kodepoli' => $value->kdpoli,
-                    'kodesubspesialis' => $value->kdsubspesialis,
-                ],
-                [
-                    'namapoli' => $value->nmpoli,
-                    'namasubspesialis' => $value->nmsubspesialis,
-                    'subspesialis' => $subpesialis,
-                ]
-            );
-        }
-        Alert::success('Success', 'Refresh Poliklinik Berhasil');
-        return redirect()->route('poli.index');
-    }
     public function ref_dokter()
     {
         $dokters = Dokter::get();

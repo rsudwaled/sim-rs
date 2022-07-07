@@ -79,7 +79,7 @@
                         </tr>
                     @endforeach
                 </x-adminlte-datatable>
-                <a href="{{ route('antrian.ref.get_poli_bpjs') }}" class="btn btn-success">Refresh</a>
+                <a href="{{ route('poli.create') }}" class="btn btn-success">Refresh</a>
             </x-adminlte-card>
         </div>
         {{-- <div class="col-md-12">
