@@ -30,12 +30,12 @@
                             <td>{{ $item->namasubspesialis }}</td>
                             <td>
                                 @if ($item->status == 1)
-                                    <a href="{{ route('poli.show', $item->id) }}">
+                                    <a href="{{ route('poli.edit', $item->id) }}">
                                         <x-adminlte-button class="btn-xs" type="button" label="aktif" theme="success"
                                             title="Klik untuk non-aktifkan" />
                                     </a>
                                 @else
-                                    <a href="{{ route('poli.show', $item->id) }}">
+                                    <a href="{{ route('poli.edit', $item->id) }}">
                                         <x-adminlte-button class="btn-xs" type="button" label="nonaktif" theme="danger"
                                             data-toggle="tooltop" title="Klik untuk aktifkan" />
                                     </a>
@@ -65,12 +65,12 @@
                             </td>
                             <td>
                                 @if ($item->status == 1)
-                                    <a href="{{ route('poli.show', $item->id) }}">
+                                    <a href="{{ route('poli.edit', $item->id) }}">
                                         <x-adminlte-button class="btn-xs" type="button" label="aktif" theme="success"
                                             title="Klik untuk non-aktifkan" />
                                     </a>
                                 @else
-                                    <a href="{{ route('poli.show', $item->id) }}">
+                                    <a href="{{ route('poli.edit', $item->id) }}">
                                         <x-adminlte-button class="btn-xs" type="button" label="nonaktif" theme="danger"
                                             data-toggle="tooltop" title="Klik untuk aktifkan" />
                                     </a>

@@ -102,9 +102,9 @@ Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified', 'permi
     Route::delete('delete_surat_kontrol/{noSurat}', [VclaimController::class, 'delete_surat_kontrol'])->name('delete_surat_kontrol');
 });
 
-Route::resource('kunjungan', KunjunganController::class);
-Route::resource('poli', PoliklinikController::class);
-Route::resource('jadwaldokter', JadwalDokterController::class);
+Route::resource('poli', PoliklinikController::class)->only(['index', 'create', 'edit']);
 Route::resource('dokter', DokterController::class);
+Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit']);
+Route::resource('kunjungan', KunjunganController::class);
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);
 Route::resource('tarif_layanan', TarifLayananController::class);
