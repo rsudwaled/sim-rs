@@ -196,6 +196,7 @@ class AntrianController extends Controller
         $request['kodepoli'] = $poli->kodepoli;
         $res_antrian = $api->tambah_antrian($request);
         if ($res_antrian->metadata->code == 200) {
+            $res_checkin = $api->update_antrian($request);
             $antrian->update([
                 "nomorkartu" => $request->nomorkartu,
                 "nik" => $request->nik,

@@ -158,14 +158,13 @@
                                                     title="Daftar Offline" data-id="{{ $item->id }}" />
                                             @endif
                                         @endif
-                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltip" title="Batal Antrian"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                     @else
                                         <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
                                             icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
                                     @endif
-
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                        data-toggle="tooltip" title="Batal Antrian"
+                                        onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                 </td>
                             </tr>
                         @endforeach
@@ -273,14 +272,13 @@
                                                     data-id="{{ $item->id }}" />
                                             @endif
                                         @endif
-                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltip" title="Batal Antrian"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                     @else
                                         <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
                                             icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
                                     @endif
-
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                        data-toggle="tooltip" title="Batal Antrian"
+                                        onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                 </td>
                             </tr>
                         @endforeach

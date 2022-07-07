@@ -165,12 +165,11 @@ class AntrianBPJSController extends Controller
         }
         $url = $this->baseUrl . "antrean/add";
         $signature = $this->signature();
-        $client = new Client();
         if (is_null($request->nomorkartu) || is_null($request->nomorreferensi)) {
             $request->nomorkartu = "";
             $request->nomorreferensi = "";
         }
-        // dd($request->all());
+        $client = new Client();
         $response = $client->request('POST', $url, [
             'headers' => $signature,
             'body' => json_encode([
@@ -213,7 +212,7 @@ class AntrianBPJSController extends Controller
         if ($validator->fails()) {
             $response = [
                 'metadata' => [
-                    'code' => 400,
+                    'code' => 201,
                     'message' => $validator->errors()->first(),
                 ],
             ];
@@ -273,8 +272,10 @@ class AntrianBPJSController extends Controller
             ]),
         ]);
         $response = json_decode($response->getBody());
-        $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
-        $response->response = json_decode($decrypt);
+        if ($response->metadata->code == 200) {
+            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
+            $response->response = json_decode($decrypt);
+        }
         return $response;
     }
     public function dashboard_tanggal(Request $request)
