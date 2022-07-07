@@ -6,6 +6,7 @@
 @section('body')
     <div class="wrapper">
         <div class="row p-3">
+            {{-- checkin --}}
             <div class="col-md-4">
                 <x-adminlte-card title="Checkin Antrian RSUD Waled" theme="primary" icon="fas fa-qrcode">
                     <div class="text-center">
@@ -27,6 +28,7 @@
                     </div>
                 </x-adminlte-card>
             </div>
+            {{-- ambil antrian offline --}}
             <div class="col-md-8">
                 <x-adminlte-card title="Ambil Antrian Ofline RSUD Waled" theme="primary" icon="fas fa-qrcode">
                     <div class="text-center">
@@ -34,13 +36,10 @@
                         <div class="row">
                             @foreach ($poliklinik as $poli)
                                 <div class="col-md-3">
-                                    {{-- <a class="withLoad"
-                                        href="{{ route('antrian.tambah_offline', $poli->kodesubspesialis) }}"> --}}
                                     <x-adminlte-info-box
                                         text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien') }}"
                                         title="POLI {{ $poli->namasubspesialis }} " class="tombolPoli"
                                         data-id="{{ $poli->kodesubspesialis }}" theme="success" />
-                                    {{-- </a> --}}
                                 </div>
                             @endforeach
                         </div>
@@ -49,12 +48,11 @@
             </div>
         </div>
     </div>
-    {{-- Themed --}}
+    {{-- Pilih Dokter --}}
     <x-adminlte-modal id="modalDokter" size="lg" title="Pilih Dokter Poliklinik" theme="success" icon="fas fa-user-md">
         <div id="btnDokter">
         </div>
     </x-adminlte-modal>
-    {{-- Example button to open modal --}}
 @stop
 @section('plugins.Sweetalert2', true);
 @section('adminlte_js')
@@ -93,7 +91,6 @@
         });
     </script>
     {{-- btn chekin --}}
-    {{-- <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
         $(function() {
             $('#btn_checkin').click(function() {
@@ -135,7 +132,7 @@
             });
         });
     </script>
-    {{-- btn poli --}}
+    {{-- btn poli pilih dokter --}}
     <script>
         $(function() {
             $('.tombolPoli').click(function() {
@@ -143,19 +140,17 @@
                 var kodepoli = $(this).data('id');
                 var tanggalperiksa = "{{ \Carbon\Carbon::now()->format('Y-m-d') }}";
                 var url =
-                    "http://127.0.0.1:8000/antrian/console_jadwaldokter/" + kodepoli +
+                    "{{ route('antrian.index') }}" + "/console_jadwaldokter/" + kodepoli +
                     "/" + tanggalperiksa;
                 console.log(url);
-
                 $.get(url, function(data) {
-                    console.log(data);
                     $.LoadingOverlay("hide", true);
                     $('#modalDokter').modal('show');
                     $('.btnPilihDokter').remove();
                     $.each(data, function(value) {
-                        console.log(data[value].namadokter);
                         $('#btnDokter').append(
-                            "<a href='http://127.0.0.1:8000/antrian/tambah_offline/" +
+                            "<a href='" + "{{ route('antrian.index') }}" +
+                            "/tambah_offline/" +
                             data[
                                 value].kodesubspesialis +
                             "/" + data[value].kodedokter + "/" + data[value].jadwal +
