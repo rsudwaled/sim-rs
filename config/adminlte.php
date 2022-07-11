@@ -261,6 +261,13 @@ return [
                     'can' => 'pendaftaran',
                 ],
                 [
+                    'text' => 'Status TaskId Antrian',
+                    'icon'    => 'fas fa-desktop',
+                    'url'  => 'antrian/taskid',
+                    'shift'   => 'ml-2',
+                    'can' => 'pendaftaran',
+                ],
+                [
                     'text' => 'Pemanggil Antrian Pendaftaran',
                     'icon'    => 'fas fa-user-plus',
                     'url'  => 'antrian/pendaftaran',

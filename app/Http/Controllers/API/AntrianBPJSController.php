@@ -400,51 +400,61 @@ class AntrianBPJSController extends Controller
         if ($auth['metadata']['code'] != 200) {
             return $auth;
         }
-        // end auth token
-        $jadwals = $this->ref_jadwal_dokter($request);
-        if (isset($jadwals->response)) {
-            $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
-            if (empty($jadwal)) {
+        // check tanggal
+        $time = Carbon::parse($request->tanggalperiksa)->endOfDay();
+        if ($time->isPast()) {
+            return [
+                "metadata" => [
+                    "code" => 201,
+                    "message" => "Tanggal periksa sudah terlewat"
+                ]
+            ];
+        } else {
+            $jadwals = $this->ref_jadwal_dokter($request);
+            if (isset($jadwals->response)) {
+                $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
+                if (empty($jadwal)) {
+                    $response = [
+                        "metadata" => [
+                            "code" => 201,
+                            "message" => "Tidak ada jadwal dokter dihari tersebut."
+                        ]
+                    ];
+                    return $response;
+                }
+                $antrian = Antrian::where('kodepoli', $request->kodepoli)
+                    ->where('tanggalperiksa', $request->tanggalperiksa);
+                $antrians = $antrian->count();
+                $antreanpanggil =  Antrian::where('kodepoli', $request->kodepoli)
+                    ->where('tanggalperiksa', $request->tanggalperiksa)
+                    ->where('taskid', 4)->first();
+                if (isset($antreanpanggil)) {
+                    $nomorantean = $antreanpanggil->nomorantrian;
+                } else {
+                    $nomorantean = 0;
+                }
                 $response = [
+                    "response" => [
+                        "namapoli" => $jadwal->namapoli,
+                        "namadokter" => $jadwal->namadokter,
+                        "totalantrean" => $antrians,
+                        "sisaantrean" => $jadwal->kapasitaspasien - $antrians,
+                        "antreanpanggil" => $nomorantean,
+                        "sisakuotajkn" => $jadwal->kapasitaspasien - $antrians,
+                        "kuotajkn" => $jadwal->kapasitaspasien,
+                        "sisakuotanonjkn" => $jadwal->kapasitaspasien - $antrians,
+                        "kuotanonjkn" => $jadwal->kapasitaspasien,
+                        "keterangan" => "Informasi antrian poliklinik",
+                    ],
                     "metadata" => [
-                        "code" => 201,
-                        "message" => "Tidak ada jadwal dokter dihari tersebut."
+                        "message" => "Ok",
+                        "code" => 200
                     ]
                 ];
                 return $response;
-            }
-            $antrian = Antrian::where('kodepoli', $request->kodepoli)
-                ->where('tanggalperiksa', $request->tanggalperiksa);
-            $antrians = $antrian->count();
-            $antreanpanggil =  Antrian::where('kodepoli', $request->kodepoli)
-                ->where('tanggalperiksa', $request->tanggalperiksa)
-                ->where('taskid', 4)->first();
-            if (isset($antreanpanggil)) {
-                $nomorantean = $antreanpanggil->nomorantrian;
             } else {
-                $nomorantean = 0;
+                return  $jadwals;
             }
-            $response = [
-                "response" => [
-                    "namapoli" => $jadwal->namapoli,
-                    "namadokter" => $jadwal->namadokter,
-                    "totalantrean" => $antrians,
-                    "sisaantrean" => $jadwal->kapasitaspasien - $antrians,
-                    "antreanpanggil" => $nomorantean,
-                    "sisakuotajkn" => $jadwal->kapasitaspasien - $antrians,
-                    "kuotajkn" => $jadwal->kapasitaspasien,
-                    "sisakuotanonjkn" => $jadwal->kapasitaspasien - $antrians,
-                    "kuotanonjkn" => $jadwal->kapasitaspasien,
-                    "keterangan" => "Informasi antrian poliklinik",
-                ],
-                "metadata" => [
-                    "message" => "Ok",
-                    "code" => 200
-                ]
-            ];
-            return $response;
-        } else {
-            return  $jadwals;
         }
     }
     public function ambil_antrian(Request $request)
@@ -454,7 +464,6 @@ class AntrianBPJSController extends Controller
         if ($auth['metadata']['code'] != 200) {
             return $auth;
         }
-        // end auth token
         // checking request
         $validator = Validator::make(request()->all(), [
             "nik" => "required|numeric|digits:16",
@@ -471,221 +480,336 @@ class AntrianBPJSController extends Controller
         if ($validator->fails()) {
             $response = [
                 'metadata' => [
-                    'code' => 400,
+                    'code' => 201,
                     'message' => $validator->errors()->first(),
                 ],
             ];
             return $response;
         }
-        // api vclaim
+        // check backdate
+        $time = Carbon::parse($request->tanggalperiksa)->endOfDay();
+        if ($time->isPast()) {
+            return [
+                "metadata" => [
+                    "code" => 201,
+                    "message" => "Tanggal periksa sudah terlewat"
+                ]
+            ];
+        }
+        // proses ambil antrian
+        $pasien = PasienDB::where('no_rm', $request->norm)->first();
         $vclaim = new VclaimBPJSController();
-        // cek jika jkn
-        if (isset($request->nomorreferensi)) {
-
-            $request['jenispasien'] = 'JKN';
-            // cek keaktifan peserta
-            try {
-                $response = $vclaim->peserta_nik($request);
-                $peserta = $response;
-                $peserta_aktif = $peserta->response->peserta->statusPeserta->kode;
-                $peserta_nomorkartu = $peserta->response->peserta->noKartu;
-                // jika data pasien salah / berbeda
-                if ($peserta_nomorkartu != $request->nomorkartu) {
-                    return $response = [
-                        "metadata" => [
-                            "message" => "NIK dan nomor kartu peserta tidak sesuai",
-                            "code" => 201,
-                        ],
-                    ];
-                }
-                // jika peserta jkn tidak aktif nilai 0
-                else if ($peserta_aktif != 0) {
-                    return $response = [
-                        "metadata" => [
-                            "message" => $peserta->response->peserta->statusPeserta->keterangan,
-                            "code" => 201,
-                        ],
-                    ];
-                }
-                // jika peserta jkn aktif dan sesuai
-                else if ($peserta_aktif == 0) {
-                    $request['jenispasien'] = 'JKN';
-                }
-            } catch (\Throwable $th) {
-                return $response;
-            }
-            // pembuatan surat kontrol
-            try {
-                $response = $vclaim->rujukan_nomor($request);
-                $rujukan = $response;
-                $request['jenisrujukan'] = $rujukan->response->asalFaskes;
-                $response = $vclaim->rujukan_jumlah_sep($request);
-                $jumlah_sep_rujukan = $response->response->jumlahSEP;
-                dd($jumlah_sep_rujukan);
-
-                // jika jenis kunjungan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
-                if ($request->jeniskunjungan == 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
-                    // buat surat control
-                    $response = $vclaim->insert_rencana_kontrol($request);
-                    // jika gagal buat surat kontrol
-                    if ($response->metaData->code == 200) {
-                        $suratkontrol = $response->response;
-                    } else {
-                        return $response;
-                    }
-                }
-                // error jika jenis kunjungan bukan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
-                else if ($request->jeniskunjungan != 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
-                    return [
-                        "metadata" => [
-                            "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
-                            "code" => 202,
-                        ],
-                    ];
-                }
-            } catch (\Throwable $th) {
-                return $response;
-            }
-        }
-        // jika non-jkn harus pilih jenis kunjungan kontrol(3)
-        else {
-            $request['jenispasien'] = 'NON JKN';
-            // error harus harus pilih jenis kunjungan kontrol(3)
-            if ($request->jeniskunjungan != 3) {
-                return [
-                    "metadata" => [
-                        "message" => "Anda mendaftar tanpa surat Rujukan atau NON-JKN silahkan pilih jenis kunjungan Kontrol(3)",
-                        "code" => 203,
-                    ],
-                ];
-            }
-        }
-
-        // cek norm pasien lama
-        $pasien = Pasien::where('nik', $request->nik)->first();
-        if ($pasien) {
-            $request['norm'] = $pasien->norm;
-            $request['nama'] = $pasien->nama;
-            $request['pasienbaru'] = 0;
-        }
-        // cek norm pasien baru dan insert pasien baru
-        else {
-            $pasienbaru = $this->info_pasien_baru($request);
-            $request['norm'] = $pasienbaru->response->norm;
-            $request['pasienbaru'] = 1;
-            $request['nama'] = "Belum Didaftarkan";
-        }
-
-        // cek jadwal
-        $jadwals = $this->ref_jadwal_dokter($request);
-        if (isset($jadwals->response)) {
-            $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
-            if (empty($jadwal)) {
-                $response = [
-                    "metadata" => [
-                        "code" => 201,
-                        "message" => "Tidak ada jadwal dokter dihari tersebut."
-                    ]
-                ];
-                return $response;
-            }
-        } else {
-            return $jadwals;
-        }
-        $request['namapoli'] = $jadwal->namapoli;
-        $request['namadokter'] = $jadwal->namadokter;
-        // cek duplikasi nik antrian
-        $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-            ->where('nik', $request->nik)
-            ->where('taskid', '<=', 4)
-            ->count();
-        if ($antrian_nik) {
+        // cek pasien baru hit info pasien baru
+        if (empty($pasien)) {
+            // $pasienbaru = $this->info_pasien_baru($request);
+            // $request['norm'] = $pasienbaru->response->norm;
+            // $request['pasienbaru'] = 1;
+            // $request['nama'] = "Belum Didaftarkan";
             return $response = [
                 "metadata" => [
-                    "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
-                    "code" => 201,
+                    "message" => "Pasien Baru",
+                    "code" => 202,
                 ],
             ];
         }
-        //  cek nik
-        $antrians = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-            ->count();
-        $antrian_poli = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-            ->where('kodepoli', $request->kodepoli)
-            ->count();
-        $antrian_dokter = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-            ->where('kodepoli', $request->kodepoli)
-            ->where('kodedokter', $request->kodedokter)
-            ->count();
-        $request['nomorantrean'] = $request->kodepoli . "-" .  str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
-        $request['angkaantrean'] = $antrians + 1;
-        $request['kodebooking'] = strtoupper(uniqid());
-        // estimasi
-        $request['estimasidilayani'] = 0;
-        $request['sisakuotajkn'] = $jadwal->kapasitaspasien -  $antrian_dokter;
-        $request['kuotajkn'] = $jadwal->kapasitaspasien;
-        $request['sisakuotanonjkn'] = $jadwal->kapasitaspasien -  $antrian_dokter;
-        $request['kuotanonjkn'] = $jadwal->kapasitaspasien;
-        $request['keterangan'] = "Antrian berhasil dibuat";
-        //tambah antrian bpjs
-        $response = $this->tambah_antrian($request);
-        if ($response->metadata->code == 200) {
-            //tambah antrian database
-            if (isset($suratkontrol)) {
-                $request["nomorsuratkontrol"] = $suratkontrol->noSuratKontrol;
+        // cek pasien lama
+        else {
+            // cek jika jkn
+            if (isset($request->nomorreferensi)) {
+                $request['jenispasien'] = 'JKN';
+                // cek keaktifan peserta
+                try {
+                    $response = $vclaim->peserta_nik($request);
+                    $peserta = $response;
+                    $peserta_aktif = $peserta->response->peserta->statusPeserta->kode;
+                    $peserta_nomorkartu = $peserta->response->peserta->noKartu;
+                    // jika data pasien salah / berbeda
+                    if ($peserta_nomorkartu != $request->nomorkartu) {
+                        return $response = [
+                            "metadata" => [
+                                "message" => "NIK dan nomor kartu peserta tidak sesuai",
+                                "code" => 201,
+                            ],
+                        ];
+                    }
+                    // jika peserta jkn tidak aktif nilai 0
+                    else if ($peserta_aktif != 0) {
+                        return $response = [
+                            "metadata" => [
+                                "message" => $peserta->response->peserta->statusPeserta->keterangan,
+                                "code" => 201,
+                            ],
+                        ];
+                    }
+                    // jika peserta jkn aktif dan sesuai
+                    else if ($peserta_aktif == 0) {
+                        $request['jenispasien'] = 'JKN';
+                    }
+                } catch (\Throwable $th) {
+                    return $response;
+                }
+                // pembuatan surat kontrol
+                try {
+                    $response = $vclaim->rujukan_nomor($request);
+                    $rujukan = $response;
+                    $request['jenisrujukan'] = $rujukan->response->asalFaskes;
+                    $response = $vclaim->rujukan_jumlah_sep($request);
+                    $jumlah_sep_rujukan = $response->response->jumlahSEP;
+                    dd($jumlah_sep_rujukan);
+
+                    // jika jenis kunjungan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
+                    if ($request->jeniskunjungan == 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
+                        // buat surat control
+                        $response = $vclaim->insert_rencana_kontrol($request);
+                        // jika gagal buat surat kontrol
+                        if ($response->metaData->code == 200) {
+                            $suratkontrol = $response->response;
+                        } else {
+                            return $response;
+                        }
+                    }
+                    // error jika jenis kunjungan bukan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
+                    else if ($request->jeniskunjungan != 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
+                        return [
+                            "metadata" => [
+                                "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
+                                "code" => 202,
+                            ],
+                        ];
+                    }
+                } catch (\Throwable $th) {
+                    return $response;
+                }
             }
-            $antrian = Antrian::create([
-                "kodebooking" => $request->kodebooking,
-                "nomorkartu" => $request->nomorkartu,
-                "nik" => $request->nik,
-                "nohp" => $request->nohp,
-                "kodepoli" => $request->kodepoli,
-                "norm" => $request->norm,
-                "pasienbaru" => $request->pasienbaru,
-                "tanggalperiksa" => $request->tanggalperiksa,
-                "kodedokter" => $request->kodedokter,
-                "jampraktek" => $request->jampraktek,
-                "jeniskunjungan" => $request->jeniskunjungan,
-                "nomorreferensi" => $request->nomorreferensi,
-                "nomorsuratkontrol" => $request->nomorsuratkontrol,
-                "jenispasien" => $request->jenispasien,
-                "namapoli" => $request->namapoli,
-                "namadokter" => $request->namadokter,
-                "nomorantrean" => $request->nomorantrean,
-                "angkaantrean" => $request->angkaantrean,
-                "estimasidilayani" => $request->estimasidilayani,
-                "sisakuotajkn" => $request->sisakuotajkn,
-                "kuotajkn" => $request->kuotajkn,
-                "sisakuotanonjkn" => $request->sisakuotanonjkn,
-                "kuotanonjkn" => $request->kuotanonjkn,
-                "keterangan" => $request->keterangan,
-                "status_bpjs" => 1,
-                "user" => "System Antrian",
-                "nama" => $request->nama,
-            ]);
-            $response = [
-                "response" => [
-                    "nomorantrean" => $request->nomorantrean,
-                    "angkaantrean" => $request->angkaantrean,
+            // jika non-jkn harus pilih jenis kunjungan kontrol(3)
+            else {
+                $request['jenispasien'] = 'NON JKN';
+                // error harus harus pilih jenis kunjungan kontrol(3)
+                if ($request->jeniskunjungan != 3) {
+                    return [
+                        "metadata" => [
+                            "message" => "Anda mendaftar tanpa surat Rujukan atau NON-JKN silahkan pilih jenis kunjungan Kontrol(3)",
+                            "code" => 203,
+                        ],
+                    ];
+                }
+            }
+            // ambil data pasien
+            $request['norm'] = $pasien->no_rm;
+            $request['nama'] = $pasien->nama_px;
+            $request['pasienbaru'] = 0;
+            // cek jadwal
+            $jadwals = $this->ref_jadwal_dokter($request);
+            if (isset($jadwals->response)) {
+                $jadwal = collect($jadwals->response)->where('kodedokter', $request->kodedokter)->first();
+                // jika jadwal tidak ada
+                if (empty($jadwal)) {
+                    $response = [
+                        "metadata" => [
+                            "code" => 201,
+                            "message" => "Tidak ada jadwal dokter dihari tersebut."
+                        ]
+                    ];
+                    return $response;
+                }
+                // ambil data jadwal
+                else {
+                    $request['namapoli'] = $jadwal->namapoli;
+                    $request['namadokter'] = $jadwal->namadokter;
+                }
+            } else {
+                // jika error
+                return $jadwals;
+            }
+            // cek duplikasi nik antrian
+            $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+                ->where('nik', $request->nik)
+                ->where('taskid', '<=', 4)
+                ->count();
+            if ($antrian_nik) {
+                return $response = [
+                    "metadata" => [
+                        "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
+                        "code" => 201,
+                    ],
+                ];
+            }
+
+            //  cek nik
+            $antrians = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+                ->count();
+            $antrian_poli = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+                ->where('kodepoli', $request->kodepoli)
+                ->count();
+            $antrian_dokter = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+                ->where('kodepoli', $request->kodepoli)
+                ->where('kodedokter', $request->kodedokter)
+                ->count();
+            $request['nomorantrean'] = $request->kodepoli . "-" .  str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
+            $request['angkaantrean'] = $antrians + 1;
+            $request['kodebooking'] = strtoupper(uniqid());
+            // estimasi
+            $request['estimasidilayani'] = 0;
+            $request['sisakuotajkn'] = $jadwal->kapasitaspasien -  $antrian_dokter;
+            $request['kuotajkn'] = $jadwal->kapasitaspasien;
+            $request['sisakuotanonjkn'] = $jadwal->kapasitaspasien -  $antrian_dokter;
+            $request['kuotanonjkn'] = $jadwal->kapasitaspasien;
+            $request['keterangan'] = "Antrian berhasil dibuat";
+            //tambah antrian bpjs
+            $response = $this->tambah_antrian($request);
+            if ($response->metadata->code == 200) {
+                //tambah antrian database
+                if (isset($suratkontrol)) {
+                    $request["nomorsuratkontrol"] = $suratkontrol->noSuratKontrol;
+                }
+                $antrian = Antrian::create([
                     "kodebooking" => $request->kodebooking,
+                    "nomorkartu" => $request->nomorkartu,
+                    "nik" => $request->nik,
+                    "nohp" => $request->nohp,
+                    "kodepoli" => $request->kodepoli,
                     "norm" => $request->norm,
+                    "pasienbaru" => $request->pasienbaru,
+                    "tanggalperiksa" => $request->tanggalperiksa,
+                    "kodedokter" => $request->kodedokter,
+                    "jampraktek" => $request->jampraktek,
+                    "jeniskunjungan" => $request->jeniskunjungan,
+                    "nomorreferensi" => $request->nomorreferensi,
+                    "nomorsuratkontrol" => $request->nomorsuratkontrol,
+                    "jenispasien" => $request->jenispasien,
                     "namapoli" => $request->namapoli,
                     "namadokter" => $request->namadokter,
+                    "nomorantrean" => $request->nomorantrean,
+                    "angkaantrean" => $request->angkaantrean,
                     "estimasidilayani" => $request->estimasidilayani,
                     "sisakuotajkn" => $request->sisakuotajkn,
                     "kuotajkn" => $request->kuotajkn,
                     "sisakuotanonjkn" => $request->sisakuotanonjkn,
                     "kuotanonjkn" => $request->kuotanonjkn,
                     "keterangan" => $request->keterangan,
+                    "status_bpjs" => 1,
+                    "user" => "System Antrian",
+                    "nama" => $request->nama,
+                ]);
+                $response = [
+                    "response" => [
+                        "nomorantrean" => $request->nomorantrean,
+                        "angkaantrean" => $request->angkaantrean,
+                        "kodebooking" => $request->kodebooking,
+                        "norm" => $request->norm,
+                        "namapoli" => $request->namapoli,
+                        "namadokter" => $request->namadokter,
+                        "estimasidilayani" => $request->estimasidilayani,
+                        "sisakuotajkn" => $request->sisakuotajkn,
+                        "kuotajkn" => $request->kuotajkn,
+                        "sisakuotanonjkn" => $request->sisakuotanonjkn,
+                        "kuotanonjkn" => $request->kuotanonjkn,
+                        "keterangan" => $request->keterangan,
+                    ],
+                    "metadata" => [
+                        "message" => "Ok",
+                        "code" => 200
+                    ]
+                ];
+                return json_decode(json_encode($response));
+            } else {
+                return $response;
+            }
+        }
+    }
+    public function info_pasien_baru(Request $request)
+    {
+        // auth token
+        $auth = $this->auth_token($request);
+        if ($auth['metadata']['code'] != 200) {
+            return $auth;
+        }
+        // end auth token
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nik" => "required",
+            "nomorkartu" => "required",
+            "nomorkk" => "required",
+            "nama" => "required",
+            "jeniskelamin" => "required",
+            "tanggallahir" => "required",
+            "nohp" => "required",
+            "alamat" => "required",
+        ]);
+        if ($validator->fails()) {
+            return [
+                'metadata' => [
+                    'code' => 201,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+        }
+        $pasien = PasienDB::where('nik_bpjs', $request->nik)->first();
+        // cek jika pasien baru
+        if (empty($pasien)) {
+            // proses pendaftaran baru
+            try {
+                // checking norm terakhir
+                $pasien_terakhir = PasienDB::latest()->first()->no_rm;
+                $request['status'] = 1;
+                $request['norm'] = $pasien_terakhir + 1;
+                // insert pasien
+                $pasien = PasienDB::updateOrCreate(
+                    [
+                        "no_Bpjs" => $request->nomorkartu,
+                        "nik_bpjs" => $request->nik,
+                        "no_rm" => $request->norm,
+                    ],
+                    [
+                        // "nomorkk" => $request->nomorkk,
+                        "nama_px" => $request->nama,
+                        "jenis_kelamin" => $request->jeniskelamin,
+                        "tgl_lahir" => $request->tanggallahir,
+                        "no_tlp" => $request->nohp,
+                        "alamat" => $request->alamat,
+                        "kode_propinsi" => $request->kodeprop,
+                        // "namaprop" => $request->namaprop,
+                        "kode_kabupaten" => $request->kodedati2,
+                        // "namadati2" => $request->namadati2,
+                        "kode_kecamatan" => $request->kodekec,
+                        // "namakec" => $request->namakec,
+                        "kode_desa" => $request->kodekel,
+                        // "namakel" => $request->namakel,
+                        // "rw" => $request->rw,
+                        // "rt" => $request->rt,
+                        // "status" => $request->status,
+                    ]
+                );
+                return  $response = [
+                    "response" => [
+                        "norm" => $request->norm,
+                    ],
+                    "metadata" => [
+                        "message" => "Ok",
+                        "code" => 200,
+                    ],
+                ];
+            } catch (\Throwable $th) {
+                $response = [
+                    "metadata" => [
+                        "message" => "Gagal Error Code " . $th->getMessage(),
+                        "code" => 201,
+                    ],
+                ];
+                return $response;
+            }
+        }
+        // cek jika pasien lama
+        else {
+            return $response = [
+                "response" => [
+                    "norm" => $pasien->no_rm,
                 ],
                 "metadata" => [
                     "message" => "Ok",
-                    "code" => 200
-                ]
+                    "code" => 200,
+                ],
             ];
-            return json_decode(json_encode($response));
-        } else {
-            return $response;
         }
     }
     public function sisa_antrian(Request $request)
@@ -697,6 +821,7 @@ class AntrianBPJSController extends Controller
         }
         // end auth token
         $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
+        // antrian ditermukan
         if ($antrian) {
             $sisaantrean = Antrian::where('taskid', "<=", 3)
                 ->where('tanggalperiksa', $antrian->tanggalperiksa)
@@ -704,6 +829,9 @@ class AntrianBPJSController extends Controller
             $antreanpanggil =  Antrian::where('taskid', "<=", 3)
                 ->where('tanggalperiksa', $antrian->tanggalperiksa)
                 ->first();
+            if (empty($antreanpanggil)) {
+                $antreanpanggil['nomorantrean'] = '';
+            }
             $antrian['waktutunggu'] = "5";
             $antrian['keterangan'] = "Info antrian anda";
             $response = [
@@ -712,7 +840,7 @@ class AntrianBPJSController extends Controller
                     "namapoli" => $antrian->namapoli,
                     "namadokter" => $antrian->namadokter,
                     "sisaantrean" => $sisaantrean,
-                    "antreanpanggil" => $antreanpanggil->nomorantrean,
+                    "antreanpanggil" => $antreanpanggil['nomorantrean'],
                     "waktutunggu" => $antrian->waktutunggu * $sisaantrean,
                     "keterangan" => $antrian->keterangan,
                 ],
@@ -722,7 +850,9 @@ class AntrianBPJSController extends Controller
                 ]
             ];
             return $response;
-        } else {
+        }
+        // antrian tidak ditermukan
+        else {
             return $response = [
                 "metadata" => [
                     "message" => "Antrian tidak ditemukan",
@@ -748,16 +878,10 @@ class AntrianBPJSController extends Controller
     }
     public function checkin_antrian(Request $request)
     {
-        // $connector = new WindowsPrintConnector('Printer Receipt');
-        // $connector = new WindowsPrintConnector("smb://ANTRIAN/Printer Receipt");
-        $connector = new WindowsPrintConnector("smb://PRINTER:qweqwe@ANTRIAN/Printer Receipt");
-        // $printer = new Printer($connector);
-        // $printer->setFont(1);
-        // $printer->text("RSUD Waled \n");
-        // $printer->cut();
-        // $printer->close();
-        // dd('selesai');
-
+        // cek printer
+        $connector = new WindowsPrintConnector("smb://PRINTER:qweqwe@192.168.2.133/Printer Receipt");
+        $printer = new Printer($connector);
+        $printer->close();
         // auth token
         $auth = $this->auth_token($request);
         if ($auth['metadata']['code'] != 200) {
@@ -1060,76 +1184,6 @@ class AntrianBPJSController extends Controller
                     "code" => 201,
                 ],
             ];
-        }
-    }
-    public function info_pasien_baru(Request $request)
-    {
-        // auth token
-        $auth = $this->auth_token($request);
-        if ($auth['metadata']['code'] != 200) {
-            return $auth;
-        }
-        // end auth token
-        // checking request
-        $validator = Validator::make(request()->all(), [
-            "nik" => "required",
-        ]);
-        if ($validator->fails()) {
-            $response = [
-                'metaData' => [
-                    'code' => 400,
-                    'message' => $validator->errors()->first(),
-                ],
-            ];
-            return $response;
-        }
-        try {
-            $request['norm'] = random_int(1, 999999);
-            $request['status'] = 1;
-            $pasien = Pasien::updateOrCreate(
-                [
-                    "norm" => $request->norm,
-                    "nomorkartu" => $request->nomorkartu,
-                    "nik" => $request->nik,
-                ],
-                [
-                    "nomorkk" => $request->nomorkk,
-                    "nama" => $request->nama,
-                    "jeniskelamin" => $request->jeniskelamin,
-                    "tanggallahir" => $request->tanggallahir,
-                    "nohp" => $request->nohp,
-                    "alamat" => $request->alamat,
-                    "kodeprop" => $request->kodeprop,
-                    "namaprop" => $request->namaprop,
-                    "kodedati2" => $request->kodedati2,
-                    "namadati2" => $request->namadati2,
-                    "kodekec" => $request->kodekec,
-                    "namakec" => $request->namakec,
-                    "kodekel" => $request->kodekel,
-                    "namakel" => $request->namakel,
-                    "rw" => $request->rw,
-                    "rt" => $request->rt,
-                    "status" => $request->status,
-                ]
-            );
-            $response = [
-                "response" => [
-                    "norm" => $pasien->norm,
-                ],
-                "metadata" => [
-                    "message" => "Ok",
-                    "code" => 200,
-                ],
-            ];
-            return json_decode(json_encode($response));
-        } catch (\Throwable $th) {
-            $response = [
-                "metadata" => [
-                    "message" => "Error Code " . $th->getMessage(),
-                    "code" => 400,
-                ],
-            ];
-            return $response;
         }
     }
     public function jadwal_operasi_rs(Request $request)

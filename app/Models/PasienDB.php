@@ -11,6 +11,22 @@ class PasienDB extends Model
     protected $connection = 'mysql2';
     protected $table = 'mt_pasien';
     protected $primaryKey = 'no_rm';
-    public $incrementing = false;
     public $timestamps = false;
+    const CREATED_AT = 'tgl_entry';
+    // const UPDATED_AT = 'last_update';
+
+    protected $fillable = [
+        "no_Bpjs",
+        "nik_bpjs",
+        "no_rm",
+        "nama_px",
+        "jenis_kelamin",
+        "tgl_lahir",
+        "no_tlp",
+        "alamat",
+        "kode_propinsi",
+        "kode_kabupaten",
+        "kode_kecamatan",
+        "kode_desa",
+    ];
 }
