@@ -404,6 +404,13 @@ return [
                     'shift'   => 'ml-2',
                     'can' => 'rekam-medis',
                 ],
+                [
+                    'text' => 'Pasien',
+                    'icon'    => 'fas fa-user-injured',
+                    'url'  => 'pasien',
+                    'shift'   => 'ml-2',
+                    'can' => 'rekam-medis',
+                ],
             ],
         ],
         // USER ACCESS CONTROLL

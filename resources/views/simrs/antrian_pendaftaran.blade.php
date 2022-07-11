@@ -794,14 +794,13 @@
                         if (data.metadata.code == 200) {
                             $('#pasienDitemukan').html(data.metadata.message);
                             $('#pasienTidakDitemukan').html('');
-                            $('#nomorkk').val(data.response.nomorkk);
-                            $('#nohp').val(data.response.nohp);
-                            $('#nama').val(data.response.nama);
-                            $('#norm').val(data.response.norm);
-                            $('#nomorkartu').val(data.response.nomorkartu);
+                            $('#nomorkk').val(data.response.no_ktp);
+                            $('#nohp').val(data.response.no_tlp);
+                            $('#nama').val(data.response.nama_px);
+                            $('#norm').val(data.response.no_rm);
+                            $('#nomorkartu').val(data.response.no_Bpjs);
                             $('#statuspasien').val('LAMA');
                             $('#formPasien').hide();
-
                         } else {
                             $('#pasienTidakDitemukan').html(data.metadata.message);
                             $('#pasienDitemukan').html('');
@@ -825,26 +824,26 @@
                     alert('NIK tidak boleh kosong');
                 } else {
                     $.LoadingOverlay("show");
-                    $.get("http://127.0.0.1:8000/antrian/cari_pasien/" + nik, function(data) {
+                    $.get("{{ route('antrian.index') }}" + "/cari_pasien/" + nik, function(data) {
                         console.log(data.metadata.code);
                         if (data.metadata.code == 200) {
                             $('#pasienDitemukanOn').html(data.metadata.message +
                                 ", Silahkan lengkapi data pasien");
                             $('#pasienTidakDitemukanOn').html('');
 
-                            $('#nomorkkOn').val(data.response.nomorkk);
-                            $('#namaOn').val(data.response.nama);
-                            $('#nohpOn').val(data.response.nohp);
-                            $('#normOn').val(data.response.norm);
-                            $('#nomorkartuOn').val(data.response.nomorkartu);
-                            $('#jeniskelaminOn').val(data.response.jeniskelamin).change();
-                            $('#tanggallahirOn').val(data.response.tanggallahir);
+                            $('#nomorkkOn').val(data.response.nik_bpjs);
+                            $('#namaOn').val(data.response.nama_px);
+                            $('#nohpOn').val(data.response.no_tlp);
+                            $('#normOn').val(data.response.no_rm);
+                            $('#nomorkartuOn').val(data.response.no_Bpjs);
+                            $('#jeniskelaminOn').val(data.response.jenis_kelamin).change();
+                            $('#tanggallahirOn').val(data.response.tgl_lahir);
                             $('#alamatOn').val(data.response.alamat);
-                            $('#rtOn').val(data.response.rt);
-                            $('#rwOn').val(data.response.rw);
-                            $('#kodepropOn').val(data.response.kodeprop).change();
-                            $('#kodedati2On').val(data.response.kodedati2).change();
-                            $('#kodekecOn').val(data.response.kodekec).change();
+                            // $('#rtOn').val(data.response.rt);
+                            // $('#rwOn').val(data.response.rw);
+                            $('#kodepropOn').val(data.response.kode_propinsi).change();
+                            $('#kodedati2On').val(data.response.kode_kabupaten).change();
+                            $('#kodekecOn').val(data.response.kode_kecamatan).change();
                             $('#namakelOn').val(data.response.namakel);
                             // $('#kodepoli').val(data.kodepoli).trigger('change');
 

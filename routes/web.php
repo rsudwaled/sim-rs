@@ -5,6 +5,7 @@ use App\Http\Controllers\API\VclaimBPJSController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
 use App\Http\Controllers\KunjunganController;
+use App\Http\Controllers\PasienController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\RoleController;
@@ -43,6 +44,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('console_jadwaldokter/{poli}/{tanggal}', [AntrianController::class, 'console_jadwaldokter'])->name('console_jadwaldokter');
     Route::get('tambah_offline/{poli}/{dokter}/{jam}', [AntrianController::class, 'tambah_offline'])->name('tambah_offline');
     Route::get('laporan', [AntrianController::class, 'laporan'])->name('laporan');
+    Route::get('taskid', [AntrianController::class, 'taskid'])->name('taskid');
     // pendafataran
     Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran')->middleware('permission:pendaftaran');
     Route::get('panggil_pendaftaran/{kodebooking}', [AntrianController::class, 'panggil_pendaftaran'])->name('panggil_pendaftaran')->middleware('permission:pendaftaran');
@@ -106,5 +108,6 @@ Route::resource('poli', PoliklinikController::class)->only(['index', 'create', '
 Route::resource('dokter', DokterController::class)->only(['index', 'create']);
 Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit']);
 Route::resource('kunjungan', KunjunganController::class);
+Route::resource('pasien', PasienController::class);
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);
 Route::resource('tarif_layanan', TarifLayananController::class);

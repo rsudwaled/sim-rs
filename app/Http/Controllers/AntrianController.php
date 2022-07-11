@@ -7,6 +7,7 @@ use App\Http\Controllers\API\VclaimBPJSController;
 use App\Models\Antrian;
 use App\Models\Dokter;
 use App\Models\Pasien;
+use App\Models\PasienDB;
 use App\Models\Poliklinik;
 use App\Models\Provinsi;
 use Carbon\Carbon;
@@ -220,6 +221,18 @@ class AntrianController extends Controller
             return redirect()->back();
         }
     }
+    public function taskid(Request $request)
+    {
+        $response = null;
+        $api = new AntrianBPJSController();
+        if ($request->kodebooking) {
+            $response = $api->list_waktu_task($request);
+        }
+        return view('simrs.antrian_task_id', [
+            'request' => $request,
+            'response' => $response,
+        ]);
+    }
     // pendaftaran
     public function pendaftaran(Request $request)
     {
@@ -256,7 +269,7 @@ class AntrianController extends Controller
     }
     public function cari_pasien($nik)
     {
-        $pasien = Pasien::where('nik', $nik)->first();
+        $pasien = PasienDB::where('nik_bpjs', $nik)->first();
         if ($pasien == null) {
             $code = 201;
             $message = "Pasien Tidak Ditemukan. Silahkan daftarkan pasien.";
@@ -306,23 +319,31 @@ class AntrianController extends Controller
         $response = $vclaim->update_antrian($request);
         if ($response->metadata->code == 200) {
             // update pasien
-            $pasien = Pasien::firstWhere('nik', $request->nikOn);
-            $pasien->update([
-                "nomorkk" => $request->nomorkkOn,
-                "nama" => $request->namaOn,
-                "nohp" => $request->nohpOn,
-                "nomorkartu" => $request->nomorkartuOn,
-                "nomorreferensi" => $request->nomorreferensiOn,
-                "jeniskelamin" => $request->jeniskelaminOn,
-                "tanggallahir" => $request->tanggallahirOn,
-                "alamat" => $request->alamatOn,
-                "rt" => $request->rtOn,
-                "rw" => $request->rwOn,
-                "kodeprop" => $request->kodepropOn,
-                "kodedati2" => $request->kodedati2On,
-                "kodekec" => $request->kodekecOn,
-                "namakel" => $request->namakelOn,
-            ]);
+            $pasien = PasienDB::firstWhere('nik_bpjs', $request->nikOn);
+            $pasien->update(
+                [
+                    "no_Bpjs" => $request->nomorkartuOn,
+                    "nik_bpjs" => $request->nikOn,
+                    "no_rm" => $request->normOn,
+                    // "nomorkk" => $request->nomorkk,
+                    "nama_px" => $request->namaOn,
+                    "jenis_kelamin" => $request->jeniskelaminOn,
+                    "tgl_lahir" => $request->tanggallahirOn,
+                    "no_tlp" => $request->nohpOn,
+                    "alamat" => $request->alamatOn,
+                    "kode_propinsi" => $request->kodepropOn,
+                    // "namaprop" => $request->namaprop,
+                    "kode_kabupaten" => $request->kodedati2On,
+                    // "namadati2" => $request->namadati2,
+                    "kode_kecamatan" => $request->kodekecOn,
+                    // "namakec" => $request->namakec,
+                    "kode_desa" => $request->kodekelOn,
+                    // "namakel" => $request->namakel,
+                    // "rw" => $request->rw,
+                    // "rt" => $request->rt,
+                    // "status" => $request->status,
+                ]
+            );
             // update antrian simrs
             $antrian->update([
                 'taskid' => 3,

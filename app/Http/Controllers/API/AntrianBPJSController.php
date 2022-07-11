@@ -23,7 +23,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -256,6 +255,7 @@ class AntrianBPJSController extends Controller
     }
     public function list_waktu_task(Request $request)
     {
+        // cek request
         $validator = Validator::make(request()->all(), [
             "kodebooking" => "required",
         ]);
@@ -280,31 +280,49 @@ class AntrianBPJSController extends Controller
     }
     public function dashboard_tanggal(Request $request)
     {
-        // tinggal masalah waktunya aja ????
-        $request['taskid'] = 1;
-        $url = $this->baseUrl . "/dashboard/waktutunggu/tanggal/" . $request->tanggal . "/waktu/1627873951000";
+        // cek request
+        $validator = Validator::make(request()->all(), [
+            "tanggal" => "required",
+            "waktu" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metadata' => [
+                    'code' => 201,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return $response;
+        }
+        // proses
+        $url = $this->baseUrl . "dashboard/waktutunggu/tanggal/" . $request->tanggal . "/waktu/" . $request->waktu;
         $signature = $this->signature();
         $response = Http::withHeaders($signature)->get($url);
         $response = json_decode($response);
-        if ($response->metadata->code == 200) {
-            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
-            $response->response = json_decode($decrypt);
-        }
         return $response;
     }
     public function dashboard_bulan(Request $request)
     {
-        // tinggal masalah waktunya aja ????
-        // tinggal masalah waktunya aja ????
-        $request['taskid'] = 1;
-        $url = $this->baseUrl . "/waktutunggu/bulan/{Parameter1}/tahun/{Parameter2}/waktu/{Parameter3}";
+        // cek request
+        $validator = Validator::make(request()->all(), [
+            "bulan" => "required",
+            "tahun" => "required",
+            "waktu" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metadata' => [
+                    'code' => 201,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return $response;
+        }
+        // proses
+        $url = $this->baseUrl . "dashboard/waktutunggu/bulan/" . $request->bulan . "/tahun/" . $request->tahun . "/waktu/" . $request->waktu;
         $signature = $this->signature();
         $response = Http::withHeaders($signature)->get($url);
         $response = json_decode($response);
-        if ($response->metadata->code == 200) {
-            $decrypt = $this->stringDecrypt($signature['decrypt_key'], $response->response);
-            $response->response = json_decode($decrypt);
-        }
         return $response;
     }
 
