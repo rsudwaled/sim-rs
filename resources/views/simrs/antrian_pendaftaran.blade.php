@@ -193,6 +193,7 @@
                                 </td>
                                 <td>
                                     {{ $item->jenispasien }}
+                                    asdas
                                     @if ($item->pasienbaru == 1)
                                         <span class="badge bg-secondary">{{ $item->pasienbaru }}. Baru</span>
                                     @endif
@@ -201,7 +202,7 @@
                                     @endif
                                     @isset($item->pasien)
                                         <br>
-                                        {{ $item->pasien->nama }}
+                                        {{ $item->pasien->nama_px }}
                                     @endisset
                                 </td>
                                 <td>
@@ -804,6 +805,11 @@
                         } else {
                             $('#pasienTidakDitemukan').html(data.metadata.message);
                             $('#pasienDitemukan').html('');
+                            $('#nomorkk').val('');
+                            $('#nohp').val('');
+                            $('#nama').val('');
+                            $('#norm').val('');
+                            $('#nomorkartu').val('');
                             $('#statuspasien').val('BARU');
                             $('#formPasien').show();
                         }

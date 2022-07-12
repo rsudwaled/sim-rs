@@ -400,10 +400,9 @@ class VclaimBPJSController extends Controller
         $response = json_decode($response->getBody());
         return $response;
     }
-
     public function insert_sep(Request $request)
     {
-        // dd($request->all());
+        // dd($request->nomorsuratkontrol);
         if ($request->nomorsuratkontrol) {
             $request['tujuanKunj'] = "2";
             $request['flagProcedure'] = "";
@@ -419,7 +418,7 @@ class VclaimBPJSController extends Controller
             $request['assesmentPel'] = "";
             $request['noSurat'] = "";
             $request['kodeDPJP'] = "";
-            $request['dpjpLayan'] = "";
+            $request['dpjpLayan'] = $request->kodedokter;
         }
         $url = $this->baseUrl . "SEP/2.0/insert";
         $signature = $this->signature();

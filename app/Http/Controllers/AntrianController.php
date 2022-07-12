@@ -116,7 +116,6 @@ class AntrianController extends Controller
             'antrianid' => 'required',
             'statuspasien' => 'required',
             'nik' => 'required',
-            'nomorkk' => 'required',
             'nama' => 'required',
             'nohp' => 'required',
             'jeniskunjungan' => 'required',
@@ -136,12 +135,15 @@ class AntrianController extends Controller
         $antrian = Antrian::find($request->antrianid);
         $poli = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first();
         $api = new AntrianBPJSController();
+        // jika pasien jkn
         if (isset($request->nomorreferensi)) {
             $jenispasien = 'JKN';
             $request['keterangan'] = "Silahkan menunggu diruang tunggu poliklinik";
             $request['taskid'] = 3;
             $request['status_api'] = 1;
-        } else {
+        }
+        // jika pasien non-jkn
+        else {
             $jenispasien = 'NON JKN';
             $request['keterangan'] = "Silahkan untuk membayar biaya pendaftaran diloket pembayaran";
             $request['taskid'] = 3;
@@ -159,42 +161,43 @@ class AntrianController extends Controller
         // update pasien baru
         if ($request->statuspasien == "BARU") {
             $request['pasienbaru'] = 1;
-            $pasien = Pasien::count();
+            $pasien = PasienDB::count();
             $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
-            $pasien = Pasien::create(
-                [
-                    "nik" => $request->nik,
-                    "norm" => $request->norm,
-                    "nomorkartu" => $request->nomorkartu,
-                    "nomorkk" => $request->nomorkk,
-                    "nama" => $request->nama,
-                    "jeniskelamin" => $request->jeniskelamin,
-                    "tanggallahir" => $request->tanggallahir,
-                    "nohp" => $request->nohp,
-                    "alamat" => $request->alamat,
-                    "kodeprop" => $request->kodeprop,
-                    "namaprop" => $request->namaprop,
-                    "kodedati2" => $request->kodedati2,
-                    "namadati2" => $request->namadati2,
-                    "kodekec" => $request->kodekec,
-                    "namakec" => $request->namakec,
-                    "kodekel" => $request->kodekel,
-                    "namakel" => $request->namakel,
-                    "rt" => $request->rt,
-                    "rt" => $request->rt,
-                ]
-            );
+            // $pasien = PasienDB::create(
+            //     [
+            //         "nik" => $request->nik,
+            //         "norm" => $request->norm,
+            //         "nomorkartu" => $request->nomorkartu,
+            //         "nomorkk" => $request->nomorkk,
+            //         "nama" => $request->nama,
+            //         "jeniskelamin" => $request->jeniskelamin,
+            //         "tanggallahir" => $request->tanggallahir,
+            //         "nohp" => $request->nohp,
+            //         "alamat" => $request->alamat,
+            //         "kodeprop" => $request->kodeprop,
+            //         "namaprop" => $request->namaprop,
+            //         "kodedati2" => $request->kodedati2,
+            //         "namadati2" => $request->namadati2,
+            //         "kodekec" => $request->kodekec,
+            //         "namakec" => $request->namakec,
+            //         "kodekel" => $request->kodekel,
+            //         "namakel" => $request->namakel,
+            //         "rt" => $request->rt,
+            //         "rt" => $request->rt,
+            //     ]
+            // );
         }
         // update pasien lama
         else {
-            $pasien = Pasien::firstWhere('norm', $request->norm);
+            $pasien = PasienDB::firstWhere('no_rm', $request->norm);
             $pasien->update([
-                "nomorkartu" => $request->nomorkartu,
+                "no_Bpjs" => $request->nomorkartu,
             ]);
             $request['pasienbaru'] = 0;
         }
         $request['namapoli'] = $poli->namapoli;
         $request['kodepoli'] = $poli->kodepoli;
+        $request['waktu'] = Carbon::now();
         $res_antrian = $api->tambah_antrian($request);
         if ($res_antrian->metadata->code == 200) {
             $res_checkin = $api->update_antrian($request);
@@ -202,11 +205,13 @@ class AntrianController extends Controller
                 "nomorkartu" => $request->nomorkartu,
                 "nik" => $request->nik,
                 "nohp" => $request->nohp,
-                "norm" => $pasien->norm,
+                "nama" => $pasien->nama_px,
+                "norm" => $pasien->no_rm,
                 "jampraktek" => $request->jampraktek,
                 "jeniskunjungan" => $request->jeniskunjungan,
                 "nomorreferensi" => $request->nomorreferensi,
                 "jenispasien" => $jenispasien,
+                "pasienbaru" => $request->pasienbaru,
                 "namapoli" => $request->namapoli,
                 "namadokter" => $request->namadokter,
                 "taskid" => $request->taskid,
@@ -256,6 +261,7 @@ class AntrianController extends Controller
         $antrian = Antrian::where('kodebooking', $kodebooking)->first();
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 2;
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -314,7 +320,7 @@ class AntrianController extends Controller
             $request['status_api'] = 0;
             $request['keterangan'] = "Silahkan melakukan pembayaran pendaftaran ke loket pembayaran";
         }
-
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         if ($response->metadata->code == 200) {
@@ -364,7 +370,7 @@ class AntrianController extends Controller
     {
         $antrian = Antrian::where('kodebooking', $kodebooking)->first();
         $request['kodebooking'] = $antrian->kodebooking;
-        $request['keterangan'] = "Dibatalkan oleh admin user " . Auth::user()->name;
+        $request['keterangan'] = "Dibatalkan oleh sistem admin user " . Auth::user()->name;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->batal_antrian($request);
         Alert::success('Success', "Antrian berhasil dibatalkan. " . $response->metadata->message);
@@ -417,6 +423,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 4;
         $request['keterangan'] = "Panggilan ke poliklinik yang anda pilih";
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -439,6 +446,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 5;
         $request['keterangan'] = "Silahkan tunggu di farmasi";
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -456,6 +464,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 5;
         $request['keterangan'] = "Antrian selesai, semoga cepat sembuh";
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -489,6 +498,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 6;
         $request['keterangan'] = "Proses peracikan obat";
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -506,6 +516,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 7;
         $request['keterangan'] = "Selesai peracikan obat";
+        $request['waktu'] = Carbon::now();
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([

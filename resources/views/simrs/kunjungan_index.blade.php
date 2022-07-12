@@ -1,11 +1,8 @@
 @extends('adminlte::page')
-
 @section('title', 'Kunjungan')
-
 @section('content_header')
     <h1>Kunjungan Periode {{ $tanggal[0] }} s/d {{ $tanggal[1] }}</h1>
 @stop
-
 @section('content')
     <div class="row">
         <div class="col-12">
