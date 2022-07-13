@@ -316,6 +316,20 @@ return [
                     'url'  => 'antrian/laporan',
                     // 'can' => 'admin',
                 ],
+                [
+                    'text' => 'Laporan Pertanggal',
+                    'icon'    => 'fas fa-chart-line',
+                    'shift'   => 'ml-2',
+                    'url'  => 'antrian/laporan_tanggal',
+                    // 'can' => 'admin',
+                ],
+                [
+                    'text' => 'Laporan Perbulan',
+                    'icon'    => 'fas fa-chart-line',
+                    'shift'   => 'ml-2',
+                    'url'  => 'antrian/laporan_bulan',
+                    // 'can' => 'admin',
+                ],
             ],
         ],
         // MENU VCLAIM
