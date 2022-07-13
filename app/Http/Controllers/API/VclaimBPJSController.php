@@ -271,7 +271,7 @@ class VclaimBPJSController extends Controller
         if ($validator->fails()) {
             return $response = [
                 'metaData' => [
-                    'code' => 400,
+                    'code' => 201,
                     'message' => $validator->errors()->first(),
                 ],
             ];
@@ -402,7 +402,6 @@ class VclaimBPJSController extends Controller
     }
     public function insert_sep(Request $request)
     {
-        // dd($request->nomorsuratkontrol);
         if ($request->nomorsuratkontrol) {
             $request['tujuanKunj'] = "2";
             $request['flagProcedure'] = "";

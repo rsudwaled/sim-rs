@@ -483,7 +483,6 @@ class AntrianBPJSController extends Controller
     }
     public function ambil_antrian(Request $request)
     {
-
         // auth token
         $auth = $this->auth_token($request);
         if ($auth['metadata']['code'] != 200) {
@@ -521,6 +520,19 @@ class AntrianBPJSController extends Controller
                 ]
             ];
         }
+                    // cek duplikasi nik antrian
+                    $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+                    ->where('nik', $request->nik)
+                    ->where('taskid', '<=', 4)
+                    ->count();
+                if ($antrian_nik) {
+                    return $response = [
+                        "metadata" => [
+                            "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
+                            "code" => 201,
+                        ],
+                    ];
+                }
         // proses ambil antrian
         $pasien = PasienDB::where('no_rm', $request->norm)->first();
         $vclaim = new VclaimBPJSController();
@@ -539,7 +551,6 @@ class AntrianBPJSController extends Controller
         }
         // cek pasien lama
         else {
-
             // cek jika jkn
             if (isset($request->nomorreferensi)) {
                 $request['jenispasien'] = 'JKN';
@@ -574,7 +585,6 @@ class AntrianBPJSController extends Controller
                 } catch (\Throwable $th) {
                     return $response;
                 }
-
                 // pembuatan surat kontrol
                 try {
                     $response = $vclaim->rujukan_nomor($request);
@@ -582,35 +592,46 @@ class AntrianBPJSController extends Controller
                     $request['jenisrujukan'] = $rujukan->response->asalFaskes;
                     $response = $vclaim->rujukan_jumlah_sep($request);
                     $jumlah_sep_rujukan = $response->response->jumlahSEP;
-
                     // jika jenis kunjungan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
-                    if ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0) {
-                        // cek hari ini
-                        if ($time->isToday()) {
-                            return [
-                                "metadata" => [
-                                    "code" => 201,
-                                    "message" => "Tanggal periksa tidak bisa untuk hari ini untuk membuat surat kontrol"
-                                ]
-                            ];
-                        }
-                        // buat surat control
-                        $response = $vclaim->insert_rencana_kontrol($request);
-                        // jika gagal buat surat kontrol
-                        if ($response->metaData->code == 200) {
-                            $suratkontrol = $response->response;
-                        } else {
-                            return $response;
+                    if($jumlah_sep_rujukan != null){
+                        if ($jumlah_sep_rujukan != 0) {
+                                                    // cek hari ini
+                                                    if ($time->isToday()) {
+                                                        return [
+                                                            "metadata" => [
+                                                                "code" => 201,
+                                                                "message" => "Tanggal periksa tidak bisa untuk hari ini untuk membuat surat kontrol"
+                                                            ]
+                                                        ];
+                                                    }
+                            if ($request->jeniskunjungan == 3) {
+                            // dd($jumlah_sep_rujukan, 'kontrol');
+       // buat surat control
+       $response = $vclaim->insert_rencana_kontrol($request);
+       // jika gagal buat surat kontrol
+       if ($response->metaData->code == 200) {
+           $suratkontrol = $response->response;
+       } else {
+           return $response;
+       }
+                            }
+                            else{
+                            // dd($jumlah_sep_rujukan);
+         return [
+                            "metadata" => [
+                                "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
+                                "code" => 201,
+                            ],
+                        ];
+                            }
+
+
                         }
                     }
+
                     // error jika jenis kunjungan bukan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
                     // else if ($request->jeniskunjungan != 3 && ($jumlah_sep_rujukan != null ||  $jumlah_sep_rujukan != 0)) {
-                    //     return [
-                    //         "metadata" => [
-                    //             "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
-                    //             "code" => 201,
-                    //         ],
-                    //     ];
+
                     // }
                 } catch (\Throwable $th) {
                     return $response;
@@ -658,19 +679,7 @@ class AntrianBPJSController extends Controller
                 // jika error
                 return $jadwals;
             }
-            // cek duplikasi nik antrian
-            $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-                ->where('nik', $request->nik)
-                ->where('taskid', '<=', 4)
-                ->count();
-            if ($antrian_nik) {
-                return $response = [
-                    "metadata" => [
-                        "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
-                        "code" => 201,
-                    ],
-                ];
-            }
+
 
             //  cek nik
             $antrians = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
@@ -976,7 +985,7 @@ class AntrianBPJSController extends Controller
                 $vclaim = new VclaimBPJSController();
                 // rujukan
                 $request['noKartu'] = $antrian->nomorkartu;
-                $request['tglSep'] = $antrian->tanggalperiksa;
+                $request['tglSep'] = Carbon::now()->format('Y-m-d');
                 $request['noMR'] = $antrian->norm;
                 $request['nik'] = $antrian->nik;
                 $request['nohp'] = $antrian->nohp;
