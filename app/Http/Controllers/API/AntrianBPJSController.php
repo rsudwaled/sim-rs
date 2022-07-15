@@ -520,19 +520,19 @@ class AntrianBPJSController extends Controller
                 ]
             ];
         }
-                    // cek duplikasi nik antrian
-                    $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
-                    ->where('nik', $request->nik)
-                    ->where('taskid', '<=', 4)
-                    ->count();
-                if ($antrian_nik) {
-                    return $response = [
-                        "metadata" => [
-                            "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
-                            "code" => 201,
-                        ],
-                    ];
-                }
+        // cek duplikasi nik antrian
+        $antrian_nik = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
+            ->where('nik', $request->nik)
+            ->where('taskid', '<=', 4)
+            ->count();
+        if ($antrian_nik) {
+            return $response = [
+                "metadata" => [
+                    "message" => "Terdapat antrian dengan nomor NIK yang sama pada tanggal tersebut yang belum selesai.",
+                    "code" => 201,
+                ],
+            ];
+        }
         // proses ambil antrian
         $pasien = PasienDB::where('no_rm', $request->norm)->first();
         $vclaim = new VclaimBPJSController();
@@ -593,39 +593,36 @@ class AntrianBPJSController extends Controller
                     $response = $vclaim->rujukan_jumlah_sep($request);
                     $jumlah_sep_rujukan = $response->response->jumlahSEP;
                     // jika jenis kunjungan "kontrol(3)" dan jumlah sep rujukan lebih dari 0
-                    if($jumlah_sep_rujukan != null){
+                    if ($jumlah_sep_rujukan != null) {
                         if ($jumlah_sep_rujukan != 0) {
-                                                    // cek hari ini
-                                                    if ($time->isToday()) {
-                                                        return [
-                                                            "metadata" => [
-                                                                "code" => 201,
-                                                                "message" => "Tanggal periksa tidak bisa untuk hari ini untuk membuat surat kontrol"
-                                                            ]
-                                                        ];
-                                                    }
+                            // cek hari ini
+                            if ($time->isToday()) {
+                                return [
+                                    "metadata" => [
+                                        "code" => 201,
+                                        "message" => "Tanggal periksa tidak bisa untuk hari ini untuk membuat surat kontrol"
+                                    ]
+                                ];
+                            }
                             if ($request->jeniskunjungan == 3) {
-                            // dd($jumlah_sep_rujukan, 'kontrol');
-       // buat surat control
-       $response = $vclaim->insert_rencana_kontrol($request);
-       // jika gagal buat surat kontrol
-       if ($response->metaData->code == 200) {
-           $suratkontrol = $response->response;
-       } else {
-           return $response;
-       }
+                                // dd($jumlah_sep_rujukan, 'kontrol');
+                                // buat surat control
+                                $response = $vclaim->insert_rencana_kontrol($request);
+                                // jika gagal buat surat kontrol
+                                if ($response->metaData->code == 200) {
+                                    $suratkontrol = $response->response;
+                                } else {
+                                    return $response;
+                                }
+                            } else {
+                                // dd($jumlah_sep_rujukan);
+                                return [
+                                    "metadata" => [
+                                        "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
+                                        "code" => 201,
+                                    ],
+                                ];
                             }
-                            else{
-                            // dd($jumlah_sep_rujukan);
-         return [
-                            "metadata" => [
-                                "message" => "Rujukan anda sudah digunakan untuk kunjungan pertama, untuk kunjungan berikutnya silahkan pilih jenis kunjungan Kontrol(3)",
-                                "code" => 201,
-                            ],
-                        ];
-                            }
-
-
                         }
                     }
 
@@ -1253,19 +1250,37 @@ class AntrianBPJSController extends Controller
         if ($auth['metadata']['code'] != 200) {
             return $auth;
         }
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "tanggalawal" => "required",
+            "tanggalakhir" => "required",
+        ]);
+        if ($validator->fails()) {
+            return [
+                'metadata' => [
+                    'code' => 201,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+        }
         // end auth token
         $jadwalops = JadwalOperasi::whereBetween('tanggaloperasi', [$request->tanggalawal, $request->tanggalakhir])->get();
         $jadwals = [];
         foreach ($jadwalops as  $jadwalop) {
+            if ($jadwalop->terlaksana == "0") {
+                $terlaksana = "Belum";
+            } else {
+                $terlaksana = "Sudah";
+            }
             $jadwals[] = [
                 "kodebooking" => $jadwalop->kodebooking,
                 "tanggaloperasi" => $jadwalop->tanggaloperasi,
                 "jenistindakan" => $jadwalop->jenistindakan,
                 "kodepoli" => $jadwalop->kodepoli,
                 "namapoli" => $jadwalop->namapoli,
-                "terlaksana" => $jadwalop->terlaksana,
+                "terlaksana" => $terlaksana,
                 "nopeserta" => $jadwalop->nopeserta,
-                "lastupdate" => $jadwalop->lastupdate,
+                "lastupdate" => Carbon::parse($jadwalop->updated_at)->format('Y-m-d H:i:s'),
             ];
         }
         $response = [
@@ -1286,19 +1301,39 @@ class AntrianBPJSController extends Controller
         if ($auth['metadata']['code'] != 200) {
             return $auth;
         }
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "nopeserta" => "required",
+        ]);
+        if ($validator->fails()) {
+            return [
+                'metadata' => [
+                    'code' => 201,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+        }
         // end auth token
-        $jadwalops = JadwalOperasi::where('nopeserta', $request->nopeserta)->get();
+        $jadwalops = JadwalOperasi::where('nopeserta', $request->nopeserta)
+            ->where('tanggaloperasi', '>=', Carbon::now()->format('Y-m-d'))
+            ->get();
+
         $jadwals = [];
         foreach ($jadwalops as  $jadwalop) {
+            if ($jadwalop->terlaksana == "0") {
+                $terlaksana = "Belum";
+            } else {
+                $terlaksana = "Sudah";
+            }
             $jadwals[] = [
                 "kodebooking" => $jadwalop->kodebooking,
                 "tanggaloperasi" => $jadwalop->tanggaloperasi,
                 "jenistindakan" => $jadwalop->jenistindakan,
                 "kodepoli" => $jadwalop->kodepoli,
                 "namapoli" => $jadwalop->namapoli,
-                "terlaksana" => $jadwalop->terlaksana,
+                "terlaksana" => $terlaksana,
                 "nopeserta" => $jadwalop->nopeserta,
-                "lastupdate" => $jadwalop->lastupdate,
+                "lastupdate" => Carbon::parse($jadwalop->updated_at)->format('Y-m-d H:i:s'),
             ];
         }
         $response = [

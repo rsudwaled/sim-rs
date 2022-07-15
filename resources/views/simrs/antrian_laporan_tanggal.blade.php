@@ -10,26 +10,13 @@
     <div class="row">
         <div class="col-12">
             <x-adminlte-card title="Filter Data Antrian" theme="secondary" collapsible>
-                <form action="{{ route('antrian.laporan') }}" method="get">
+                <form action="{{ route('antrian.laporan_tanggal') }}" method="get">
                     <div class="row">
                         <div class="col-md-3">
-                            {{-- @php
-                                $config = [
-                                    'locale' => ['format' => 'YYYY/MM/DD'],
-                                ];
-                            @endphp
-                            <x-adminlte-date-range name="tanggal" label="Periode Tanggal Antrian"
-                                enable-default-ranges="Last 30 Days" :config="$config">
-                                <x-slot name="prependSlot">
-                                    <div class="input-group-text bg-primary">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                </x-slot>
-                            </x-adminlte-date-range> --}}
                             @php
                                 $config = ['format' => 'YYYY-MM-DD'];
                             @endphp
-                            <x-adminlte-input-date name="tanggal" label="Tanggal Laporan" value="2020-10-04"
+                            <x-adminlte-input-date name="tanggal" label="Tanggal Laporan" value="{{ $request->tanggal }}"
                                 :config="$config">
                                 <x-slot name="prependSlot">
                                     <div class="input-group-text bg-primary">
@@ -38,12 +25,17 @@
                                 </x-slot>
                             </x-adminlte-input-date>
                         </div>
+                        <div class="col-md-3">
+                            <x-adminlte-select label="Waktu Server" name="waktu">
+                                <option value="rs">Server RS</option>
+                                <option value="server">Server BPJS</option>
+                            </x-adminlte-select>
+                        </div>
                     </div>
                     <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Submit Antrian" />
                 </form>
             </x-adminlte-card>
-
-            @if (isset($request->tanggal))
+            @if (isset($antrians))
                 {{-- <div class="row">
                     <div class="col-md-3">
                         <x-adminlte-small-box title="{{ $antrians->count() }}" text="Total Antrian Terdaftar"
@@ -94,7 +86,7 @@
                                     {{ $item->avg_waktu_task6 }} s
                                 </td>
                                 <td>{{ $item->jumlah_antrean }}</td>
-                                <td>{{ date("d/m/Y H:i:s", $item->insertdate / 1000)  }}</td>
+                                <td>{{ date('d/m/Y H:i:s', $item->insertdate / 1000) }}</td>
                             </tr>
                         @endforeach
                     </x-adminlte-datatable>

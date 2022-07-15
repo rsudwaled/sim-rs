@@ -310,6 +310,13 @@ return [
                     // 'can' => 'admin',
                 ],
                 [
+                    'text' => 'Jadwal Opersasi',
+                    'icon'    => 'fas fa-calendar-alt',
+                    'shift'   => 'ml-2',
+                    'url'  => 'jadwaloperasi',
+                    // 'can' => 'admin',
+                ],
+                [
                     'text' => 'Laporan Antrian',
                     'icon'    => 'fas fa-chart-line',
                     'shift'   => 'ml-2',
@@ -386,6 +393,13 @@ return [
                     'icon'    => 'fas fa-calendar-alt',
                     'shift'   => 'ml-2',
                     'url'  => 'jadwaldokter',
+                    'can' => 'pelayanan-medis',
+                ],
+                [
+                    'text' => 'Jadwal Opersi',
+                    'icon'    => 'fas fa-calendar-alt',
+                    'shift'   => 'ml-2',
+                    'url'  => 'jadwaloperasi',
                     'can' => 'pelayanan-medis',
                 ],
                 [

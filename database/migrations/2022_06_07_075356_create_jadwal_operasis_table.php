@@ -21,10 +21,13 @@ return new class extends Migration
             $table->string('jenistindakan');
             $table->string('kodepoli');
             $table->string('namapoli');
-            $table->string('terlaksana');
+            $table->string('kodedokter');
+            $table->string('namadokter');
             $table->string('nopeserta');
+            $table->string('nik');
+            $table->string('norm');
             $table->string('namapeserta');
-            $table->string('lastupdate');
+            $table->string('terlaksana')->default('0');
             $table->timestamps();
         });
     }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\API\VclaimBPJSController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\JadwalDokterController;
+use App\Http\Controllers\JadwalOperasiController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\PasienController;
 use App\Http\Controllers\PermissionController;
@@ -109,6 +110,7 @@ Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified', 'permi
 Route::resource('poli', PoliklinikController::class)->only(['index', 'create', 'edit']);
 Route::resource('dokter', DokterController::class)->only(['index', 'create']);
 Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit']);
+Route::resource('jadwaloperasi', JadwalOperasiController::class)->only(['index', 'store', 'edit']);
 Route::resource('kunjungan', KunjunganController::class);
 Route::resource('pasien', PasienController::class);
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);

@@ -592,38 +592,56 @@ class AntrianController extends Controller
         if ($request['tanggal'] == null) {
             $request['tanggal'] = Carbon::now()->format('Y-m-d');
             $request['waktu'] = 'rs';
-        }
-        $api = new AntrianBPJSController();
-        $response = $api->dashboard_tanggal($request);
-        if ($response->metadata->code == 200) {
-            $antrians = $response->response->list;
+            $antrians = null;
             return view('simrs.antrian_laporan_tanggal', [
                 'antrians' => $antrians,
                 'request' => $request,
             ]);
         } else {
-            Alert::error('Error Title', "Error Message " . $response->metadata->message);
-            return redirect()->route('antrian.laporan_tanggal');
+            $api = new AntrianBPJSController();
+            $response = $api->dashboard_tanggal($request);
+            if ($response->metadata->code == 200) {
+                $antrians = $response->response->list;
+                Alert::success('Success', "Success Message " . $response->metadata->message);
+                return view('simrs.antrian_laporan_tanggal', [
+                    'antrians' => $antrians,
+                    'request' => $request,
+                ]);
+            } else {
+                Alert::error('Error Title', "Error Message " . $response->metadata->message);
+                return redirect()->route('antrian.laporan_tanggal');
+            }
         }
     }
     public function laporan_bulan(Request $request)
     {
-        // if ($request['tanggal'] == null) {
+        if ($request['tanggal'] == null) {
+            $request['tanggal'] = Carbon::now()->format('Y-m');
             $request['tahun'] = Carbon::now()->format('Y');
             $request['bulan'] = Carbon::now()->format('m');
             $request['waktu'] = 'rs';
-        // }
-        $api = new AntrianBPJSController();
-        $response = $api->dashboard_bulan($request);
-        if ($response->metadata->code == 200) {
-            $antrians = $response->response->list;
+            $antrians = null;
             return view('simrs.antrian_laporan_bulan', [
                 'antrians' => $antrians,
                 'request' => $request,
             ]);
         } else {
-            Alert::error('Error Title', "Error Message " . $response->metadata->message);
-            return redirect()->route('antrian.laporan_bulan');
+            $tanggal = explode('-', $request->tanggal);
+            $request['tahun'] = $tanggal[0];
+            $request['bulan'] = $tanggal[1];
+            $api = new AntrianBPJSController();
+            $response = $api->dashboard_bulan($request);
+            if ($response->metadata->code == 200) {
+                Alert::success('Success', "Success Message " . $response->metadata->message);
+                $antrians = $response->response->list;
+                return view('simrs.antrian_laporan_bulan', [
+                    'antrians' => $antrians,
+                    'request' => $request,
+                ]);
+            } else {
+                Alert::error('Error Title', "Error Message " . $response->metadata->message);
+                return redirect()->route('antrian.laporan_bulan');
+            }
         }
     }
 
