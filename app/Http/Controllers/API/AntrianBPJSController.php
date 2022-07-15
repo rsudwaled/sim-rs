@@ -457,6 +457,12 @@ class AntrianBPJSController extends Controller
                 } else {
                     $nomorantean = 0;
                 }
+                $antrianjkn = Antrian::where('kodepoli', $request->kodepoli)
+                    ->where('tanggalperiksa', $request->tanggalperiksa)
+                    ->where('jenispasien', "JKN")->count();
+                $antriannonjkn = Antrian::where('kodepoli', $request->kodepoli)
+                    ->where('tanggalperiksa', $request->tanggalperiksa)
+                    ->where('jenispasien', "NON JKN")->count();
                 $response = [
                     "response" => [
                         "namapoli" => $jadwal->namapoli,
@@ -464,10 +470,10 @@ class AntrianBPJSController extends Controller
                         "totalantrean" => $antrians,
                         "sisaantrean" => $jadwal->kapasitaspasien - $antrians,
                         "antreanpanggil" => $nomorantean,
-                        "sisakuotajkn" => $jadwal->kapasitaspasien - $antrians,
-                        "kuotajkn" => $jadwal->kapasitaspasien,
-                        "sisakuotanonjkn" => $jadwal->kapasitaspasien - $antrians,
-                        "kuotanonjkn" => $jadwal->kapasitaspasien,
+                        "sisakuotajkn" => $jadwal->kapasitaspasien * 80 / 100 -  $antrianjkn,
+                        "kuotajkn" => $jadwal->kapasitaspasien * 80 / 100,
+                        "sisakuotanonjkn" =>  ($jadwal->kapasitaspasien * 20 / 100) - $antriannonjkn,
+                        "kuotanonjkn" =>  $jadwal->kapasitaspasien  * 20 / 100,
                         "keterangan" => "Informasi antrian poliklinik",
                     ],
                     "metadata" => [

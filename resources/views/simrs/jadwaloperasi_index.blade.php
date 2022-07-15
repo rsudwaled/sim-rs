@@ -31,7 +31,17 @@
                                     Sudah
                                 @endif
                             </td>
-                            <td>{{ $item->terlaksana }}</td>
+                            <td>
+                                <form action="{{ route('pasien.destroy', $item->kodebooking) }}" method="POST">
+                                    {{-- <x-adminlte-button class="btn-xs" theme="warning" icon="fas fa-edit"
+                                        onclick="window.location='{{ route('pasien.edit', $item->kodebooking) }}'" /> --}}
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-trash-alt"
+                                        type="submit"
+                                        onclick="return confirm('Apakah anda akan menghapus {{ $item->kodebooking }} ?')" />
+                                </form>
+                            </td>
 
                             {{-- <td>
                                 @if ($item->status == 1)
@@ -74,15 +84,15 @@
                     </x-adminlte-input>
                     <div class="row">
                         <div class="col-md-6">
-                            <x-adminlte-input name="nokartu" label="Nomor Kartu" placeholder="Nomor Kartu" />
+                            <x-adminlte-input name="nopeserta" label="Nomor Kartu" placeholder="Nomor Kartu" />
                         </div>
                         <div class="col-md-6">
                             <x-adminlte-input name="norm" label="Nomor RM Pasien" placeholder="Nomor RM Pasien"
                                 readonly />
                         </div>
                     </div>
-                    <x-adminlte-input name="nama" label="Nama Pasien" placeholder="Nama Pasien" />
-                    <x-adminlte-select2 name="poli" label="Poliklinik">
+                    <x-adminlte-input name="namapeserta" label="Nama Pasien" placeholder="Nama Pasien" />
+                    <x-adminlte-select2 name="kodepoli" label="Poliklinik">
                         @foreach ($poli as $item)
                             <option value="{{ $item->kodesubspesialis }}">{{ $item->kodesubspesialis }} -
                                 {{ $item->namasubspesialis }}
@@ -145,9 +155,9 @@
                             $('#pasienTidakDitemukan').html('');
                             $('#nomorkk').val(data.response.no_ktp);
                             $('#nohp').val(data.response.no_tlp);
-                            $('#nama').val(data.response.nama_px);
+                            $('#namapeserta').val(data.response.nama_px);
                             $('#norm').val(data.response.no_rm);
-                            $('#nomorkartu').val(data.response.no_Bpjs);
+                            $('#nopeserta').val(data.response.no_Bpjs);
                             $('#statuspasien').val('LAMA');
                             $('#formPasien').hide();
                         } else {
