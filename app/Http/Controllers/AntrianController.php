@@ -50,7 +50,7 @@ class AntrianController extends Controller
             ->count();
         $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
         $angkaantrean = $antrian_tgl + 1;
-        $kodebooking = strtoupper(uniqid(6));
+        $kodebooking = strtoupper(uniqid());
 
         $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
         $jadwal = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)->where('kodedokter', $dokter)->first();
@@ -192,6 +192,7 @@ class AntrianController extends Controller
             $pasien = PasienDB::firstWhere('no_rm', $request->norm);
             $pasien->update([
                 "no_Bpjs" => $request->nomorkartu,
+                "no_tlp" => $request->nohp,
             ]);
             $request['pasienbaru'] = 0;
         }
@@ -259,19 +260,24 @@ class AntrianController extends Controller
     public function panggil_pendaftaran($kodebooking, Request $request)
     {
         $antrian = Antrian::where('kodebooking', $kodebooking)->first();
-        $request['kodebooking'] = $antrian->kodebooking;
-        $request['taskid'] = 2;
-        $request['waktu'] = Carbon::now();
-        $vclaim = new AntrianBPJSController();
-        $response = $vclaim->update_antrian($request);
-        $antrian->update([
-            'taskid' => 2,
-            'status_api' => 1,
-            'keterangan' => "Panggilan ke loket pendaftaran",
-            'user' => Auth::user()->name,
-        ]);
-        Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
-        return redirect()->back();
+        if ($antrian) {
+            $request['kodebooking'] = $antrian->kodebooking;
+            $request['taskid'] = 2;
+            $request['waktu'] = Carbon::now();
+            $vclaim = new AntrianBPJSController();
+            $response = $vclaim->update_antrian($request);
+            $antrian->update([
+                'taskid' => 2,
+                'status_api' => 1,
+                'keterangan' => "Panggilan ke loket pendaftaran",
+                'user' => Auth::user()->name,
+            ]);
+            Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
+            return redirect()->back();
+        }else{
+            Alert::error('Error', 'Kode Booking tidak ditemukan');
+            return redirect()->back();
+        }
     }
     public function cari_pasien($nik)
     {

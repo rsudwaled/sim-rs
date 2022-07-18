@@ -472,7 +472,7 @@ class AntrianBPJSController extends Controller
                         "antreanpanggil" => $nomorantean,
                         "sisakuotajkn" => $jadwal->kapasitaspasien * 80 / 100 -  $antrianjkn,
                         "kuotajkn" => $jadwal->kapasitaspasien * 80 / 100,
-                        "sisakuotanonjkn" =>  ($jadwal->kapasitaspasien * 20 / 100) - $antriannonjkn,
+                        "sisakuotanonjkn" => ($jadwal->kapasitaspasien * 20 / 100) - $antriannonjkn,
                         "kuotanonjkn" =>  $jadwal->kapasitaspasien  * 20 / 100,
                         "keterangan" => "Informasi antrian poliklinik",
                     ],
@@ -499,13 +499,13 @@ class AntrianBPJSController extends Controller
             "nik" => "required|numeric|digits:16",
             "nohp" => "required|numeric",
             "kodepoli" => "required",
-            // "norm" => "required",
+            "norm" => "required",
             "tanggalperiksa" => "required",
             "kodedokter" => "required",
             "jampraktek" => "required",
             "jeniskunjungan" => "required|numeric",
             // "nomorreferensi" => "numeric",
-            "nomorkartu" => "numeric",
+            "nomorkartu" => "required|numeric|digits:13",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -554,6 +554,16 @@ class AntrianBPJSController extends Controller
                     "code" => 202,
                 ],
             ];
+        }
+        // cek no kartu sesuai tidak
+        else if ($pasien->no_Bpjs != $request->nomorkartu || $pasien->nik_bpjs != $request->nik) {
+            return $response = [
+                "metadata" => [
+                    "message" => "NIK atau Nomor Kartu Tidak Sesuai dengan Data RM, (" . $pasien->no_Bpjs . ", " . $pasien->nik_bpjs . ")",
+                    "code" => 201,
+                ],
+            ];
+            dd($pasien->no_Bpjs, $pasien->nik_bpjs, 'beda');
         }
         // cek pasien lama
         else {
@@ -682,8 +692,6 @@ class AntrianBPJSController extends Controller
                 // jika error
                 return $jadwals;
             }
-
-
             //  cek nik
             $antrians = Antrian::where('tanggalperiksa', $request->tanggalperiksa)
                 ->count();
@@ -1309,7 +1317,7 @@ class AntrianBPJSController extends Controller
         }
         // checking request
         $validator = Validator::make(request()->all(), [
-            "nopeserta" => "required",
+            "nopeserta" => "required|digits:13",
         ]);
         if ($validator->fails()) {
             return [

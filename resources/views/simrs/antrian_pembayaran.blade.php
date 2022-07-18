@@ -65,8 +65,8 @@
                         $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
                         $config['order'] = ['7', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
-                        bordered hoverable compressed>
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped bordered
+                        hoverable compressed>
                         @foreach ($antrians->where('taskid', '!=', 0) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -99,7 +99,7 @@
                                         <br> {{ $item->nomorreferensi }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                <td>{{ $item->namapoli }} {{ $item->jampraktek }}<br>{{ $item->namadokter }}
                                 </td>
                                 <td>
                                     @if ($item->taskid == 2)
@@ -134,21 +134,14 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($item->taskid == 3)
-                                        {{-- <x-adminlte-button class="btn-xs" label="Panggil" theme="warning"
-                                            icon="fas fa-volume-down" data-toggle="tooltop" title="Panggil"
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" /> --}}
+                                    @if ($item->status_api == 0)
                                         <x-adminlte-button class="btn-xs btnBayar withLoad" label="Bayar" theme="success"
                                             icon="fas fa-hand-holding-medical" data-toggle="tooltop" title="Bayar"
                                             data-id="{{ $item->id }}" />
-                                        <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
-                                            data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
-                                            onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
-                                    @else
-                                        {{-- <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
-                                            icon="fas fa-print" data-toggle="tooltop" title=""
-                                            onclick="window.location='{{ route('antrian.panggil', $item->kodebooking) }}'" /> --}}
                                     @endif
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
+                                        data-toggle="tooltop" title="Batal Antrian {{ $item->nomorantrean }}"
+                                        onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
                                 </td>
                             </tr>
                         @endforeach

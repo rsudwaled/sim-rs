@@ -106,38 +106,40 @@
                                 $heads = ['Tgl SEP', 'Tgl Pulang', 'Nomor SEP / Rujukan', 'Nama', 'PPK Pelayanan', 'Poliklinik / Kelas', 'Diagnosa', 'Action'];
                                 $config['order'] = ['7', 'asc'];
                             @endphp
+
                             <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
                                 bordered hoverable compressed>
-                                @foreach ($monitoring->response->histori as $item)
-                                    <tr>
-                                        <td>{{ $item->tglSep }}</td>
-                                        <td>{{ $item->tglPlgSep }}</td>
-                                        <td>
-                                            {{ $item->noSep }}<br>
-                                            {{ $item->noRujukan }}
-                                        </td>
-                                        <td>{{ $item->namaPeserta }}</td>
-                                        <td>
-                                            {{ $item->ppkPelayanan }}<br>
-                                            {{ $item->jnsPelayanan }}
-                                        </td>
-                                        <td>{{ $item->poli }}<br>
-                                            {{ $item->kelasRawat }}
-                                        </td>
-                                        <td>{{ $item->diagnosa }}</td>
-                                        <td>
-                                            <form action="{{ route('vclaim.delete_sep', $item->noSep) }}" method="POST">
-                                                {{-- <x-adminlte-button class="btn-xs" theme="warning" icon="fas fa-edit"
-                                                    onclick="window.location='{{ route('admin.user.edit', $item->noSep) }}'" /> --}}
-                                                @csrf
-                                                @method('DELETE')
-                                                <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-trash-alt"
-                                                    type="submit"
-                                                    onclick="return confirm('Apakah anda akan menghapus {{ $item->noSep }} ?')" />
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                @isset($monitoring->response->histori)
+                                    @foreach ($monitoring->response->histori as $item)
+                                        <tr>
+                                            <td>{{ $item->tglSep }}</td>
+                                            <td>{{ $item->tglPlgSep }}</td>
+                                            <td>
+                                                {{ $item->noSep }}<br>
+                                                {{ $item->noRujukan }}
+                                            </td>
+                                            <td>{{ $item->namaPeserta }}</td>
+                                            <td>
+                                                {{ $item->ppkPelayanan }}<br>
+                                                {{ $item->jnsPelayanan }}
+                                            </td>
+                                            <td>{{ $item->poli }}<br>
+                                                {{ $item->kelasRawat }}
+                                            </td>
+                                            <td>{{ $item->diagnosa }}</td>
+                                            <td>
+                                                <form action="{{ route('vclaim.delete_sep', $item->noSep) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-trash-alt"
+                                                        type="submit"
+                                                        onclick="return confirm('Apakah anda akan menghapus {{ $item->noSep }} ?')" />
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endisset
+
                             </x-adminlte-datatable>
                         </div>
                     </div>
