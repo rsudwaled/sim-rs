@@ -50,6 +50,28 @@
                 </form>
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
+                {{-- info box --}}
+                <div class="row">
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', 2)->first()->angkaantrean ?? '0' }}"
+                            text="Antrian Saat Ini" theme="primary" class="withLoad" icon="fas fa-sign-in-alt"
+                            url="" url-text="Batalkan Antrian" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', 1)->first()->angkaantrean ?? '0' }}"
+                            class="withLoad" text="Antrian Selanjutnya" theme="success" icon="fas fa-sign-in-alt"
+                            url="{{ route('antrian.panggil_pendaftaran', $antrians->where('taskid', 1)->first()->kodebooking ?? '0') }}"
+                            url-text="Panggil Antrian Selanjutnya" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', '<', 2)->count() }}"
+                            text="Sisa Antrian" theme="warning" icon="fas fa-sign-in-alt" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->count() }}" text="Total Antrian" theme="success"
+                            icon="fas fa-sign-in-alt" />
+                    </div>
+                </div>
                 {{-- antrian sedang dipanggil --}}
                 <x-adminlte-card
                     title="Antrian Pendaftaran Sedang Dilayani ({{ $antrians->where('taskid', 2)->count() }} Orang)"
@@ -101,7 +123,7 @@
                                         <br> {{ $item->nomorreferensi }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                <td>{{ $item->namapoli }} {{ $item->jampraktek }}<br>{{ $item->namadokter }}
                                 </td>
                                 <td>
                                     {{-- {{ $item->taskid }} --}}
@@ -154,8 +176,9 @@
                                             @endif
                                             @if ($item->pasienbaru == 2)
                                                 <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
-                                                    theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
-                                                    title="Daftar Offline" data-id="{{ $item->id }}" />
+                                                    theme="success" icon="fas fa-hand-holding-medical"
+                                                    data-toggle="tooltip" title="Daftar Offline"
+                                                    data-id="{{ $item->id }}" />
                                             @endif
                                         @endif
                                     @else
@@ -173,13 +196,13 @@
                 {{-- antrian belum dipanggil --}}
                 <x-adminlte-card
                     title="Antrian Pendaftaran Belum Dilayani ({{ $antrians->where('taskid', 1)->count() }} Orang)"
-                    theme="primary" icon="fas fa-info-circle" collapsible>
+                    theme="warning" icon="fas fa-info-circle" collapsible="collapsed">
                     @php
                         $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
                         $config['order'] = ['7', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped bordered
-                        hoverable compressed>
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
+                        bordered hoverable compressed>
                         @foreach ($antrians->where('taskid', '!=', 0) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -192,18 +215,14 @@
                                     {{ $item->nik }}
                                 </td>
                                 <td>
+                                    {{ $item->nama }}<br>
                                     {{ $item->jenispasien }}
-                                    asdas
                                     @if ($item->pasienbaru == 1)
                                         <span class="badge bg-secondary">{{ $item->pasienbaru }}. Baru</span>
                                     @endif
                                     @if ($item->pasienbaru == 0)
                                         <span class="badge bg-secondary">{{ $item->pasienbaru }}. Lama</span>
                                     @endif
-                                    @isset($item->pasien)
-                                        <br>
-                                        {{ $item->pasien->nama_px }}
-                                    @endisset
                                 </td>
                                 <td>
                                     @isset($item->nomorkartu)
@@ -213,7 +232,7 @@
                                         <br> {{ $item->nomorreferensi }}
                                     @endisset
                                 </td>
-                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }} <br>{{ $item->jampraktek }}
+                                <td>{{ $item->namapoli }}<br>{{ $item->namadokter }}
                                 </td>
                                 <td>
                                     {{-- {{ $item->taskid }} --}}
