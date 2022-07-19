@@ -44,6 +44,8 @@
                             @endforeach
                         </div>
                     </div>
+                    <x-adminlte-button icon="fas fa-sync" class="withLoad reload" theme="success"
+                        label="Reload" />
                 </x-adminlte-card>
             </div>
         </div>
@@ -169,6 +171,11 @@
                 $.LoadingOverlay("show");
             });
         })
+        $('.reload').click(function() {
+            location.reload();
+        });
     </script>
+
+
     @include('sweetalert::alert')
 @stop

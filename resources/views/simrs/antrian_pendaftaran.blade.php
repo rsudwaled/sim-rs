@@ -46,7 +46,6 @@
                         </div>
                     </div>
                     <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Submit Antrian" />
-                    <x-adminlte-button class="withLoad" theme="success" label="Tambah Antrian Offline" />
                 </form>
             </x-adminlte-card>
             @if (isset($request->loket) && isset($request->lantai) && isset($request->tanggal))
