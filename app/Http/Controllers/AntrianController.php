@@ -160,32 +160,38 @@ class AntrianController extends Controller
         $request['kuotanonjkn'] = 20;
         // update pasien baru
         if ($request->statuspasien == "BARU") {
+            // $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
+            // $pasien = PasienDB::count();
             $request['pasienbaru'] = 1;
-            $pasien = PasienDB::count();
-            $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
-            // $pasien = PasienDB::create(
-            //     [
-            //         "nik" => $request->nik,
-            //         "norm" => $request->norm,
-            //         "nomorkartu" => $request->nomorkartu,
-            //         "nomorkk" => $request->nomorkk,
-            //         "nama" => $request->nama,
-            //         "jeniskelamin" => $request->jeniskelamin,
-            //         "tanggallahir" => $request->tanggallahir,
-            //         "nohp" => $request->nohp,
-            //         "alamat" => $request->alamat,
-            //         "kodeprop" => $request->kodeprop,
-            //         "namaprop" => $request->namaprop,
-            //         "kodedati2" => $request->kodedati2,
-            //         "namadati2" => $request->namadati2,
-            //         "kodekec" => $request->kodekec,
-            //         "namakec" => $request->namakec,
-            //         "kodekel" => $request->kodekel,
-            //         "namakel" => $request->namakel,
-            //         "rt" => $request->rt,
-            //         "rt" => $request->rt,
-            //     ]
-            // );
+            $pasien_terakhir = PasienDB::latest()->first()->no_rm;
+            $request['status'] = 1;
+            $request['norm'] = $pasien_terakhir + 1;
+            $pasien = PasienDB::updateOrCreate(
+                [
+                    "no_Bpjs" => $request->nomorkartu,
+                    "nik_bpjs" => $request->nik,
+                    "no_rm" => $request->norm,
+                ],
+                [
+                    // "nomorkk" => $request->nomorkk,
+                    "nama_px" => $request->nama,
+                    "jenis_kelamin" => $request->jeniskelamin,
+                    "tgl_lahir" => $request->tanggallahir,
+                    "no_tlp" => $request->nohp,
+                    "alamat" => $request->alamat,
+                    "kode_propinsi" => $request->kodeprop,
+                    // "namaprop" => $request->namaprop,
+                    "kode_kabupaten" => $request->kodedati2,
+                    // "namadati2" => $request->namadati2,
+                    "kode_kecamatan" => $request->kodekec,
+                    // "namakec" => $request->namakec,
+                    "kode_desa" => $request->kodekel,
+                    // "namakel" => $request->namakel,
+                    // "rw" => $request->rw,
+                    // "rt" => $request->rt,
+                    // "status" => $request->status,
+                ]
+            );
         }
         // update pasien lama
         else {
@@ -202,6 +208,44 @@ class AntrianController extends Controller
         $res_antrian = $api->tambah_antrian($request);
         if ($res_antrian->metadata->code == 200) {
             $res_checkin = $api->update_antrian($request);
+            if ($pasienbaru) {
+                $antrian->update([
+                    "nomorkartu" => $request->nomorkartu,
+                    "nik" => $request->nik,
+                    "nohp" => $request->nohp,
+                    "nama" => $pasien->nama_px,
+                    "norm" => $pasien->no_rm,
+                    "jampraktek" => $request->jampraktek,
+                    "jeniskunjungan" => $request->jeniskunjungan,
+                    "nomorreferensi" => $request->nomorreferensi,
+                    "jenispasien" => $jenispasien,
+                    "pasienbaru" => $request->pasienbaru,
+                    "namapoli" => $request->namapoli,
+                    "namadokter" => $request->namadokter,
+                    "taskid" => 1,
+                    "keterangan" => $request->keterangan,
+                    "user" => Auth::user()->name,
+                    "status_api" => $request->status_api,
+                ]);
+                $antrian->update([
+                    "nomorkartu" => $request->nomorkartu,
+                    "nik" => $request->nik,
+                    "nohp" => $request->nohp,
+                    "nama" => $pasien->nama_px,
+                    "norm" => $pasien->no_rm,
+                    "jampraktek" => $request->jampraktek,
+                    "jeniskunjungan" => $request->jeniskunjungan,
+                    "nomorreferensi" => $request->nomorreferensi,
+                    "jenispasien" => $jenispasien,
+                    "pasienbaru" => $request->pasienbaru,
+                    "namapoli" => $request->namapoli,
+                    "namadokter" => $request->namadokter,
+                    "taskid" => 2,
+                    "keterangan" => $request->keterangan,
+                    "user" => Auth::user()->name,
+                    "status_api" => $request->status_api,
+                ]);
+            }
             $antrian->update([
                 "nomorkartu" => $request->nomorkartu,
                 "nik" => $request->nik,
