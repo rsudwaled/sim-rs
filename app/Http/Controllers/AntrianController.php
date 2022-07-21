@@ -115,7 +115,7 @@ class AntrianController extends Controller
         $request->validate([
             'antrianid' => 'required',
             'statuspasien' => 'required',
-            'nik' => 'required',
+            'nik' => 'required|digits:16',
             'nama' => 'required',
             'nohp' => 'required',
             'jeniskunjungan' => 'required',
@@ -204,48 +204,19 @@ class AntrianController extends Controller
         }
         $request['namapoli'] = $poli->namapoli;
         $request['kodepoli'] = $poli->kodepoli;
-        $request['waktu'] = Carbon::now();
         $res_antrian = $api->tambah_antrian($request);
         if ($res_antrian->metadata->code == 200) {
-            $res_checkin = $api->update_antrian($request);
-            if ($request->pasienbaru) {
-                $antrian->update([
-                    "nomorkartu" => $request->nomorkartu,
-                    "nik" => $request->nik,
-                    "nohp" => $request->nohp,
-                    "nama" => $pasien->nama_px,
-                    "norm" => $pasien->no_rm,
-                    "jampraktek" => $request->jampraktek,
-                    "jeniskunjungan" => $request->jeniskunjungan,
-                    "nomorreferensi" => $request->nomorreferensi,
-                    "jenispasien" => $jenispasien,
-                    "pasienbaru" => $request->pasienbaru,
-                    "namapoli" => $request->namapoli,
-                    "namadokter" => $request->namadokter,
-                    "taskid" => 1,
-                    "keterangan" => $request->keterangan,
-                    "user" => Auth::user()->name,
-                    "status_api" => $request->status_api,
-                ]);
-                $antrian->update([
-                    "nomorkartu" => $request->nomorkartu,
-                    "nik" => $request->nik,
-                    "nohp" => $request->nohp,
-                    "nama" => $pasien->nama_px,
-                    "norm" => $pasien->no_rm,
-                    "jampraktek" => $request->jampraktek,
-                    "jeniskunjungan" => $request->jeniskunjungan,
-                    "nomorreferensi" => $request->nomorreferensi,
-                    "jenispasien" => $jenispasien,
-                    "pasienbaru" => $request->pasienbaru,
-                    "namapoli" => $request->namapoli,
-                    "namadokter" => $request->namadokter,
-                    "taskid" => 2,
-                    "keterangan" => $request->keterangan,
-                    "user" => Auth::user()->name,
-                    "status_api" => $request->status_api,
-                ]);
+            if ($request->statuspasien == "BARU") {
+                $request['taskid'] = 1;
+                $request['waktu'] = $antrian->created_at->timestamp * 1000;
+                $taskid1 = $api->update_antrian($request);
+                $request['taskid'] = 2;
+                $request['waktu'] = Carbon::parse($antrian->checkin)->timestamp * 1000;
+                $taskid2 = $api->update_antrian($request);
             }
+            $request['taskid'] = 3;
+            $request['waktu'] = Carbon::now()->timestamp * 1000;
+            $taskid3 = $api->update_antrian($request);
             $antrian->update([
                 "nomorkartu" => $request->nomorkartu,
                 "nik" => $request->nik,
@@ -314,6 +285,7 @@ class AntrianController extends Controller
                 'taskid' => 2,
                 'status_api' => 1,
                 'keterangan' => "Panggilan ke loket pendaftaran",
+                'checkin' => $request->waktu,
                 'user' => Auth::user()->name,
             ]);
             Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);

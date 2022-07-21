@@ -409,11 +409,23 @@
                     </div>
                     <div class="col-md-4">
                         <x-adminlte-input name="nama" label="Nama Lengkap" placeholder="Nama Lengkap"
-                            enable-old-support />
+                            enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input>
                     </div>
                     <div class="col-md-4">
                         <x-adminlte-input name="nohp" label="Nomor HP" placeholder="Nomor HP Aktif"
-                            enable-old-support />
+                            enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input>
                     </div>
                     <div class="col-md-6">
                         <x-adminlte-input name="nomorkartu" label="Nomor Kartu BPJS" placeholder="Nomor Kartu BPJS"
@@ -453,6 +465,11 @@
                             <option value="3">KONTROL</option>
                             <option value="2">RUJUKAN INTERNAL</option>
                             <option value="4">RUJUKAN ANTAR RS</option>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
                         </x-adminlte-select>
                     </div>
                     <div class="col-md-4">
@@ -479,6 +496,11 @@
                             <option disabled selected>PILIH JENIS KELAMIN</option>
                             <option value="L">LAKI-LAKI</option>
                             <option value="P">PEREMPUAN</option>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
                         </x-adminlte-select>
                     </div>
                     <div class="col-md-4">
@@ -486,13 +508,25 @@
                             $config = ['format' => 'YYYY-MM-DD'];
                         @endphp
                         <x-adminlte-input-date name="tanggallahir" value="" label="Tanggal Lahir"
-                            placeholder="Tanggal Lahir" :config="$config" enable-old-support />
+                            placeholder="Tanggal Lahir" :config="$config" enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input-date>
                     </div>
 
                 </div>
                 <div class="row">
                     <div class="col-md-8">
-                        <x-adminlte-input name="alamat" label="Alamat" placeholder="Alamat" enable-old-support />
+                        <x-adminlte-input name="alamat" label="Alamat" placeholder="Alamat" enable-old-support>
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
+                        </x-adminlte-input>
                     </div>
                     <div class="col-md-2">
                         <x-adminlte-input name="rt" label="Nomor RT" placeholder="RT" enable-old-support />
@@ -508,6 +542,11 @@
                             @foreach ($provinsis as $item)
                                 <option value="{{ $item->kode }}">{{ $item->nama }}</option>
                             @endforeach
+                            <x-slot name="bottomSlot">
+                                <span class="text-sm text-danger">
+                                    Wajib Diisi
+                                </span>
+                            </x-slot>
                         </x-adminlte-select2>
                     </div>
                     <div class="col-md-6">
@@ -527,7 +566,7 @@
                 </div>
             </x-adminlte-card>
             <x-slot name="footerSlot">
-                <x-adminlte-button label="Daftar" form="formDaftar" class="mr-auto" type="submit" theme="success"
+                <x-adminlte-button label="Daftar" form="formDaftar" class="mr-auto withLoad" type="submit" theme="success"
                     icon="fas fa-plus" />
                 <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
             </x-slot>
@@ -685,7 +724,7 @@
                 </div>
             </x-adminlte-card>
             <x-slot name="footerSlot">
-                <x-adminlte-button label="Daftar" form="formDaftarOn" class="mr-auto" type="submit" theme="success"
+                <x-adminlte-button label="Daftar" form="formDaftarOn" class="mr-auto withLoad" type="submit" theme="success"
                     icon="fas fa-plus" />
                 <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
             </x-slot>
@@ -823,9 +862,6 @@
                         } else {
                             $('#pasienTidakDitemukan').html(data.metadata.message);
                             $('#pasienDitemukan').html('');
-                            $('#nomorkk').val('');
-                            $('#nohp').val('');
-                            $('#nama').val('');
                             $('#norm').val('');
                             $('#nomorkartu').val('');
                             $('#statuspasien').val('BARU');

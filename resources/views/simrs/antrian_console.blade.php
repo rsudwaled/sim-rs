@@ -44,8 +44,7 @@
                             @endforeach
                         </div>
                     </div>
-                    <x-adminlte-button icon="fas fa-sync" class="withLoad reload" theme="success"
-                        label="Reload" />
+                    <x-adminlte-button icon="fas fa-sync" class="withLoad reload" theme="success" label="Reload" />
                 </x-adminlte-card>
             </div>
         </div>
@@ -121,7 +120,6 @@
                             'error'
                         );
                     }
-
                     $.LoadingOverlay("hide");
                     setTimeout(function() {
                         $.LoadingOverlay("show", {
@@ -145,8 +143,10 @@
                     "{{ route('antrian.index') }}" + "/console_jadwaldokter/" + kodepoli +
                     "/" + tanggalperiksa;
                 console.log(url);
-                $.get(url, function(data) {
+                setTimeout(function() {
                     $.LoadingOverlay("hide", true);
+                }, 2000);
+                $.get(url, function(data) {
                     $('#modalDokter').modal('show');
                     $('.btnPilihDokter').remove();
                     $.each(data, function(value) {
@@ -156,7 +156,7 @@
                             data[
                                 value].kodesubspesialis +
                             "/" + data[value].kodedokter + "/" + data[value].jadwal +
-                            "' class='btn btn-lg bg-success m-2 btnPilihDokter'>" +
+                            "' class='btn btn-lg bg-success m-2 btnPilihDokter withLoad'>" +
                             data[value].jadwal + " " + data[value].namadokter + " (" +
                             data[value].kapasitaspasien + ") </a>");
                     });
@@ -175,7 +175,5 @@
             location.reload();
         });
     </script>
-
-
     @include('sweetalert::alert')
 @stop

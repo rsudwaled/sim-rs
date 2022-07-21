@@ -107,11 +107,11 @@ Route::prefix('vclaim')->name('vclaim.')->middleware(['auth', 'verified', 'permi
     Route::delete('delete_surat_kontrol/{noSurat}', [VclaimController::class, 'delete_surat_kontrol'])->name('delete_surat_kontrol');
 });
 
-Route::resource('poli', PoliklinikController::class)->only(['index', 'create', 'edit']);
-Route::resource('dokter', DokterController::class)->only(['index', 'create']);
-Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit']);
-Route::resource('jadwaloperasi', JadwalOperasiController::class)->only(['index', 'store', 'edit']);
-Route::resource('kunjungan', KunjunganController::class);
-Route::resource('pasien', PasienController::class);
+Route::resource('poli', PoliklinikController::class)->only(['index', 'create', 'edit'])->middleware('permission:pelayanan-medis');
+Route::resource('dokter', DokterController::class)->only(['index', 'create'])->middleware('permission:pelayanan-medis');
+Route::resource('jadwaldokter', JadwalDokterController::class)->only(['index', 'store', 'edit'])->middleware('permission:pelayanan-medis');
+Route::resource('jadwaloperasi', JadwalOperasiController::class)->only(['index', 'store', 'edit'])->middleware('permission:pelayanan-medis');
+Route::resource('kunjungan', KunjunganController::class)->middleware('permission:rekam-medis');
+Route::resource('pasien', PasienController::class)->middleware('permission:rekam-medis');
 Route::resource('tarif_kelompok_layanan', TarifKelompokLayananController::class);
 Route::resource('tarif_layanan', TarifLayananController::class);
