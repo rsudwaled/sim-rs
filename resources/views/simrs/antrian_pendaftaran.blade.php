@@ -366,7 +366,7 @@
     </div>
     <x-adminlte-modal id="modalDaftarOffline" title="Pendaftaran Pasien Offline" size="lg" theme="success"
         icon="fas fa-user-plus" v-centered>
-        <form name="formDaftar" id="formDaftar" action="{{ route('antrian.update_offline') }}" method="post">
+        <form name="formDaftar" id="formDaftar" action="{{ route('antrian.update_pendaftaran_offline') }}" method="post">
             @csrf
             <input type="hidden" name="antrianid" id="antrianid" value="">
             <dl class="row">

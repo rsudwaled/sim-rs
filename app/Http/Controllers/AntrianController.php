@@ -109,7 +109,110 @@ class AntrianController extends Controller
         Alert::success('Success', 'Antrian Berhasil Ditambahkan');
         return redirect()->route('antrian.console');
     }
-    public function update_offline(Request $request)
+    public function taskid(Request $request)
+    {
+        $response = null;
+        $api = new AntrianBPJSController();
+        if ($request->kodebooking) {
+            $response = $api->list_waktu_task($request);
+        }
+        return view('simrs.antrian_task_id', [
+            'request' => $request,
+            'response' => $response,
+        ]);
+    }
+    public function checkin_update(Request $request)
+    {
+        // checking request
+        $validator = Validator::make(request()->all(), [
+            "kodebooking" => "required",
+        ]);
+        if ($validator->fails()) {
+            $response = [
+                'metadata' => [
+                    'code' => 400,
+                    'message' => $validator->errors()->first(),
+                ],
+            ];
+            return $response;
+        }
+        // cari antrian
+        $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
+        if (isset($antrian)) {
+            $api = new AntrianBPJSController();
+            $response = json_decode(json_encode($api->checkin_antrian($request)));
+            return $response;
+        }
+        // jika antrian tidak ditemukan
+        else {
+            return $response = [
+                'metadata' => [
+                    'code' => 400,
+                    'message' => "Antrian tidak ditemukan",
+                ],
+            ];
+        }
+    }
+    // pendaftaran
+    public function pendaftaran(Request $request)
+    {
+        $antrians = [];
+        if ($request->tanggal) {
+            $antrians = Antrian::with(['pasien'])
+                ->where('tanggalperiksa', $request->tanggal)
+                ->get();
+        }
+        $provinsis = Provinsi::get();
+        return view('simrs.antrian_pendaftaran', [
+            'antrians' => $antrians,
+            'request' => $request,
+            'provinsis' => $provinsis,
+        ]);
+    }
+    public function panggil_pendaftaran($kodebooking, Request $request)
+    {
+        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
+        if ($antrian) {
+            $request['kodebooking'] = $antrian->kodebooking;
+            $request['taskid'] = 2;
+            $now = Carbon::now();
+            $request['waktu'] = Carbon::now();
+            $vclaim = new AntrianBPJSController();
+            $response = $vclaim->update_antrian($request);
+            $antrian->update([
+                'taskid' => 2,
+                'status_api' => 1,
+                'keterangan' => "Panggilan ke loket pendaftaran",
+                'taskid2' => $now,
+                'user' => Auth::user()->name,
+            ]);
+            Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
+            return redirect()->back();
+        } else {
+            Alert::error('Error', 'Kode Booking tidak ditemukan');
+            return redirect()->back();
+        }
+    }
+    public function cari_pasien($nik)
+    {
+        $pasien = PasienDB::where('nik_bpjs', $nik)->first();
+        if ($pasien == null) {
+            $code = 201;
+            $message = "Pasien Tidak Ditemukan. Silahkan daftarkan pasien.";
+        } else {
+            $message = "Pasien Ditemukan";
+            $code = 200;
+        }
+        $response = [
+            "response" => $pasien,
+            "metadata" => [
+                "message" => $message,
+                "code" => $code,
+            ]
+        ];
+        return $response;
+    }
+    public function update_pendaftaran_offline(Request $request)
     {
         // validation
         $request->validate([
@@ -132,23 +235,25 @@ class AntrianController extends Controller
             ]);
         }
         // init
-        $antrian = Antrian::find($request->antrianid);
+
         $poli = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first();
         $api = new AntrianBPJSController();
         // jika pasien jkn
         if (isset($request->nomorreferensi)) {
             $jenispasien = 'JKN';
             $request['keterangan'] = "Silahkan menunggu diruang tunggu poliklinik";
-            $request['taskid'] = 3;
             $request['status_api'] = 1;
         }
         // jika pasien non-jkn
         else {
             $jenispasien = 'NON JKN';
             $request['keterangan'] = "Silahkan untuk membayar biaya pendaftaran diloket pembayaran";
-            $request['taskid'] = 3;
             $request['status_api'] = 0;
         }
+        $antrian = Antrian::find($request->antrianid);
+        $waktu1= Carbon::parse($antrian->taskid1)->timestamp * 1000;
+        $waktu2 = Carbon::parse($antrian->taskid2)->timestamp * 1000;
+        $waktu3 =  Carbon::now()->timestamp * 1000;
         $request['kodebooking'] = $antrian->kodebooking;
         $request['nomorantrean'] = $antrian->nomorantrean;
         $request['angkaantrean'] = $antrian->angkaantrean;
@@ -158,10 +263,10 @@ class AntrianController extends Controller
         $request['sisakuotanonjkn'] = 5;
         $request['kuotajkn'] = 20;
         $request['kuotanonjkn'] = 20;
+        $request['namapoli'] = $poli->namapoli;
+        $request['kodepoli'] = $poli->kodepoli;
         // update pasien baru
         if ($request->statuspasien == "BARU") {
-            // $request['norm'] =  Carbon::now()->format('Y') . str_pad($pasien + 1, 4, '0', STR_PAD_LEFT);
-            // $pasien = PasienDB::count();
             $request['pasienbaru'] = 1;
             $pasien_terakhir = PasienDB::latest()->first()->no_rm;
             $request['status'] = 1;
@@ -202,20 +307,18 @@ class AntrianController extends Controller
             ]);
             $request['pasienbaru'] = 0;
         }
-        $request['namapoli'] = $poli->namapoli;
-        $request['kodepoli'] = $poli->kodepoli;
         $res_antrian = $api->tambah_antrian($request);
         if ($res_antrian->metadata->code == 200) {
             if ($request->statuspasien == "BARU") {
                 $request['taskid'] = 1;
-                $request['waktu'] = $antrian->created_at->timestamp * 1000;
+                $request['waktu'] = $waktu1;
                 $taskid1 = $api->update_antrian($request);
                 $request['taskid'] = 2;
-                $request['waktu'] = Carbon::parse($antrian->checkin)->timestamp * 1000;
+                $request['waktu'] = $waktu2;
                 $taskid2 = $api->update_antrian($request);
             }
             $request['taskid'] = 3;
-            $request['waktu'] = Carbon::now()->timestamp * 1000;
+            $request['waktu'] = $waktu3;
             $taskid3 = $api->update_antrian($request);
             $antrian->update([
                 "nomorkartu" => $request->nomorkartu,
@@ -241,78 +344,6 @@ class AntrianController extends Controller
             Alert::error('Error', 'Error Message : ' . $res_antrian->metadata->message);
             return redirect()->back();
         }
-    }
-    public function taskid(Request $request)
-    {
-        $response = null;
-        $api = new AntrianBPJSController();
-        if ($request->kodebooking) {
-            $response = $api->list_waktu_task($request);
-        }
-        return view('simrs.antrian_task_id', [
-            'request' => $request,
-            'response' => $response,
-        ]);
-    }
-    // pendaftaran
-    public function pendaftaran(Request $request)
-    {
-        if ($request->tanggal == null) {
-            $request['tanggal'] = Carbon::now()->format('Y-m-d');
-        }
-        $polis = Poliklinik::where('status', 1)->get();
-        $antrians = Antrian::with(['pasien'])
-            ->where('tanggalperiksa', $request->tanggal)
-            ->get();
-        $provinsis = Provinsi::get();
-        return view('simrs.antrian_pendaftaran', [
-            'antrians' => $antrians,
-            'request' => $request,
-            'polis' => $polis,
-            'provinsis' => $provinsis,
-        ]);
-    }
-    public function panggil_pendaftaran($kodebooking, Request $request)
-    {
-        $antrian = Antrian::where('kodebooking', $kodebooking)->first();
-        if ($antrian) {
-            $request['kodebooking'] = $antrian->kodebooking;
-            $request['taskid'] = 2;
-            $request['waktu'] = Carbon::now();
-            $vclaim = new AntrianBPJSController();
-            $response = $vclaim->update_antrian($request);
-            $antrian->update([
-                'taskid' => 2,
-                'status_api' => 1,
-                'keterangan' => "Panggilan ke loket pendaftaran",
-                'checkin' => $request->waktu,
-                'user' => Auth::user()->name,
-            ]);
-            Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
-            return redirect()->back();
-        } else {
-            Alert::error('Error', 'Kode Booking tidak ditemukan');
-            return redirect()->back();
-        }
-    }
-    public function cari_pasien($nik)
-    {
-        $pasien = PasienDB::where('nik_bpjs', $nik)->first();
-        if ($pasien == null) {
-            $code = 201;
-            $message = "Pasien Tidak Ditemukan. Silahkan daftarkan pasien.";
-        } else {
-            $message = "Pasien Ditemukan";
-            $code = 200;
-        }
-        $response = [
-            "response" => $pasien,
-            "metadata" => [
-                "message" => $message,
-                "code" => $code,
-            ]
-        ];
-        return $response;
     }
     public function update_pendaftaran_online(Request $request)
     {
@@ -667,38 +698,7 @@ class AntrianController extends Controller
         }
     }
 
-    public function checkin_update(Request $request)
-    {
-        // checking request
-        $validator = Validator::make(request()->all(), [
-            "kodebooking" => "required",
-        ]);
-        if ($validator->fails()) {
-            $response = [
-                'metadata' => [
-                    'code' => 400,
-                    'message' => $validator->errors()->first(),
-                ],
-            ];
-            return $response;
-        }
-        // cari antrian
-        $antrian = Antrian::firstWhere('kodebooking', $request->kodebooking);
-        if (isset($antrian)) {
-            $api = new AntrianBPJSController();
-            $response = json_decode(json_encode($api->checkin_antrian($request)));
-            return $response;
-        }
-        // jika antrian tidak ditemukan
-        else {
-            return $response = [
-                'metadata' => [
-                    'code' => 400,
-                    'message' => "Antrian tidak ditemukan",
-                ],
-            ];
-        }
-    }
+
     public function baru_online($kodebooking)
     {
         $antrian = Antrian::firstWhere('kodebooking', $kodebooking);
