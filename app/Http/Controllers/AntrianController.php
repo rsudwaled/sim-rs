@@ -51,11 +51,9 @@ class AntrianController extends Controller
         $nomorantrean = $poli . '-' .    str_pad($antrian_poli + 1, 3, '0', STR_PAD_LEFT);
         $angkaantrean = $antrian_tgl + 1;
         $kodebooking = strtoupper(uniqid());
-
         $poli = Poliklinik::where('kodesubspesialis', $poli)->first();
         $jadwal = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)->where('kodedokter', $dokter)->first();
         $dokter = Dokter::where('kodedokter', $dokter)->first();
-
         if ($antrian_dokter >= $jadwal->kapasitaspasien) {
             Alert::error('Error', 'Antrian poliklinik jadwal dokter tersebut telah penuh');
             return redirect()->route('antrian.console');
@@ -78,9 +76,11 @@ class AntrianController extends Controller
             "angkaantrean" =>  $angkaantrean,
             "estimasidilayani" => 0,
             "taskid" => 1,
+            "taskid1" => Carbon::now(),
             "user" => 'System',
-            "keterangan" => 'Offline',
+            "keterangan" => 'Ambil antrian offline',
         ]);
+        // print antrian
         try {
             // $connector = new WindowsPrintConnector('Printer Receipt');
             $connector = new WindowsPrintConnector("smb://PRINTER:qweqwe@192.168.2.133/Printer Receipt");

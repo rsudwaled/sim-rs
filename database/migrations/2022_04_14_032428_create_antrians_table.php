@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('nama')->nullable();
             $table->string('nohp');
             $table->string('kodepoli');
-            $table->string('norm');
+            $table->string('norm')->nullable();
             $table->date('tanggalperiksa');
             $table->string('kodedokter');
             $table->string('jampraktek');
@@ -42,12 +42,13 @@ return new class extends Migration
             $table->string('kuotajkn')->nullable();
             $table->string('sisakuotanonjkn')->nullable();
             $table->string('kuotanonjkn')->nullable();
-
-            $table->string('taskid')->default(0);
-            $table->text('keterangan');
             $table->string('user')->nullable();
+            $table->text('keterangan');
+            $table->string('taskid')->default(0);
             $table->string('status_api')->default(0);
-            $table->string('checkin')->nullable();
+            $table->string('taskid1')->nullable();
+            $table->string('taskid2')->nullable();
+            $table->string('taskid3')->nullable();
             $table->timestamps();
         });
     }

@@ -39,7 +39,9 @@ class Antrian extends Model
         "status_api",
         "user",
         "nama",
-        "checkin",
+        "taskid1",
+        "taskid2",
+        "taskid3",
     ];
 
     public function pasien()
