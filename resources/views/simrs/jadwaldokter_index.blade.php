@@ -35,8 +35,8 @@
                             @endif
                         @endforeach
                     </x-adminlte-select2>
-                    <x-adminlte-button label="Get Jadwal Dokter" form="formJadwalHafiz" class="mr-auto" type="submit" theme="success"
-                    icon="fas fa-download" />
+                    <x-adminlte-button label="Get Jadwal Dokter" form="formJadwalHafiz" class="mr-auto" type="submit"
+                        theme="success" icon="fas fa-download" />
                 </form>
             </x-adminlte-card>
             <x-adminlte-card title="Data Informasi Jadwal Dokter" theme="info" icon="fas fa-info-circle" collapsible
@@ -49,7 +49,7 @@
                         <tr>
                             <td>{{ $item->first()->namasubspesialis }}</td>
                             <td>{{ $item->first()->kodesubspesialis }}</td>
-                            <td>{{ $item->first()->namadokter }}</td>
+                            <td>{{ $item->first()->kodedokter }} {{ $item->first()->namadokter }}</td>
                             @for ($i = 1; $i <= 6; $i++)
                                 <td>
                                     @foreach ($item as $jadwal)
@@ -114,7 +114,7 @@
             </div>
             <x-adminlte-select2 name="kodedokter" id="kodedokter" label="Dokter">
                 @foreach ($dokters as $item)
-                    <option value="{{ $item->kodedokter }}">{{ $item->namadokter }}
+                    <option value="{{ $item->kodedokter }}">{{ $item->kodedokter }} {{ $item->namadokter }}
                     </option>
                 @endforeach
             </x-adminlte-select2>

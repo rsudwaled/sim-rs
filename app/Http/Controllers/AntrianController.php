@@ -235,7 +235,6 @@ class AntrianController extends Controller
             ]);
         }
         // init
-
         $poli = Poliklinik::where('kodesubspesialis', $request->kodepoli)->first();
         $api = new AntrianBPJSController();
         // jika pasien jkn

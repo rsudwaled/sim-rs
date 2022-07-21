@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Laporan Antrian Per Bulan')
+@section('title', 'Laporan Antrian Per Tanggal')
 
 @section('content_header')
-    <h1>Laporan Antrian Per Bulan</h1>
+    <h1>Laporan Antrian Per Tanggal</h1>
 @stop
 
 @section('content')
@@ -36,16 +36,6 @@
                 </form>
             </x-adminlte-card>
             @if (isset($antrians))
-                {{-- <div class="row">
-                    <div class="col-md-3">
-                        <x-adminlte-small-box title="{{ $antrians->count() }}" text="Total Antrian Terdaftar"
-                            theme="success" icon="fas fa-users" />
-                    </div>
-                    <div class="col-md-3">
-                        <x-adminlte-small-box title="{{ $antrians->where('taskid', 99)->count() }}" text="Antrian Batal"
-                            theme="danger" icon="fas fa-users" />
-                    </div>
-                </div> --}}
                 <x-adminlte-card title="Antrian Pendaftaran" theme="primary" icon="fas fa-info-circle" collapsible>
                     @if ($errors->any())
                         <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
@@ -86,7 +76,7 @@
                                     {{ $item->avg_waktu_task6 }} s
                                 </td>
                                 <td>{{ $item->jumlah_antrean }}</td>
-                                <td>{{ date('d/m/Y H:i:s', $item->insertdate / 1000) }}</td>
+                                <td>{{ $item->insertdate }}</td>
                             </tr>
                         @endforeach
                     </x-adminlte-datatable>
@@ -96,7 +86,6 @@
     </div>
 @stop
 
-@section('plugins.Select2', true)
 @section('plugins.Datatables', true)
 @section('plugins.TempusDominusBs4', true)
 @section('plugins.DateRangePicker', true)

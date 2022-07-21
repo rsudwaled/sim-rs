@@ -9,6 +9,15 @@
 @section('content')
     <div class="row">
         <div class="col-12">
+            @if ($errors->any())
+                <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </x-adminlte-alert>
+            @endif
             <x-adminlte-card title="Jadwal Operasi RSUD Waled" theme="info" icon="fas fa-info-circle" collapsible
                 maximizable>
                 @php
@@ -37,8 +46,7 @@
                                         onclick="window.location='{{ route('pasien.edit', $item->kodebooking) }}'" /> --}}
                                     @csrf
                                     @method('DELETE')
-                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-trash-alt"
-                                        type="submit"
+                                    <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-trash-alt" type="submit"
                                         onclick="return confirm('Apakah anda akan menghapus {{ $item->kodebooking }} ?')" />
                                 </form>
                             </td>
@@ -57,7 +65,8 @@
                         </tr>
                     @endforeach
                 </x-adminlte-datatable>
-                <x-adminlte-button label="Open Modal" theme="success" data-toggle="modal" data-target="#jadwalOpeasiModal" />
+                <x-adminlte-button label="Open Modal" theme="success" data-toggle="modal"
+                    data-target="#jadwalOpeasiModal" />
                 {{-- <a href="{{ route('dokter.create') }}" class="btn btn-success">Refresh</a> --}}
             </x-adminlte-card>
             {{-- Modal Update Jadwal --}}

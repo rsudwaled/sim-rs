@@ -63,7 +63,7 @@
                             url-text="Panggil Antrian Selanjutnya" />
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-small-box title="{{ $antrians->where('taskid', '<', 2)->count() }}"
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', '<', 2)->where('taskid', '>=', 1)->count() }}"
                             text="Sisa Antrian" theme="warning" icon="fas fa-sign-in-alt" />
                     </div>
                     <div class="col-md-3">
