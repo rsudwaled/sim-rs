@@ -35,10 +35,10 @@
                         <h6>Pilih Antrian Poliklinik</h6>
                         <div class="row">
                             @foreach ($poliklinik as $poli)
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <x-adminlte-info-box
                                         text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien') }}"
-                                        title="POLI {{ $poli->namasubspesialis }} " class="tombolPoli"
+                                        title="{{ $poli->namasubspesialis }} " class="tombolPoli"
                                         data-id="{{ $poli->kodesubspesialis }}" theme="success" />
                                 </div>
                             @endforeach
