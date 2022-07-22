@@ -13,6 +13,7 @@ use App\Models\Provinsi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 use Mike42\Escpos\Printer;
@@ -169,7 +170,7 @@ class AntrianController extends Controller
             'provinsis' => $provinsis,
         ]);
     }
-    public function panggil_pendaftaran($kodebooking, Request $request)
+    public function panggil_pendaftaran($kodebooking, $loket, $lantai, Request $request)
     {
         $antrian = Antrian::where('kodebooking', $kodebooking)->first();
         if ($antrian) {
@@ -186,6 +187,50 @@ class AntrianController extends Controller
                 'taskid2' => $now,
                 'user' => Auth::user()->name,
             ]);
+            //panggil urusan mesin antrian
+            try {
+                $tanggal = Carbon::now()->format('Y-m-d');
+                $urutan = $antrian->angkaantrean;
+                $mesin_antrian = DB::connection('mysql3')->table('tb_counter')
+                    ->where('tgl', $tanggal)
+                    ->where('kategori', 'WA')
+                    ->where('loket', $loket)
+                    ->where('lantai', $lantai)
+                    ->get();
+                if ($mesin_antrian->count() < 1) {
+                    $mesin_antrian = DB::connection('mysql3')->table('tb_counter')->insert([
+                        'tgl' => $tanggal,
+                        'kategori' => 'WA',
+                        'loket' => $loket,
+                        'counterloket' => $urutan,
+                        'lantai' => $lantai,
+                        'mastercount' => $urutan,
+                        'sound' => 'PLAY',
+                    ]);
+                } else {
+                    DB::connection('mysql3')->table('tb_counter')
+                        ->where('tgl', $tanggal)
+                        ->where('kategori', 'WA')
+                        ->where('loket', $loket)
+                        ->where('lantai', $lantai)
+                        ->limit(1)
+                        ->update([
+                            // 'counterloket' => $antrian->first()->mastercount + 1,
+                            'counterloket' => $urutan,
+                            // 'mastercount' => $antrian->first()->mastercount + 1,
+                            'mastercount' => $urutan,
+                            'sound' => 'PLAY',
+                        ]);
+                }
+            } catch (\Throwable $th) {
+                Alert::error('Error', 'Mesin Antrian Tidak Menyala');
+                return redirect()->back();
+                // return redirect()->route('antrian.index', [
+                //     'tanggal' => $tanggal,
+                //     'loket' => $loket,
+                //     'lantai' => $lantai
+                // ]);
+            }
             Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
             return redirect()->back();
         } else {
@@ -457,7 +502,7 @@ class AntrianController extends Controller
     // poliklinik
     public function poli(Request $request)
     {
-        $antrians = [];
+        $antrians = null;
         if ($request->tanggal) {
             $antrians = Antrian::whereDate('tanggalperiksa', $request->tanggal)
                 ->get();
@@ -480,20 +525,25 @@ class AntrianController extends Controller
     public function panggil_poli($kodebooking, Request $request)
     {
         $antrian = Antrian::where('kodebooking', $kodebooking)->first();
-        $request['kodebooking'] = $antrian->kodebooking;
-        $request['taskid'] = 4;
-        $request['keterangan'] = "Panggilan ke poliklinik yang anda pilih";
-        $request['waktu'] = Carbon::now();
-        $vclaim = new AntrianBPJSController();
-        $response = $vclaim->update_antrian($request);
-        $antrian->update([
-            'taskid' => $request->taskid,
-            'status_api' => 1,
-            'keterangan' => $request->keterangan,
-            'user' => Auth::user()->name,
-        ]);
-        Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
-        return redirect()->back();
+        if ($antrian) {
+            $request['kodebooking'] = $antrian->kodebooking;
+            $request['taskid'] = 4;
+            $request['keterangan'] = "Panggilan ke poliklinik yang anda pilih";
+            $request['waktu'] = Carbon::now();
+            $vclaim = new AntrianBPJSController();
+            $response = $vclaim->update_antrian($request);
+            $antrian->update([
+                'taskid' => $request->taskid,
+                'status_api' => 1,
+                'keterangan' => $request->keterangan,
+                'user' => Auth::user()->name,
+            ]);
+            Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
+            return redirect()->back();
+        } else {
+            Alert::error('Error', 'Kodebooking tidak ditemukan');
+            return redirect()->back();
+        }
     }
     public function edit($id)
     {

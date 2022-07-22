@@ -540,7 +540,7 @@ class AntrianBPJSController extends Controller
             ];
         }
         // proses ambil antrian
-        $pasien = PasienDB::where('no_rm', $request->norm)->first();
+        $pasien = PasienDB::where('nik_Bpjs', $request->nik)->first();
         $vclaim = new VclaimBPJSController();
         // cek pasien baru hit info pasien baru
         if (empty($pasien)) {

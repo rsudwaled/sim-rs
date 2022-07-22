@@ -41,7 +41,13 @@
                         </div>
                         <div class="col-md-3">
                             <x-adminlte-select name="lantai" label="Lantai">
-                                <x-adminlte-options :options="[1 => 'Lantai 1', 2 => 'Lantai 2']" />
+                                <x-adminlte-options :options="[
+                                    1 => 'Lantai 1',
+                                    2 => 'Lantai 2',
+                                    3 => 'Lantai 3',
+                                    4 => 'Lantai 4',
+                                    5 => 'Lantai 5',
+                                ]" :selected="$request->lantai ?? 1" />
                             </x-adminlte-select>
                         </div>
                     </div>
@@ -59,7 +65,7 @@
                     <div class="col-md-3">
                         <x-adminlte-small-box title="{{ $antrians->where('taskid', 1)->first()->angkaantrean ?? '0' }}"
                             class="withLoad" text="Antrian Selanjutnya" theme="success" icon="fas fa-sign-in-alt"
-                            url="{{ route('antrian.panggil_pendaftaran', $antrians->where('taskid', 1)->first()->kodebooking ?? '0') }}"
+                            url="{{ route('antrian.panggil_pendaftaran', [$antrians->where('taskid', 1)->first()->kodebooking ?? '0', $request->loket, $request->lantai]) }}"
                             url-text="Panggil Antrian Selanjutnya" />
                     </div>
                     <div class="col-md-3">
@@ -157,13 +163,13 @@
                                         @if ($item->taskid == 1)
                                             <x-adminlte-button class="btn-xs" label="Panggil" theme="success"
                                                 icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', [$item->kodebooking, $request->loket, $request->lantai]) }}'" />
                                         @endif
                                         {{-- panggil ulang --}}
                                         @if ($item->taskid == 2)
                                             <x-adminlte-button class="btn-xs" label="Panggil Ulang" theme="primary"
                                                 icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
+                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', [$item->kodebooking, $request->loket, $request->lantai]) }}'" />
                                             @if ($item->pasienbaru == 1)
                                                 <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
                                                     theme="success" icon="fas fa-hand-holding-medical" data-toggle="tooltip"
@@ -200,7 +206,7 @@
                     @endphp
                     <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
                         bordered hoverable compressed>
-                        @foreach ($antrians->where('taskid', '!=', 0) as $item)
+                        @foreach ($antrians->where('taskid', '==', 1) as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
                                 <td>{{ $item->kodebooking }}<br>
@@ -258,38 +264,6 @@
 
                                 </td>
                                 <td>
-                                    @if ($item->taskid <= 2)
-                                        {{-- panggil pertama --}}
-                                        @if ($item->taskid == 1)
-                                            <x-adminlte-button class="btn-xs" label="Panggil" theme="success"
-                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
-                                        @endif
-                                        {{-- panggil ulang --}}
-                                        @if ($item->taskid == 2)
-                                            <x-adminlte-button class="btn-xs" label="Panggil Ulang" theme="primary"
-                                                icon="fas fa-volume-down" data-toggle="tooltip" title=""
-                                                onclick="window.location='{{ route('antrian.panggil_pendaftaran', $item->kodebooking) }}'" />
-                                            @if ($item->pasienbaru == 1)
-                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
-                                                    theme="success" icon="fas fa-hand-holding-medical"
-                                                    data-toggle="tooltip" title="Daftar Online"
-                                                    data-id="{{ $item->id }}" />
-                                            @endif
-                                            @if ($item->pasienbaru == 0)
-                                                <x-adminlte-button class="btn-xs btnDaftarOnline" label="Daftar"
-                                                    theme="success" icon="fas fa-hand-holding-medical"
-                                                    data-toggle="tooltip" title="Daftar Online"
-                                                    data-id="{{ $item->id }}" />
-                                            @endif
-                                            @if ($item->pasienbaru == 2)
-                                                <x-adminlte-button class="btn-xs btnDaftarOffline withLoad" label="Daftar"
-                                                    theme="success" icon="fas fa-hand-holding-medical"
-                                                    data-toggle="tooltip" title="Daftar Offline"
-                                                    data-id="{{ $item->id }}" />
-                                            @endif
-                                        @endif
-                                    @endif
                                     <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                         data-toggle="tooltip" title="Batal Antrian"
                                         onclick="window.location='{{ route('antrian.batal_antrian', $item->kodebooking) }}'" />
@@ -472,9 +446,8 @@
                         @php
                             $config = ['format' => 'YYYY-MM-DD'];
                         @endphp
-                        <x-adminlte-input-date name="tanggalperiksa"
-                            value="{{ Carbon\Carbon::now()->format('Y-m-d') }}" label="Tanggal Periksa" readonly
-                            :config="$config" />
+                        <x-adminlte-input-date name="tanggalperiksa" value="{{ Carbon\Carbon::now()->format('Y-m-d') }}"
+                            label="Tanggal Periksa" readonly :config="$config" />
                     </div>
                     <div class="col-md-4">
                         <x-adminlte-input name="jampraktek" label="Jadwal Praktek" placeholder="Waktu Jadwal Praktek"
