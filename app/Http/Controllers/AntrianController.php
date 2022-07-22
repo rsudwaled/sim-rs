@@ -32,7 +32,7 @@ class AntrianController extends Controller
     }
     public function console_jadwaldokter($poli, $tanggal)
     {
-        $poli = Poliklinik::with(['antrians', 'jadwals'])->firstWhere('kodesubspesialis', $poli);
+        $poli = Poliklinik::with(['jadwals'])->firstWhere('kodesubspesialis', $poli);
         $jadwals = $poli->jadwals->where('hari', Carbon::parse($tanggal)->dayOfWeek)
             ->where('kodesubspesialis', $poli->kodesubspesialis);
         return response()->json($jadwals);

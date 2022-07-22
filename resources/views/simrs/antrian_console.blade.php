@@ -39,7 +39,8 @@
                                     <x-adminlte-info-box
                                         text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien') }}"
                                         title="{{ $poli->namasubspesialis }} " class="tombolPoli"
-                                        data-id="{{ $poli->kodesubspesialis }}" theme="success" />
+                                        data-id="{{ $poli->kodesubspesialis }}"
+                                        theme="{{ ($poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() >= $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien')) ? 'danger': 'success' }}" />
                                 </div>
                             @endforeach
                         </div>

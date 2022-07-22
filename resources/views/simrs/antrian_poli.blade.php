@@ -54,7 +54,9 @@
                             <x-adminlte-select2 name="kodedokter" label="Dokter">
                                 <option value="">00000 - SEMUA DOKTER</option>
                                 @foreach ($dokters as $item)
-                                    <option value="{{ $item->kodedokter }}" {{ $item->kodedokter == $request->kodedokter ? 'selected' : null }}>{{ $item->kodedokter }} -
+                                    <option value="{{ $item->kodedokter }}"
+                                        {{ $item->kodedokter == $request->kodedokter ? 'selected' : null }}>
+                                        {{ $item->kodedokter }} -
                                         {{ $item->namadokter }}
                                     </option>
                                 @endforeach
@@ -193,6 +195,70 @@
                         @endforeach
                     </x-adminlte-datatable>
                 </x-adminlte-card>
+                       {{-- modal pelayanan --}}
+                       @if ($antrians->count() > 0)
+                       <x-adminlte-modal id="modalPelayanan" title="Pembayaran Antrian Pasien" size="xl"
+                           theme="success" icon="fas fa-user-plus" v-centered>
+                           <form name="formLayanan" id="formLayanan" action="{{ route('antrian.pendaftaran') }}"
+                               method="post">
+                               @csrf
+                               <input type="hidden" name="antrianid" id="antrianid" value="">
+                               <dl class="row">
+                                   <dt class="col-sm-3">Kode Booking</dt>
+                                   <dd class="col-sm-8">: <span id="kodebooking"></span></dd>
+                                   <dt class="col-sm-3">Antrian</dt>
+                                   <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span id="nomorantrean"></span>
+                                   </dd>
+                                   <dt class="col-sm-3 ">Tanggal Perikasa</dt>
+                                   <dd class="col-sm-8">: <span id="tanggalperiksa"></span></dd>
+                                   <dt class="col-sm-3">Administrator</dt>
+                                   <dd class="col-sm-8">: {{ Auth::user()->name }}</dd>
+                               </dl>
+                               <x-adminlte-card theme="primary" title="Informasi Kunjungan Berobat">
+                                   <div class="row">
+                                       <div class="col-md-5">
+                                           <dl class="row">
+                                               <dt class="col-sm-4">No RM</dt>
+                                               <dd class="col-sm-8">: <span id="norm"></span></dd>
+                                               <dt class="col-sm-4">NIK</dt>
+                                               <dd class="col-sm-8">: <span id="nik"></span></dd>
+                                               <dt class="col-sm-4">No BPJS</dt>
+                                               <dd class="col-sm-8">: <span id="nomorkartu"></span></dd>
+                                               <dt class="col-sm-4">Nama</dt>
+                                               <dd class="col-sm-8">: <span id="nama"></span></dd>
+                                               <dt class="col-sm-4">No HP</dt>
+                                               <dd class="col-sm-8">: <span id="nohp"></span></dd>
+                                           </dl>
+                                       </div>
+                                       <div class="col-md-7">
+                                           <dl class="row">
+                                               <dt class="col-sm-4">No Rujukan</dt>
+                                               <dd class="col-sm-8">: <span id="nomorreferensi"></span></dd>
+                                               <dt class="col-sm-4">Jenis Pasien</dt>
+                                               <dd class="col-sm-8">: <span id="jenispasien"></span></dd>
+                                               <dt class="col-sm-4">Poliklinik</dt>
+                                               <dd class="col-sm-8">: <span id="namapoli"></span></dd>
+                                               <dt class="col-sm-4">Dokter</dt>
+                                               <dd class="col-sm-8">: <span id="namadokter"></span></dd>
+                                               <dt class="col-sm-4">Jadwal</dt>
+                                               <dd class="col-sm-8">: <span id="jampraktek"></span></dd>
+                                               <dt class="col-sm-4">Jenis Kunjungan</dt>
+                                               <dd class="col-sm-8">: <span id="jeniskunjungan"></span></dd>
+                                           </dl>
+                                       </div>
+                                   </div>
+                               </x-adminlte-card>
+                               <x-slot name="footerSlot">
+                                   <x-adminlte-button class="mr-auto" label="Lanjut Farmasi" theme="warning"
+                                       icon="fas fa-prescription-bottle-alt"
+                                       onclick=" window.location='{{ route('antrian.lanjut_farmasi', $item->kodebooking ?? 0) }}'" />
+                                   <x-adminlte-button label="Selesai" theme="success" icon="fas fa-check"
+                                       onclick="window.location='{{ route('antrian.selesai', $item->kodebooking ?? 0) }}'" />
+                                   <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
+                               </x-slot>
+                           </form>
+                       </x-adminlte-modal>
+                   @endif
                 {{-- poli belum dan sudah dilayani --}}
                 <x-adminlte-card
                     title="Antrian Pelayanan Poliklinik ({{ $antrians->where('taskid', '!=', 4)->count() }} Orang)"
@@ -308,69 +374,8 @@
                         @endforeach
                     </x-adminlte-datatable>
                 </x-adminlte-card>
-                @if ($antrians->count() > 0)
-                    <x-adminlte-modal id="modalPembayaran" title="Pembayaran Antrian Pasien" size="xl"
-                        theme="success" icon="fas fa-user-plus" v-centered>
-                        <form name="formLayanan" id="formLayanan" action="{{ route('antrian.pendaftaran') }}"
-                            method="post">
-                            @csrf
-                            <input type="hidden" name="antrianid" id="antrianid" value="">
-                            <dl class="row">
-                                <dt class="col-sm-3">Kode Booking</dt>
-                                <dd class="col-sm-8">: <span id="kodebooking"></span></dd>
-                                <dt class="col-sm-3">Antrian</dt>
-                                <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span id="nomorantrean"></span>
-                                </dd>
-                                <dt class="col-sm-3 ">Tanggal Perikasa</dt>
-                                <dd class="col-sm-8">: <span id="tanggalperiksa"></span></dd>
-                                <dt class="col-sm-3">Administrator</dt>
-                                <dd class="col-sm-8">: {{ Auth::user()->name }}</dd>
-                            </dl>
-                            <x-adminlte-card theme="primary" title="Informasi Kunjungan Berobat">
-                                <div class="row">
-                                    <div class="col-md-5">
-                                        <dl class="row">
-                                            <dt class="col-sm-4">No RM</dt>
-                                            <dd class="col-sm-8">: <span id="norm"></span></dd>
-                                            <dt class="col-sm-4">NIK</dt>
-                                            <dd class="col-sm-8">: <span id="nik"></span></dd>
-                                            <dt class="col-sm-4">No BPJS</dt>
-                                            <dd class="col-sm-8">: <span id="nomorkartu"></span></dd>
-                                            <dt class="col-sm-4">Nama</dt>
-                                            <dd class="col-sm-8">: <span id="nama"></span></dd>
-                                            <dt class="col-sm-4">No HP</dt>
-                                            <dd class="col-sm-8">: <span id="nohp"></span></dd>
-                                        </dl>
-                                    </div>
-                                    <div class="col-md-7">
-                                        <dl class="row">
-                                            <dt class="col-sm-4">No Rujukan</dt>
-                                            <dd class="col-sm-8">: <span id="nomorreferensi"></span></dd>
-                                            <dt class="col-sm-4">Jenis Pasien</dt>
-                                            <dd class="col-sm-8">: <span id="jenispasien"></span></dd>
-                                            <dt class="col-sm-4">Poliklinik</dt>
-                                            <dd class="col-sm-8">: <span id="namapoli"></span></dd>
-                                            <dt class="col-sm-4">Dokter</dt>
-                                            <dd class="col-sm-8">: <span id="namadokter"></span></dd>
-                                            <dt class="col-sm-4">Jadwal</dt>
-                                            <dd class="col-sm-8">: <span id="jampraktek"></span></dd>
-                                            <dt class="col-sm-4">Jenis Kunjungan</dt>
-                                            <dd class="col-sm-8">: <span id="jeniskunjungan"></span></dd>
-                                        </dl>
-                                    </div>
-                                </div>
-                            </x-adminlte-card>
-                            <x-slot name="footerSlot">
-                                <x-adminlte-button class="mr-auto" label="Lanjut Farmasi" theme="warning"
-                                    icon="fas fa-prescription-bottle-alt"
-                                    onclick=" window.location='{{ route('antrian.lanjut_farmasi', $item->kodebooking) }}'" />
-                                <x-adminlte-button label="Selesai" theme="success" icon="fas fa-check"
-                                    onclick="window.location='{{ route('antrian.selesai', $item->kodebooking) }}'" />
-                                <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
-                            </x-slot>
-                        </form>
-                    </x-adminlte-modal>
-                @endif
+
+
             @endif
         </div>
     </div>
@@ -419,7 +424,7 @@
                     $('#kodedokter').val(data.kodedokter);
                     $('#jampraktek').val(data.jampraktek);
                     // $('#kodepoli').val(data.kodepoli).trigger('change');
-                    $('#modalPembayaran').modal('show');
+                    $('#modalPelayanan').modal('show');
                     $.LoadingOverlay("hide", true);
                 })
             });
