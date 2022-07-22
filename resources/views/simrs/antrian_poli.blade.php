@@ -29,8 +29,8 @@
                             </x-adminlte-input-date>
                         </div>
                         <div class="col-md-3">
-                            <x-adminlte-select2 name="poli" id="poli" label="Poliklinik">
-                                <option value="00000">00000 - SEMUA POLIKLINIK</option>
+                            <x-adminlte-select2 name="kodepoli" label="Poliklinik">
+                                <option value="">00000 - SEMUA POLIKLINIK</option>
                                 @foreach ($polis as $item)
                                     <option value="{{ $item->kodesubspesialis }}">{{ $item->kodesubspesialis }} -
                                         {{ $item->namasubspesialis }}
@@ -39,22 +39,47 @@
                             </x-adminlte-select2>
                         </div>
                         <div class="col-md-3">
-                            <x-adminlte-select2 name="dokter" label="Dokter">
-                                <option value="00000">00000 - SEMUA DOKTER</option>
+                            <x-adminlte-select2 name="kodedokter" label="Dokter">
+                                <option value="">00000 - SEMUA DOKTER</option>
                                 @foreach ($dokters as $item)
                                     <option value="{{ $item->kodedokter }}">{{ $item->kodedokter }} -
                                         {{ $item->namadokter }}
                                     </option>
                                 @endforeach
-                                </x-adminlte-select>
+                            </x-adminlte-select2>
                         </div>
                     </div>
                     <x-adminlte-button type="submit" class="withLoad" theme="primary" label="Submit Antrian" />
                     <x-adminlte-button class="withLoad" theme="success" label="Tambah Antrian Offline" />
                 </form>
             </x-adminlte-card>
-            @if (isset($request->poli) && isset($request->dokter) && isset($request->tanggal))
-                <x-adminlte-card title="Antrian Pelayanan Poliklinik ({{ $antrians->where('taskid', 3)->count() }} Orang)"
+            @if (isset($antrians))
+                {{-- info box --}}
+                <div class="row">
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', 2)->first()->angkaantrean ?? '0' }}"
+                            text="Antrian Saat Ini" theme="primary" class="withLoad" icon="fas fa-sign-in-alt"
+                            url="" url-text="Batalkan Antrian" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->where('taskid', 1)->first()->angkaantrean ?? '0' }}"
+                            class="withLoad" text="Antrian Selanjutnya" theme="success" icon="fas fa-sign-in-alt"
+                            url="{{ route('antrian.panggil_pendaftaran', $antrians->where('taskid', 1)->first()->kodebooking ?? '0') }}"
+                            url-text="Panggil Antrian Selanjutnya" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box
+                            title="{{ $antrians->where('taskid', '<', 2)->where('taskid', '>=', 1)->count() }}"
+                            text="Sisa Antrian" theme="warning" icon="fas fa-sign-in-alt" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-adminlte-small-box title="{{ $antrians->count() }}" text="Total Antrian" theme="success"
+                            icon="fas fa-sign-in-alt" />
+                    </div>
+                </div>
+                {{-- poli dilayani --}}
+                <x-adminlte-card
+                    title="Antrian Pelayanan Poliklinik ({{ $antrians->where('taskid', 3)->count() }} Orang)"
                     theme="primary" icon="fas fa-info-circle" collapsible>
                     @if ($errors->any())
                         <x-adminlte-alert title="Ops Terjadi Masalah !" theme="danger" dismissable>
@@ -69,8 +94,8 @@
                         $heads = ['No', 'Kode', 'Tanggal', 'No RM / NIK', 'Jenis / Pasien', 'No Kartu / Rujukan', 'Poliklinik / Dokter', 'Status', 'Action'];
                         $config['order'] = ['7', 'asc'];
                     @endphp
-                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped
-                        bordered hoverable compressed>
+                    <x-adminlte-datatable id="table1" class="nowrap" :heads="$heads" :config="$config" striped bordered
+                        hoverable compressed>
                         @foreach ($antrians as $item)
                             <tr>
                                 <td>{{ $item->angkaantrean }}</td>
@@ -168,8 +193,8 @@
                     </x-adminlte-datatable>
                 </x-adminlte-card>
                 @if ($antrians->count() > 0)
-                    <x-adminlte-modal id="modalPembayaran" title="Pembayaran Antrian Pasien" size="xl" theme="success"
-                        icon="fas fa-user-plus" v-centered>
+                    <x-adminlte-modal id="modalPembayaran" title="Pembayaran Antrian Pasien" size="xl"
+                        theme="success" icon="fas fa-user-plus" v-centered>
                         <form name="formLayanan" id="formLayanan" action="{{ route('antrian.pendaftaran') }}"
                             method="post">
                             @csrf
@@ -178,8 +203,7 @@
                                 <dt class="col-sm-3">Kode Booking</dt>
                                 <dd class="col-sm-8">: <span id="kodebooking"></span></dd>
                                 <dt class="col-sm-3">Antrian</dt>
-                                <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span
-                                        id="nomorantrean"></span>
+                                <dd class="col-sm-8">: <span id="angkaantrean"></span> / <span id="nomorantrean"></span>
                                 </dd>
                                 <dt class="col-sm-3 ">Tanggal Perikasa</dt>
                                 <dd class="col-sm-8">: <span id="tanggalperiksa"></span></dd>
@@ -234,7 +258,6 @@
             @endif
         </div>
     </div>
-
 @stop
 
 @section('plugins.Select2', true)

@@ -63,7 +63,8 @@
                             url-text="Panggil Antrian Selanjutnya" />
                     </div>
                     <div class="col-md-3">
-                        <x-adminlte-small-box title="{{ $antrians->where('taskid', '<', 2)->where('taskid', '>=', 1)->count() }}"
+                        <x-adminlte-small-box
+                            title="{{ $antrians->where('taskid', '<', 2)->where('taskid', '>=', 1)->count() }}"
                             text="Sisa Antrian" theme="warning" icon="fas fa-sign-in-alt" />
                     </div>
                     <div class="col-md-3">
@@ -180,9 +181,6 @@
                                                     data-id="{{ $item->id }}" />
                                             @endif
                                         @endif
-                                    @else
-                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
-                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
                                     @endif
                                     <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                         data-toggle="tooltip" title="Batal Antrian"
@@ -291,9 +289,6 @@
                                                     data-id="{{ $item->id }}" />
                                             @endif
                                         @endif
-                                    @else
-                                        <x-adminlte-button class="btn-xs" label="Print Karcis" theme="warning"
-                                            icon="fas fa-print" data-toggle="tooltip" title="Print Karcis" />
                                     @endif
                                     <x-adminlte-button class="btn-xs" theme="danger" icon="fas fa-times"
                                         data-toggle="tooltip" title="Batal Antrian"
@@ -366,7 +361,8 @@
     </div>
     <x-adminlte-modal id="modalDaftarOffline" title="Pendaftaran Pasien Offline" size="lg" theme="success"
         icon="fas fa-user-plus" v-centered>
-        <form name="formDaftar" id="formDaftar" action="{{ route('antrian.update_pendaftaran_offline') }}" method="post">
+        <form name="formDaftar" id="formDaftar" action="{{ route('antrian.update_pendaftaran_offline') }}"
+            method="post">
             @csrf
             <input type="hidden" name="antrianid" id="antrianid" value="">
             <dl class="row">
@@ -566,8 +562,8 @@
                 </div>
             </x-adminlte-card>
             <x-slot name="footerSlot">
-                <x-adminlte-button label="Daftar" form="formDaftar" class="mr-auto withLoad" type="submit" theme="success"
-                    icon="fas fa-plus" />
+                <x-adminlte-button label="Daftar" form="formDaftar" class="mr-auto withLoad" type="submit"
+                    theme="success" icon="fas fa-plus" />
                 <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
             </x-slot>
         </form>
@@ -724,8 +720,8 @@
                 </div>
             </x-adminlte-card>
             <x-slot name="footerSlot">
-                <x-adminlte-button label="Daftar" form="formDaftarOn" class="mr-auto withLoad" type="submit" theme="success"
-                    icon="fas fa-plus" />
+                <x-adminlte-button label="Daftar" form="formDaftarOn" class="mr-auto withLoad" type="submit"
+                    theme="success" icon="fas fa-plus" />
                 <x-adminlte-button theme="danger" label="Dismiss" data-dismiss="modal" />
             </x-slot>
         </form>

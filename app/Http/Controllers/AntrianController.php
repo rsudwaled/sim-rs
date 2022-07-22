@@ -250,7 +250,7 @@ class AntrianController extends Controller
             $request['status_api'] = 0;
         }
         $antrian = Antrian::find($request->antrianid);
-        $waktu1= Carbon::parse($antrian->taskid1)->timestamp * 1000;
+        $waktu1 = Carbon::parse($antrian->taskid1)->timestamp * 1000;
         $waktu2 = Carbon::parse($antrian->taskid2)->timestamp * 1000;
         $waktu3 =  Carbon::now()->timestamp * 1000;
         $request['kodebooking'] = $antrian->kodebooking;
@@ -431,15 +431,16 @@ class AntrianController extends Controller
     // kasir
     public function pembayaran(Request $request)
     {
-        if ($request->tanggal == null) {
-            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        $antrians = [];
+        if ($request->tanggal) {
+            $antrians = Antrian::where('taskid', '>=', 3)
+                ->where('jenispasien', "NON JKN")
+                ->whereDate('tanggalperiksa', $request->tanggal)
+                ->get();
         }
-        $polis = Poliklinik::where('status', 1)->get();
-        $antrians = Antrian::where('taskid', '>=', 2)->get();
         return view('simrs.antrian_pembayaran', [
             'antrians' => $antrians,
             'request' => $request,
-            'polis' => $polis,
         ]);
     }
     public function update_pembayaran(Request $request)
@@ -456,10 +457,17 @@ class AntrianController extends Controller
     // poliklinik
     public function poli(Request $request)
     {
-        if ($request->tanggal == null) {
-            $request['tanggal'] = Carbon::now()->format('Y-m-d');
+        $antrians = [];
+        if ($request->tanggal) {
+            $antrians = Antrian::whereDate('tanggalperiksa', $request->tanggal)
+                ->get();
+            if ($request->kodepoli != null) {
+                $antrians = $antrians->where('kodepoli', $request->kodepoli);
+            }
+            if ($request->kodedokter != null) {
+                $antrians = $antrians->where('kodedokter', $request->kodedokter);
+            }
         }
-        $antrians = Antrian::where('taskid', '>=', 3)->get();
         $polis = Poliklinik::where('status', 1)->get();
         $dokters = Dokter::get();
         return view('simrs.antrian_poli', [

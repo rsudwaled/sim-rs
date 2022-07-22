@@ -47,6 +47,7 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     Route::get('laporan_tanggal', [AntrianController::class, 'laporan_tanggal'])->name('laporan_tanggal');
     Route::get('laporan_bulan', [AntrianController::class, 'laporan_bulan'])->name('laporan_bulan');
     Route::get('taskid', [AntrianController::class, 'taskid'])->name('taskid');
+    Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit');
     // pendafataran
     Route::get('pendaftaran', [AntrianController::class, 'pendaftaran'])->name('pendaftaran')->middleware('permission:pendaftaran');
     Route::get('panggil_pendaftaran/{kodebooking}', [AntrianController::class, 'panggil_pendaftaran'])->name('panggil_pendaftaran')->middleware('permission:pendaftaran');
@@ -59,7 +60,6 @@ Route::prefix('antrian')->name('antrian.')->middleware(['auth', 'verified'])->gr
     // poliklinik
     Route::get('poli', [AntrianController::class, 'poli'])->name('poli')->middleware('permission:poliklinik');
     Route::get('panggil_poli/{kodebooking}', [AntrianController::class, 'panggil_poli'])->name('panggil_poli')->middleware('permission:poliklinik');
-    Route::get('{kodebookig}/edit', [AntrianController::class, 'edit'])->name('edit')->middleware('permission:poliklinik');
     Route::get('lanjut_farmasi/{kodebooking}', [AntrianController::class, 'lanjut_farmasi'])->name('lanjut_farmasi')->middleware('permission:poliklinik');
     Route::get('selesai/{kodebooking}', [AntrianController::class, 'selesai'])->name('selesai')->middleware('permission:poliklinik');
     // farmasi
