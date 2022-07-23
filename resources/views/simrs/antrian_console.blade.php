@@ -4,6 +4,7 @@
 
 @section('title', 'Antrian QR Code')
 @section('body')
+
     <div class="wrapper">
         <div class="row p-3">
             {{-- checkin --}}
@@ -33,6 +34,8 @@
                 <x-adminlte-card title="Ambil Antrian Ofline RSUD Waled" theme="primary" icon="fas fa-qrcode">
                     <div class="text-center">
                         <h6>Pilih Antrian Poliklinik</h6>
+                        <p hidden>{{ setlocale(LC_ALL, 'IND') }}</p>
+                        <h6>{{ \Carbon\Carbon::now()->formatLocalized('%A, %d %B %Y') }}</h6>
                         <div class="row">
                             @foreach ($poliklinik as $poli)
                                 <div class="col-md-4">
@@ -40,7 +43,7 @@
                                         text="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() }} / {{ $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien') }}"
                                         title="{{ $poli->namasubspesialis }} " class="tombolPoli"
                                         data-id="{{ $poli->kodesubspesialis }}"
-                                        theme="{{ ($poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() >= $poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien')) ? 'danger': 'success' }}" />
+                                        theme="{{ $poli->antrians->where('tanggalperiksa', \Carbon\Carbon::now()->format('Y-m-d'))->count() >=$poli->jadwals->where('hari', \Carbon\Carbon::now()->dayOfWeek)->where('kodesubspesialis', $poli->kodesubspesialis)->sum('kapasitaspasien')? 'danger': 'success' }}" />
                                 </div>
                             @endforeach
                         </div>
