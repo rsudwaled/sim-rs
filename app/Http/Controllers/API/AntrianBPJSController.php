@@ -206,7 +206,7 @@ class AntrianBPJSController extends Controller
         $validator = Validator::make(request()->all(), [
             "kodebooking" => "required",
             "taskid" => "required",
-            "waktu" => "required",
+            "waktu" => "required|numeric",
         ]);
         if ($validator->fails()) {
             $response = [

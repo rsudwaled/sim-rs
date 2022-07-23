@@ -177,7 +177,7 @@ class AntrianController extends Controller
             $request['kodebooking'] = $antrian->kodebooking;
             $request['taskid'] = 2;
             $now = Carbon::now();
-            $request['waktu'] = Carbon::now();
+            $request['waktu'] = Carbon::now()->timestamp * 1000;
             $vclaim = new AntrianBPJSController();
             $response = $vclaim->update_antrian($request);
             $antrian->update([
@@ -224,12 +224,7 @@ class AntrianController extends Controller
                 }
             } catch (\Throwable $th) {
                 Alert::error('Error', 'Mesin Antrian Tidak Menyala');
-                return redirect()->back();
-                // return redirect()->route('antrian.index', [
-                //     'tanggal' => $tanggal,
-                //     'loket' => $loket,
-                //     'lantai' => $lantai
-                // ]);
+                // return redirect()->back();
             }
             Alert::success('Success', 'Panggilan Berhasil ' . $response->metadata->message);
             return redirect()->back();
@@ -529,7 +524,7 @@ class AntrianController extends Controller
             $request['kodebooking'] = $antrian->kodebooking;
             $request['taskid'] = 4;
             $request['keterangan'] = "Panggilan ke poliklinik yang anda pilih";
-            $request['waktu'] = Carbon::now();
+            $request['waktu'] = Carbon::now()->timestamp * 1000;
             $vclaim = new AntrianBPJSController();
             $response = $vclaim->update_antrian($request);
             $antrian->update([
@@ -556,7 +551,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 5;
         $request['keterangan'] = "Silahkan tunggu di farmasi";
-        $request['waktu'] = Carbon::now();
+        $request['waktu'] = Carbon::now()->timestamp * 1000;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -574,7 +569,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 5;
         $request['keterangan'] = "Antrian selesai, semoga cepat sembuh";
-        $request['waktu'] = Carbon::now();
+        $request['waktu'] = Carbon::now()->timestamp * 1000;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -608,7 +603,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 6;
         $request['keterangan'] = "Proses peracikan obat";
-        $request['waktu'] = Carbon::now();
+        $request['waktu'] = Carbon::now()->timestamp * 1000;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -626,7 +621,7 @@ class AntrianController extends Controller
         $request['kodebooking'] = $antrian->kodebooking;
         $request['taskid'] = 7;
         $request['keterangan'] = "Selesai peracikan obat";
-        $request['waktu'] = Carbon::now();
+        $request['waktu'] = Carbon::now()->timestamp * 1000;
         $vclaim = new AntrianBPJSController();
         $response = $vclaim->update_antrian($request);
         $antrian->update([
@@ -784,7 +779,7 @@ class AntrianController extends Controller
 
         $api = new AntrianBPJSController();
         $request['taskid'] = 3;
-        $request['waktu'] = Carbon::now();
+        $request['waktu'] = Carbon::now()->timestamp * 1000;
         $request['kodebooking'] = $kodebooking;
         $response = $api->update_antrian($request);
         if ($response->metadata->code == 200) {
